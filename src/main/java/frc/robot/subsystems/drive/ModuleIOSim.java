@@ -35,42 +35,6 @@ public class ModuleIOSim implements ModuleIO {
   private double driveAppliedVolts = 0.0;
   private double turnAppliedVolts = 0.0;
 
-  // private TalonFX driveTalon;
-  // private TalonFX turnTalon;
-  // private CANcoder cancoder;
-  // private Rotation2d absoluteEncoderOffset;
-
-  // public ModuleIOSim(int index) {
-  //   switch (index) {
-  //     case 0:
-  //       driveTalon = new TalonFX(0);
-  //       turnTalon = new TalonFX(1);
-  //       cancoder = new CANcoder(2);
-  //       absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
-  //       break;
-  //     case 1:
-  //       driveTalon = new TalonFX(3);
-  //       turnTalon = new TalonFX(4);
-  //       cancoder = new CANcoder(5);
-  //       absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
-  //       break;
-  //     case 2:
-  //       driveTalon = new TalonFX(6);
-  //       turnTalon = new TalonFX(7);
-  //       cancoder = new CANcoder(8);
-  //       absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
-  //       break;
-  //     case 3:
-  //       driveTalon = new TalonFX(9);
-  //       turnTalon = new TalonFX(10);
-  //       cancoder = new CANcoder(11);
-  //       absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
-  //       break;
-  //     default:
-  //       throw new RuntimeException("Invalid module index");
-  //   }
-  // }
-
   @Override
   public void updateInputs(ModuleIOInputs inputs) {
     driveSim.update(LOOP_PERIOD_SECS);
