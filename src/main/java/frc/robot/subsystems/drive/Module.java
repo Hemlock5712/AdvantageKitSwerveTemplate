@@ -199,4 +199,8 @@ public class Module {
   public double getCharacterizationVelocity() {
     return inputs.driveVelocityRadPerSec;
   }
+
+  public static double getWheelRadius() {
+    return WHEEL_RADIUS;
+  }
 }
