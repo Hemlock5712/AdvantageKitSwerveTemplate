@@ -139,7 +139,7 @@ public class AprilTagVision extends VirtualSubsystem {
       Pose3d cameraPose = null;
       Pose3d robotPose3d = null;
 
-      if (inputs[instanceIndex].numTags < 1
+      if (inputs[instanceIndex].currentTags.size() < 1
           || inputs[instanceIndex].estimatedPose == null
           || cameraPoses[instanceIndex] == null) {
         continue;

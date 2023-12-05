@@ -17,7 +17,6 @@ public interface AprilTagVisionIO {
 
     public Pose3d estimatedPose = new Pose3d();
     public double captureTimestamp = 0.0;
-    public double numTags = 0;
     public boolean valid = false;
     public ArrayList<Double> currentTags = new ArrayList<Double>();
 
@@ -25,7 +24,6 @@ public interface AprilTagVisionIO {
     public void toLog(LogTable table) {
       table.put("estimatedPose", estimatedPose);
       table.put("captureTimestamp", captureTimestamp);
-      table.put("numTags", numTags);
       table.put("valid", valid);
       table.put("currentTags", currentTags);
     }
@@ -35,7 +33,6 @@ public interface AprilTagVisionIO {
       estimatedPose = table.get("estimatedPose", estimatedPose);
       captureTimestamp = table.get("latency", captureTimestamp);
       valid = table.get("valid", valid);
-      numTags = table.get("numTags", numTags);
       currentTags = table.get("currentTags", currentTags);
     }
   }
