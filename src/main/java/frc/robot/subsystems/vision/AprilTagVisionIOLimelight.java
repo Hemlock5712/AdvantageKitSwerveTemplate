@@ -28,7 +28,7 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
       inputs.estimatedPose = LimelightHelpers.getBotPose3d_wpiRed(limelightName);
     }
     inputs.captureTimestamp =
-        Logger.getRealTimestamp() - ((LimelightHelpers.getLatency_Capture(limelightName)+LimelightHelpers.getLatency_Pipeline(limelightName)) / 1000.0);
+        Logger.getRealTimestamp() - (LimelightHelpers.getLatency_Total(limelightName) / 1000.0);
     inputs.valid = LimelightHelpers.getTV(limelightName);
     LimelightTarget_Fiducial[] tagID =
         LimelightHelpers.getLatestResults(limelightName).targetingResults.targets_Fiducials;
