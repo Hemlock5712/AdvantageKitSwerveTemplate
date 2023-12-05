@@ -453,6 +453,10 @@ public class LimelightHelpers {
     return getLimelightNTDouble(limelightName, "cl");
   }
 
+  public static double getLatency_Total(String limelightName) {
+    return getLimelightNTDouble(limelightName, "cl")+getLimelightNTDouble(limelightName, "tl");
+  }  
+
   public static double getCurrentPipelineIndex(String limelightName) {
     return getLimelightNTDouble(limelightName, "getpipe");
   }
