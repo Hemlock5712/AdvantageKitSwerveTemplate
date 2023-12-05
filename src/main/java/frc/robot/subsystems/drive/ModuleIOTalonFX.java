@@ -67,30 +67,30 @@ public class ModuleIOTalonFX implements ModuleIO {
   public ModuleIOTalonFX(int index) {
     switch (index) {
       case 0:
-        driveTalon = new TalonFX(7, "chassis");
-        turnTalon = new TalonFX(8, "chassis");
-        cancoder = new CANcoder(12, "chassis");
+        driveTalon = new TalonFX(1, "chassis");
+        turnTalon = new TalonFX(2, "chassis");
+        cancoder = new CANcoder(9, "chassis");
         absoluteEncoderOffset =
             Rotation2d.fromRadians(-2.366932533707544 + Math.PI); // MUST BE CALIBRATED
         break;
       case 1:
-        driveTalon = new TalonFX(5, "chassis");
-        turnTalon = new TalonFX(6, "chassis");
-        cancoder = new CANcoder(11, "chassis");
+        driveTalon = new TalonFX(3, "chassis");
+        turnTalon = new TalonFX(4, "chassis");
+        cancoder = new CANcoder(10, "chassis");
         absoluteEncoderOffset =
             Rotation2d.fromRadians(-1.5912698570438777 + Math.PI); // MUST BE CALIBRATED
         break;
       case 2:
-        driveTalon = new TalonFX(3, "chassis");
-        turnTalon = new TalonFX(4, "chassis");
-        cancoder = new CANcoder(12, "chassis");
+        driveTalon = new TalonFX(5, "chassis");
+        turnTalon = new TalonFX(6, "chassis");
+        cancoder = new CANcoder(11, "chassis");
         absoluteEncoderOffset =
             Rotation2d.fromRadians(-2.365983749196588 + Math.PI); // MUST BE CALIBRATED
         break;
       case 3:
-        driveTalon = new TalonFX(1, "chassis");
-        turnTalon = new TalonFX(2, "chassis");
-        cancoder = new CANcoder(9, "chassis");
+        driveTalon = new TalonFX(7, "chassis");
+        turnTalon = new TalonFX(8, "chassis");
+        cancoder = new CANcoder(12, "chassis");
         absoluteEncoderOffset =
             Rotation2d.fromRadians(-2.991957941000841 + Math.PI); // MUST BE CALIBRATED
         break;
