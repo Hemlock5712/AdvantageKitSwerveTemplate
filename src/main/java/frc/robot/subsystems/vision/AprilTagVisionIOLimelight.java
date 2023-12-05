@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.util.LimelightHelpers;
 import frc.robot.util.LimelightHelpers.LimelightTarget_Fiducial;
-import org.littletonrobotics.junction.Logger;
 
 public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
 
@@ -23,12 +22,14 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
 
   public void updateInputs(AprilTagVisionIOInputs inputs) {
     if (DriverStation.getAlliance().get() == Alliance.Blue) {
-      inputs.estimatedPose = LimelightHelpers.getBotPose3d_wpiBlue(limelightName);
+      var estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName);
+      inputs.estimatedPose = estimate.pose;
+      inputs.captureTimestamp = estimate.timestampSeconds;
     } else {
-      inputs.estimatedPose = LimelightHelpers.getBotPose3d_wpiRed(limelightName);
+      var estimate = LimelightHelpers.getBotPoseEstimate_wpiRed(limelightName);
+      inputs.estimatedPose = estimate.pose;
+      inputs.captureTimestamp = estimate.timestampSeconds;
     }
-    inputs.captureTimestamp =
-        Logger.getRealTimestamp() - (LimelightHelpers.getLatency_Total(limelightName) / 1000.0);
     inputs.valid = LimelightHelpers.getTV(limelightName);
     LimelightTarget_Fiducial[] tagID =
         LimelightHelpers.getLatestResults(limelightName).targetingResults.targets_Fiducials;

@@ -20,7 +20,6 @@ import frc.robot.subsystems.vision.AprilTagVisionIO.AprilTagVisionIOInputs;
 import frc.robot.util.Alert;
 import frc.robot.util.Alert.AlertType;
 import frc.robot.util.FieldConstants;
-import frc.robot.util.GeomUtil;
 import frc.robot.util.PoseEstimator.TimestampedVisionUpdate;
 import frc.robot.util.VirtualSubsystem;
 import java.util.ArrayList;
@@ -145,11 +144,10 @@ public class AprilTagVision extends VirtualSubsystem {
         continue;
       }
 
-      cameraPose = inputs[instanceIndex].estimatedPose;
+      cameraPose = cameraPoses[instanceIndex];
       var timestamp = inputs[instanceIndex].captureTimestamp;
-      robotPose3d =
-          cameraPose.transformBy(
-              GeomUtil.pose3dToTransform3d(cameraPoses[instanceIndex]).inverse());
+      robotPose3d = inputs[instanceIndex].estimatedPose;
+      ;
 
       if (robotPose3d.getX() < -fieldBorderMargin
           || robotPose3d.getX() > FieldConstants.fieldLength + fieldBorderMargin
