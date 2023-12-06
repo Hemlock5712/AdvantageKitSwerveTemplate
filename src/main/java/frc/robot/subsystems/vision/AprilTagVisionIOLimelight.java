@@ -18,6 +18,7 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
 
   public AprilTagVisionIOLimelight(String identifier) {
     limelightName = identifier;
+    LimelightHelpers.setPipelineIndex(limelightName, 0);
   }
 
   public void updateInputs(AprilTagVisionIOInputs inputs) {
@@ -33,8 +34,10 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
     inputs.valid = LimelightHelpers.getTV(limelightName);
     LimelightTarget_Fiducial[] tagID =
         LimelightHelpers.getLatestResults(limelightName).targetingResults.targets_Fiducials;
+    int temp[] = new int[tagID.length];
     for (int i = 0; i < tagID.length; i++) {
-      inputs.currentTags.add(tagID[i].fiducialID);
+      temp[i] = (int) tagID[i].fiducialID;
     }
+    inputs.currentTags = temp;
   }
 }

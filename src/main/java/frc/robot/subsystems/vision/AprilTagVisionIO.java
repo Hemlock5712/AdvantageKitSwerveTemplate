@@ -8,7 +8,6 @@
 package frc.robot.subsystems.vision;
 
 import edu.wpi.first.math.geometry.Pose3d;
-import java.util.ArrayList;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
@@ -18,7 +17,8 @@ public interface AprilTagVisionIO {
     public Pose3d estimatedPose = new Pose3d();
     public double captureTimestamp = 0.0;
     public boolean valid = false;
-    public ArrayList<Double> currentTags = new ArrayList<Double>();
+    public int[] currentTags = new int[] {};
+    ;
 
     @Override
     public void toLog(LogTable table) {

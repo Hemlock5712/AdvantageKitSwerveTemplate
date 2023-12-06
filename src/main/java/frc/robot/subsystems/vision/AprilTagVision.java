@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Module;
 import frc.robot.subsystems.vision.AprilTagVisionIO.AprilTagVisionIOInputs;
@@ -21,16 +22,16 @@ import frc.robot.util.Alert;
 import frc.robot.util.Alert.AlertType;
 import frc.robot.util.FieldConstants;
 import frc.robot.util.PoseEstimator.TimestampedVisionUpdate;
-import frc.robot.util.VirtualSubsystem;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
-public class AprilTagVision extends VirtualSubsystem {
+public class AprilTagVision extends SubsystemBase {
   private static final double targetLogTimeSecs = 0.1;
   private static final double fieldBorderMargin = 0.5;
   private static final double zMargin = 0.75;
@@ -54,37 +55,13 @@ public class AprilTagVision extends VirtualSubsystem {
       case REPLAY:
         cameraPoses =
             new Pose3d[] {
-              // Front left (forward facing, camera 6)
+              // Front left (forward facing, camera 1)
               new Pose3d(
-                  Units.inchesToMeters(9.875),
-                  Units.inchesToMeters(9.55),
-                  Units.inchesToMeters(6.752) + Module.getWheelRadius(),
-                  new Rotation3d(0.0, Units.degreesToRadians(-28.125), 0.0)
-                      .rotateBy(new Rotation3d(0.0, 0.0, Units.degreesToRadians(-35.0)))),
-
-              // Back right (right facing, camera 4)
-              new Pose3d(
-                  Units.inchesToMeters(-10.375),
-                  Units.inchesToMeters(-10.242),
-                  Units.inchesToMeters(7.252) + Module.getWheelRadius(),
-                  new Rotation3d(0.0, Units.degreesToRadians(-28.125), 0.0)
-                      .rotateBy(new Rotation3d(0.0, 0.0, Units.degreesToRadians(-82.829)))),
-
-              // Back left (left facing, camera 5)
-              new Pose3d(
-                  Units.inchesToMeters(-10.15),
-                  Units.inchesToMeters(9.7),
-                  Units.inchesToMeters(5.752) + Module.getWheelRadius(),
-                  new Rotation3d(0.0, Units.degreesToRadians(-28.125), 0.0)
-                      .rotateBy(new Rotation3d(0.0, 0.0, Units.degreesToRadians(82.829)))),
-
-              // Back right (back facing, camera 3)
-              new Pose3d(
-                  Units.inchesToMeters(-10.5),
-                  Units.inchesToMeters(-9.25),
-                  Units.inchesToMeters(6.252) + Module.getWheelRadius(),
-                  new Rotation3d(0.0, Units.degreesToRadians(-28.125), 0.0)
-                      .rotateBy(new Rotation3d(0.0, 0.0, Units.degreesToRadians(145.0))))
+                  Units.inchesToMeters(2),
+                  Units.inchesToMeters(4.5),
+                  Units.inchesToMeters(33.5) + Module.getWheelRadius(),
+                  new Rotation3d(0.0, Units.degreesToRadians(0), 0.0)
+                      .rotateBy(new Rotation3d(0.0, 0.0, 0))),
             };
         xyStdDevCoefficient = 0.01;
         thetaStdDevCoefficient = 0.01;
@@ -101,6 +78,11 @@ public class AprilTagVision extends VirtualSubsystem {
   public void setVisionUpdatesEnabled(boolean enabled) {
     enableVisionUpdates = enabled;
     enableVisionUpdatesAlert.set(!enabled);
+  }
+
+  public void setDataInterfaces(
+      Consumer<List<TimestampedVisionUpdate>> visionConsumer, Supplier<Pose2d> poseSupplier) {
+    this.visionConsumer = visionConsumer;
   }
 
   public AprilTagVision(AprilTagVisionIO... io) {
@@ -138,7 +120,7 @@ public class AprilTagVision extends VirtualSubsystem {
       Pose3d cameraPose = null;
       Pose3d robotPose3d = null;
 
-      if (inputs[instanceIndex].currentTags.size() < 1
+      if (inputs[instanceIndex].currentTags.length < 1
           || inputs[instanceIndex].estimatedPose == null
           || cameraPoses[instanceIndex] == null) {
         continue;
@@ -147,7 +129,6 @@ public class AprilTagVision extends VirtualSubsystem {
       cameraPose = cameraPoses[instanceIndex];
       var timestamp = inputs[instanceIndex].captureTimestamp;
       robotPose3d = inputs[instanceIndex].estimatedPose;
-      ;
 
       if (robotPose3d.getX() < -fieldBorderMargin
           || robotPose3d.getX() > FieldConstants.fieldLength + fieldBorderMargin
@@ -164,9 +145,9 @@ public class AprilTagVision extends VirtualSubsystem {
       // Get tag poses and update last detection times
       List<Pose3d> tagPoses = new ArrayList<>();
       for (int tagCounter = 0;
-          tagCounter < inputs[instanceIndex].currentTags.size();
+          tagCounter < inputs[instanceIndex].currentTags.length;
           tagCounter++) {
-        int tagId = inputs[instanceIndex].currentTags.get(tagCounter).intValue();
+        int tagId = inputs[instanceIndex].currentTags[tagCounter];
         lastTagDetectionTimes.put(tagId, Timer.getFPGATimestamp());
         Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(tagId);
         if (tagPose.isPresent()) {
@@ -206,7 +187,10 @@ public class AprilTagVision extends VirtualSubsystem {
     List<Pose3d> allTagPoses = new ArrayList<>();
     for (Map.Entry<Integer, Double> detectionEntry : lastTagDetectionTimes.entrySet()) {
       if (Timer.getFPGATimestamp() - detectionEntry.getValue() < targetLogTimeSecs) {
-        allTagPoses.add(FieldConstants.aprilTags.getTagPose(detectionEntry.getKey()).get());
+        Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(detectionEntry.getKey());
+        if (tagPose.isPresent()) {
+          allTagPoses.add(tagPose.get());
+        }
       }
     }
     Logger.recordOutput(

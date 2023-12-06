@@ -402,8 +402,12 @@ public class LimelightHelpers {
   }
 
   private static PoseEstimate getBotPoseEstimate(String limelightName, String entryName) {
-    var poseEntry = LimelightHelpers.getLimelightNTTableEntry(limelightName, entryName);
+    var poseEntry = getLimelightNTTableEntry(limelightName, entryName);
     var poseArray = poseEntry.getDoubleArray(new double[0]);
+    if (poseArray.length == 0) {
+      return new PoseEstimate(new Pose3d(), 0);
+    }
+
     var pose = toPose3D(poseArray);
     var timestamp = poseEntry.getLastChange() / 1e6 - poseArray[6] / 1e3;
     return new PoseEstimate(pose, timestamp);
