@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class AprilTagVision extends SubsystemBase {
@@ -80,8 +79,7 @@ public class AprilTagVision extends SubsystemBase {
     enableVisionUpdatesAlert.set(!enabled);
   }
 
-  public void setDataInterfaces(
-      Consumer<List<TimestampedVisionUpdate>> visionConsumer, Supplier<Pose2d> poseSupplier) {
+  public void setDataInterfaces(Consumer<List<TimestampedVisionUpdate>> visionConsumer) {
     this.visionConsumer = visionConsumer;
   }
 

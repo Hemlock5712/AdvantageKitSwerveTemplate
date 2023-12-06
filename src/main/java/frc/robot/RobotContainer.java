@@ -127,7 +127,7 @@ public class RobotContainer {
     // flywheel::getCharacterizationVelocity));
 
     // Configure the button bindings
-    aprilTagVision.setDataInterfaces(drive::addVisionData, drive::getPose);
+    aprilTagVision.setDataInterfaces(drive::addVisionData);
     configureButtonBindings();
   }
 
