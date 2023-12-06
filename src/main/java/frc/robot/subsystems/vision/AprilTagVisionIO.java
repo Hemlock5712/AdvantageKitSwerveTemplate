@@ -18,7 +18,6 @@ public interface AprilTagVisionIO {
     public double captureTimestamp = 0.0;
     public boolean valid = false;
     public int[] currentTags = new int[] {};
-    ;
 
     @Override
     public void toLog(LogTable table) {
