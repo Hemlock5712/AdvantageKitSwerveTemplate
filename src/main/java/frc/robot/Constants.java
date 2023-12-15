@@ -34,4 +34,7 @@ public final class Constants {
     /** Replaying from a log file. */
     REPLAY
   }
+
+  // Amount to multiply distance from vector to in order to determine the spin rate
+  public static double DEFENSE_DISTANCE_TO_SPIN_RATIO = 0.5;
 }
