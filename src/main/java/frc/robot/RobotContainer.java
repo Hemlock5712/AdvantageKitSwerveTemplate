@@ -88,6 +88,7 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
+        aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
         // flywheel = new Flywheel(new FlywheelIOSim());
         break;
 
