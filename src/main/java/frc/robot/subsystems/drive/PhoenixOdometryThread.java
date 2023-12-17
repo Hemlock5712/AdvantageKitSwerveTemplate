@@ -16,7 +16,7 @@ package frc.robot.subsystems.drive;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.ParentDevice;
-import com.ctre.phoenix6.unmanaged.Unmanaged;
+import com.ctre.phoenix6.jni.CANBusJNI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -55,18 +55,19 @@ public class PhoenixOdometryThread extends Thread {
   }
 
   public Queue<Double> registerSignal(ParentDevice device, StatusSignal<Double> signal) {
-    isCANFD = Unmanaged.isNetworkFD(device.getNetwork());
     Queue<Double> queue = new ArrayBlockingQueue<>(100);
     signalsLock.lock();
+    Drive.odometryLock.lock();
     try {
+      isCANFD = CANBusJNI.JNI_IsNetworkFD(device.getNetwork());
       BaseStatusSignal[] newSignals = new BaseStatusSignal[signals.length + 1];
       System.arraycopy(signals, 0, newSignals, 0, signals.length);
       newSignals[signals.length] = signal;
       signals = newSignals;
       queues.add(queue);
-
     } finally {
       signalsLock.unlock();
+      Drive.odometryLock.unlock();
     }
     return queue;
   }
