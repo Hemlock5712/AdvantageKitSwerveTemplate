@@ -18,4 +18,8 @@ public class DriveUtils {
     }
     return 0.0;
   }
+
+  public static Translation2d translatePointToNewOrigin(Translation2d point, Translation2d space) {
+    return new Translation2d(point.getX() - space.getX(), point.getY() - space.getY());
+  }
 }

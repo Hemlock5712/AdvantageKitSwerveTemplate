@@ -40,9 +40,13 @@ public class DriveWithAutoDefenseSpin extends Command {
     defenseOmegaSupplier =
         () ->
             DriveUtils.getDistanceFromVector(
-                    drive.getDefenseDriveVector(), drive.getPose().getTranslation())
+                    drive.getDefenseDriveVector(), DriveUtils.translatePointToNewOrigin(
+                      drive.getPose().getTranslation(),
+                      drive.getDefenseStartPose().getTranslation()))
                 * Constants.DEFENSE_DISTANCE_TO_SPIN_RATIO;
     fullOmegaSupplier = () -> defenseOmegaSupplier.getAsDouble() * omegaSupplier.getAsDouble();
+    drive.setDefenseDriveVector(drive.getDriveVector());
+    drive.setDefenseStartPose(drive.getPose());
   }
 
   @Override
