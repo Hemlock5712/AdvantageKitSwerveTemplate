@@ -16,7 +16,7 @@ Click on the "Use this template" button at the top of the repository (or the one
 
 Clone the repository, then change the team number in the `.wpilib/wpilib_preferences.json` file.
 
-> Note: You will need the 2024 beta version of WPILib VSCode installed in order to run this properly. You can download this from the [WPILib Releases Page](https://github.com/wpilibsuite/allwpilib/releases)
+> Note: You will need the 2024 beta version of WPILib VSCode and 2024_v2.0 beta roboRIO image installed to run this properly. You can download both from the [WPILib Releases Page](https://github.com/wpilibsuite/allwpilib/releases)
 
 ---
 
