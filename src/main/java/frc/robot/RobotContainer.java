@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeedForwardCharacterization;
+import frc.robot.commands.drive.DriveWithAutoDefenseSpin;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -169,14 +170,14 @@ public class RobotContainer {
             () -> -controller.getRightX()));
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     // While right trigger is held, run defense spin
-    // controller
-    // .rightTrigger(0.5)
-    // .whileTrue(
-    // new DriveWithAutoDefenseSpin(
-    // drive,
-    // () -> -controller.getLeftY(),
-    // () -> -controller.getLeftX(),
-    // () -> -controller.getRightX()));
+    controller
+        .rightTrigger(0.5)
+        .whileTrue(
+            new DriveWithAutoDefenseSpin(
+                drive,
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
+                () -> -controller.getRightX()));
     controller
         .b()
         .onTrue(
