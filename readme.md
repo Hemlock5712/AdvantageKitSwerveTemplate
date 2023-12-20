@@ -1,16 +1,12 @@
 ![Hemlock's Gray Matter - AdvantageKit Swerve Base](./docs/images/Github%20Header.png)
 
-<center>
-<a href="https://github.com/wpilibsuite/allwpilib/releases/tag/v2024.1.1-beta-3"><img src="https://img.shields.io/badge/WPILib-2024.1.1--beta--3-AC2B37" /></a>
-<a href="https://v6.docs.ctr-electronics.com/en/stable/">
-<img src="https://img.shields.io/badge/Phoenix6-24.0.0--beta--3-97D700">
-</a>
-<a href="https://docs.revrobotics.com/sparkmax/software-resources/spark-max-api-information">
-<img src="https://img.shields.io/badge/REVLib-2024.0.0-f05a28">
-</a>
-</center>
+<p align="center">
+  <a href="https://github.com/wpilibsuite/allwpilib/releases/tag/v2024.1.1-beta-3"><img src="https://img.shields.io/badge/WPILib-2024.1.1--beta--3-AC2B37" /></a>
+  <a href="https://v6.docs.ctr-electronics.com/en/stable/"><img src="https://img.shields.io/badge/Phoenix6-24.0.0--beta--3-97D700"></a>
+  <a href="https://docs.revrobotics.com/sparkmax/software-resources/spark-max-api-information"><img src="https://img.shields.io/badge/REVLib-2024.0.0-f05a28"></a>
+</p>
 
-<center>This is a template repository for starting a new <a href="https://wpilib.org/">WPILib</a> robot project using <a href="https://github.com/Mechanical-Advantage/AdvantageKit">AdvantageKit</a>. It provides support for TalonFX and SparkMAX powered drivetrains, as well as April Tag field tracking with Limelight and full robot simulation with code replay.</center>
+<p align="center">This is a template repository for starting a new <a href="https://wpilib.org/">WPILib</a> robot project using <a href="https://github.com/Mechanical-Advantage/AdvantageKit">AdvantageKit</a>. It provides support for TalonFX and SparkMAX powered drivetrains, as well as April Tag field tracking with Limelight and full robot simulation with code replay.</p>
 
 ## Getting Started
 
