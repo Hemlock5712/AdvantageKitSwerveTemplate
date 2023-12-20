@@ -48,6 +48,8 @@ public class AprilTagVision extends SubsystemBase {
   private final AprilTagVisionIO[] io;
   private final AprilTagVisionIOInputs[] inputs;
 
+  Pose2d robotPose = new Pose2d();
+
   static {
     switch (Constants.currentMode) {
       case REAL:
@@ -138,7 +140,7 @@ public class AprilTagVision extends SubsystemBase {
       }
 
       // Get 2D robot pose
-      Pose2d robotPose = robotPose3d.toPose2d();
+      setRobotPose(robotPose3d.toPose2d());
 
       // Get tag poses and update last detection times
       List<Pose3d> tagPoses = new ArrayList<>();
@@ -198,5 +200,13 @@ public class AprilTagVision extends SubsystemBase {
     if (enableVisionUpdates) {
       visionConsumer.accept(visionUpdates);
     }
+  }
+
+  public void setRobotPose(Pose2d robotPose) {
+    this.robotPose = robotPose;
+  }
+
+  public Pose2d getPose2d() {
+    return this.robotPose;
   }
 }

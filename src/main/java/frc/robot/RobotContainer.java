@@ -155,6 +155,11 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
+    controller
+        .start()
+        .onTrue(
+            Commands.runOnce(() -> drive.setVisonPose(aprilTagVision.getPose2d()), drive)
+                .ignoringDisable(true));
     // controller
     //     .a()
     //     .whileTrue(
