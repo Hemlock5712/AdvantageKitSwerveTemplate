@@ -66,7 +66,6 @@ public class Drive extends SubsystemBase {
   private PoseEstimator poseEstimator = new PoseEstimator(VecBuilder.fill(0.003, 0.003, 0.0002));
 
   private Translation2d defenseDriveVector = null;
-  private ChassisSpeeds lastSpeeds = new ChassisSpeeds();
   private Pose2d defenseStartPose = null;
 
   public Drive(
@@ -173,16 +172,10 @@ public class Drive extends SubsystemBase {
       optimizedSetpointStates[i] = modules[i].runSetpoint(setpointStates[i]);
     }
 
-    lastSpeeds = discreteSpeeds;
-
     // Log setpoint states
     Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
     Logger.recordOutput("SwerveStates/SetpointsOptimized", optimizedSetpointStates);
     // Logger.recordOutput("SwerveStates/Speeds", discreteSpeeds);
-  }
-
-  public Translation2d getDriveVector() {
-    return new Translation2d(lastSpeeds.vxMetersPerSecond, lastSpeeds.vyMetersPerSecond);
   }
 
   public void setDefenseStartPose(Pose2d pose) {

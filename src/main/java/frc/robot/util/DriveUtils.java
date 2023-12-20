@@ -13,13 +13,18 @@ public class DriveUtils {
 
   public static double getDistanceFromVector(Translation2d vector, Translation2d point) {
     if (vector != null && point != null) {
-      return Math.abs((vector.getX() * point.getY()) - (vector.getY() * point.getX()))
-          / vector.getNorm();
+      return ((vector.getX() * point.getY()) - (vector.getY() * point.getX())) / vector.getNorm();
     }
     return 0.0;
   }
 
   public static Translation2d translatePointToNewOrigin(Translation2d point, Translation2d space) {
+    if (space == null) {
+      return new Translation2d();
+    }
+    if (point == null) {
+      return new Translation2d();
+    }
     return new Translation2d(point.getX() - space.getX(), point.getY() - space.getY());
   }
 }
