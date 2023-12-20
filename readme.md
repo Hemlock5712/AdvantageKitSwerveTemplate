@@ -1,8 +1,8 @@
 ![Hemlock's Gray Matter - AdvantageKit Swerve Base](./docs/images/Github%20Header.png)
 
 <p align="center">
-  <a href="https://github.com/wpilibsuite/allwpilib/releases/tag/v2024.1.1-beta-3"><img src="https://img.shields.io/badge/WPILib-2024.1.1--beta--3-AC2B37" /></a>
-  <a href="https://v6.docs.ctr-electronics.com/en/stable/"><img src="https://img.shields.io/badge/Phoenix6-24.0.0--beta--3-97D700"></a>
+  <a href="https://github.com/wpilibsuite/allwpilib/releases/tag/v2024.1.1-beta-4"><img src="https://img.shields.io/badge/WPILib-2024.1.1--beta--4-AC2B37" /></a>
+  <a href="https://v6.docs.ctr-electronics.com/en/stable/"><img src="https://img.shields.io/badge/Phoenix6-24.0.0--beta--5-97D700"></a>
   <a href="https://docs.revrobotics.com/sparkmax/software-resources/spark-max-api-information"><img src="https://img.shields.io/badge/REVLib-2024.0.0-f05a28"></a>
 </p>
 
