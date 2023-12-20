@@ -126,7 +126,6 @@ public class DriveWithAutoDefenseSpin extends Command {
     drive.setDefenseDriveVector(null);
     drive.setDefenseStartPose(null);
 
-    
     Logger.recordOutput("Defense/TranslatedRobotPose", new Pose2d());
     Logger.recordOutput("Defense/DriveVectorTranslated", new Trajectory());
     Logger.recordOutput("Defense/DriveVector", new Trajectory());

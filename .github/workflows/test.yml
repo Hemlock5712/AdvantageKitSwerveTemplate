@@ -1,0 +1,19 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Grant execute permission
+        run: chmod +x gradlew
+      - name: Build and download dependencies
+        run: ./gradlew build
+      - name: Test robot code
+        run: ./gradlew test
