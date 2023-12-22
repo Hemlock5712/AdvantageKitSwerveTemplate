@@ -122,7 +122,8 @@ public class AprilTagVision extends SubsystemBase {
 
       if (inputs[instanceIndex].currentTags.length < 1
           || inputs[instanceIndex].estimatedPose == null
-          || cameraPoses[instanceIndex] == null) {
+          || cameraPoses[instanceIndex] == null
+          || !inputs[instanceIndex].valid) {
         continue;
       }
 
@@ -167,8 +168,8 @@ public class AprilTagVision extends SubsystemBase {
       double thetaStdDev = thetaStdDevCoefficient * Math.pow(avgDistance, 2.0) / tagPoses.size();
       visionUpdates.add(
           new TimestampedVisionUpdate(
-              timestamp, robotPose, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
-      allRobotPoses.add(robotPose);
+              timestamp, getPose2d(), VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
+      allRobotPoses.add(getPose2d());
       allRobotPoses3d.add(robotPose3d);
 
       // Log data from instance
@@ -176,7 +177,7 @@ public class AprilTagVision extends SubsystemBase {
           "AprilTagVision/Inst" + Integer.toString(instanceIndex) + "/LatencySecs",
           Timer.getFPGATimestamp() - timestamp);
       Logger.recordOutput(
-          "AprilTagVision/Inst" + Integer.toString(instanceIndex) + "/RobotPose", robotPose);
+          "AprilTagVision/Inst" + Integer.toString(instanceIndex) + "/RobotPose", getPose2d());
       Logger.recordOutput(
           "AprilTagVision/Inst" + Integer.toString(instanceIndex) + "/RobotPose3d", robotPose3d);
       Logger.recordOutput(

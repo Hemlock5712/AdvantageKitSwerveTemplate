@@ -11,18 +11,25 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.util.LimelightHelpers;
 import frc.robot.util.LimelightHelpers.LimelightTarget_Fiducial;
+import java.util.NoSuchElementException;
 
 public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
 
   String limelightName;
+  Alliance alliance = Alliance.Blue;
 
   public AprilTagVisionIOLimelight(String identifier) {
     limelightName = identifier;
     LimelightHelpers.setPipelineIndex(limelightName, 0);
+    try {
+      alliance = DriverStation.getAlliance().get();
+    } catch (NoSuchElementException e) {
+      alliance = Alliance.Blue;
+    }
   }
 
   public void updateInputs(AprilTagVisionIOInputs inputs) {
-    if (DriverStation.getAlliance().get() == Alliance.Blue) {
+    if (alliance == Alliance.Blue) {
       var estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName);
       inputs.estimatedPose = estimate.pose;
       inputs.captureTimestamp = estimate.timestampSeconds;
