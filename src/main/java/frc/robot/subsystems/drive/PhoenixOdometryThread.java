@@ -78,7 +78,7 @@ public class PhoenixOdometryThread extends Thread {
       // Wait for updates from all signals
       signalsLock.lock();
       try {
-        if (isCANFD && signals.length > 0) {
+        if (isCANFD) {
           BaseStatusSignal.waitForAll(2.0 / Module.ODOMETRY_FREQUENCY, signals);
         } else {
           // "waitForAll" does not support blocking on multiple
@@ -86,7 +86,7 @@ public class PhoenixOdometryThread extends Thread {
           // of Pro licensing. No reasoning for this behavior
           // is provided by the documentation.
           Thread.sleep((long) (1000.0 / Module.ODOMETRY_FREQUENCY));
-          BaseStatusSignal.refreshAll(signals);
+          if (signals.length > 0) BaseStatusSignal.refreshAll(signals);
         }
       } catch (InterruptedException e) {
         e.printStackTrace();

@@ -29,6 +29,9 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.vision.AprilTagVision;
+import frc.robot.subsystems.vision.AprilTagVisionIO;
+import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -40,6 +43,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
+  private AprilTagVision aprilTagVision;
   // private final Flywheel flywheel;
 
   // Controller
@@ -70,6 +74,8 @@ public class RobotContainer {
                 new ModuleIOTalonFX(1),
                 new ModuleIOTalonFX(2),
                 new ModuleIOTalonFX(3));
+        aprilTagVision = new AprilTagVision(new AprilTagVisionIOLimelight("limelight"));
+
         // flywheel = new Flywheel(new FlywheelIOTalonFX());
         break;
 
@@ -82,6 +88,7 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
+        aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
         // flywheel = new Flywheel(new FlywheelIOSim());
         break;
 
@@ -94,7 +101,9 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
+        aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
         // flywheel = new Flywheel(new FlywheelIO() {});
+
         break;
     }
 
@@ -119,6 +128,7 @@ public class RobotContainer {
     // flywheel::getCharacterizationVelocity));
 
     // Configure the button bindings
+    aprilTagVision.setDataInterfaces(drive::addVisionData);
     configureButtonBindings();
   }
 
@@ -144,6 +154,11 @@ public class RobotContainer {
                         drive.setPose(
                             new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                     drive)
+                .ignoringDisable(true));
+    controller
+        .start()
+        .onTrue(
+            Commands.runOnce(() -> drive.setVisonPose(aprilTagVision.getPose2d()), drive)
                 .ignoringDisable(true));
     // controller
     //     .a()

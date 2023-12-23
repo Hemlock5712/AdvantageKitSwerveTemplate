@@ -18,6 +18,7 @@ import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -28,8 +29,12 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.util.LocalADStarAK;
+import frc.robot.util.PoseEstimator;
+import frc.robot.util.PoseEstimator.TimestampedVisionUpdate;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -51,6 +56,8 @@ public class Drive extends SubsystemBase {
   private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
   private Pose2d pose = new Pose2d();
   private Rotation2d lastGyroRotation = new Rotation2d();
+
+  private PoseEstimator poseEstimator = new PoseEstimator(VecBuilder.fill(0.003, 0.003, 0.0002));
 
   public Drive(
       GyroIO gyroIO,
@@ -115,6 +122,7 @@ public class Drive extends SubsystemBase {
     for (int i = 0; i < 4; i++) {
       deltaCount = Math.min(deltaCount, modules[i].getPositionDeltas().length);
     }
+    Pose2d loopPoseDiff = new Pose2d();
     for (int deltaIndex = 0; deltaIndex < deltaCount; deltaIndex++) {
       // Read wheel deltas from each module
       SwerveModulePosition[] wheelDeltas = new SwerveModulePosition[4];
@@ -135,7 +143,10 @@ public class Drive extends SubsystemBase {
       }
       // Apply the twist (change since last sample) to the current pose
       pose = pose.exp(twist);
+      loopPoseDiff = loopPoseDiff.exp(twist);
     }
+    // Update the pose estimator
+    poseEstimator.addDriveData(Timer.getFPGATimestamp(), new Pose2d().log(loopPoseDiff));
   }
 
   /**
@@ -239,5 +250,27 @@ public class Drive extends SubsystemBase {
       new Translation2d(-TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0),
       new Translation2d(-TRACK_WIDTH_X / 2.0, -TRACK_WIDTH_Y / 2.0)
     };
+  }
+
+  /** Adds vision data to the pose esimation. */
+  public void addVisionData(List<TimestampedVisionUpdate> visionData) {
+    poseEstimator.addVisionData(visionData);
+  }
+
+  /** Returns the current odometry pose. */
+  @AutoLogOutput(key = "Odometry/VisionRobot")
+  public Pose2d getVisionPose() {
+    return poseEstimator.getLatestPose();
+  }
+
+  /** Returns the current odometry rotation. */
+  public Rotation2d getVisionRotation() {
+    return poseEstimator.getLatestPose().getRotation();
+  }
+
+  /** Resets the current odometry pose. */
+  public void setVisonPose(Pose2d pose) {
+    setPose(pose);
+    poseEstimator.resetPose(pose);
   }
 }
