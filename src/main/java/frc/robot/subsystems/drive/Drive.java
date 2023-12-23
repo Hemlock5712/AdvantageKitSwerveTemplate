@@ -122,6 +122,7 @@ public class Drive extends SubsystemBase {
     for (int i = 0; i < 4; i++) {
       deltaCount = Math.min(deltaCount, modules[i].getPositionDeltas().length);
     }
+    Pose2d loopPoseDiff = new Pose2d();
     for (int deltaIndex = 0; deltaIndex < deltaCount; deltaIndex++) {
       // Read wheel deltas from each module
       SwerveModulePosition[] wheelDeltas = new SwerveModulePosition[4];
@@ -139,11 +140,13 @@ public class Drive extends SubsystemBase {
         Rotation2d gyroRotation = gyroInputs.odometryYawPositions[deltaIndex];
         twist = new Twist2d(twist.dx, twist.dy, gyroRotation.minus(lastGyroRotation).getRadians());
         lastGyroRotation = gyroRotation;
-        poseEstimator.addDriveData(Timer.getFPGATimestamp(), twist);
       }
       // Apply the twist (change since last sample) to the current pose
       pose = pose.exp(twist);
+      loopPoseDiff = loopPoseDiff.exp(twist);
     }
+    // Update the pose estimator
+    poseEstimator.addDriveData(Timer.getFPGATimestamp(), new Pose2d().log(loopPoseDiff));
   }
 
   /**
