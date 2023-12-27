@@ -18,6 +18,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.TimestampedDoubleArray;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -411,6 +413,23 @@ public class LimelightHelpers {
     var pose = toPose3D(poseArray);
     var timestamp = poseEntry.getLastChange() / 1e6 - poseArray[6] / 1e3;
     return new PoseEstimate(pose, timestamp);
+  }
+
+  public static PoseEstimate queueToPoseEstimate(TimestampedDoubleArray[] queue, int index){
+    var pose = toPose3D(queue[index].value);
+    var timestamp = queue[index].timestamp / 1e6 - queue[index].value[6] / 1e3;
+    return new PoseEstimate(pose, timestamp);
+  }
+
+  public static double[] poseToArray(Pose3d pose){
+    double[] result = new double[6];
+    result[0] = pose.getTranslation().getX();
+    result[1] = pose.getTranslation().getY();
+    result[2] = pose.getTranslation().getZ();
+    result[3] = pose.getRotation().getX();
+    result[4] = pose.getRotation().getY();
+    result[5] = pose.getRotation().getZ();
+    return result;
   }
 
   public static NetworkTable getLimelightNTTable(String tableName) {

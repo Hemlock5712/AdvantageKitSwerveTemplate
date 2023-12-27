@@ -12,6 +12,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -117,6 +118,7 @@ public class AprilTagVision extends SubsystemBase {
     List<Pose3d> allRobotPoses3d = new ArrayList<>();
     List<TimestampedVisionUpdate> visionUpdates = new ArrayList<>();
     for (int instanceIndex = 0; instanceIndex < io.length; instanceIndex++) {
+      for (int frameIndex = 0; frameIndex < inputs[instanceIndex].captureTimestamp.length; frameIndex++) {
       Pose3d cameraPose = null;
       Pose3d robotPose3d = null;
 
@@ -128,8 +130,17 @@ public class AprilTagVision extends SubsystemBase {
       }
 
       cameraPose = cameraPoses[instanceIndex];
-      var timestamp = inputs[instanceIndex].captureTimestamp;
-      robotPose3d = inputs[instanceIndex].estimatedPose;
+      var timestamp = inputs[instanceIndex].captureTimestamp[frameIndex];
+      robotPose3d = new Pose3d(
+        new Translation3d(
+          inputs[instanceIndex].estimatedPose[frameIndex][0],
+          inputs[instanceIndex].estimatedPose[frameIndex][1],
+          inputs[instanceIndex].estimatedPose[frameIndex][2]), 
+        new Rotation3d(
+          inputs[instanceIndex].estimatedPose[frameIndex][3],
+          inputs[instanceIndex].estimatedPose[frameIndex][4],
+          inputs[instanceIndex].estimatedPose[frameIndex][5]
+        ));
 
       if (robotPose3d.getX() < -fieldBorderMargin
           || robotPose3d.getX() > FieldConstants.fieldLength + fieldBorderMargin
@@ -184,6 +195,7 @@ public class AprilTagVision extends SubsystemBase {
           "AprilTagVision/Inst" + Integer.toString(instanceIndex) + "/TagPoses",
           tagPoses.toArray(new Pose3d[tagPoses.size()]));
     }
+  }
     // Log tag poses
     List<Pose3d> allTagPoses = new ArrayList<>();
     for (Map.Entry<Integer, Double> detectionEntry : lastTagDetectionTimes.entrySet()) {
