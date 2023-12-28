@@ -19,7 +19,6 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.TimestampedDoubleArray;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -415,13 +414,13 @@ public class LimelightHelpers {
     return new PoseEstimate(pose, timestamp);
   }
 
-  public static PoseEstimate queueToPoseEstimate(TimestampedDoubleArray[] queue, int index){
+  public static PoseEstimate queueToPoseEstimate(TimestampedDoubleArray[] queue, int index) {
     var pose = toPose3D(queue[index].value);
     var timestamp = queue[index].timestamp / 1e6 - queue[index].value[6] / 1e3;
     return new PoseEstimate(pose, timestamp);
   }
 
-  public static double[] poseToArray(Pose3d pose){
+  public static double[] poseToArray(Pose3d pose) {
     double[] result = new double[6];
     result[0] = pose.getTranslation().getX();
     result[1] = pose.getTranslation().getY();

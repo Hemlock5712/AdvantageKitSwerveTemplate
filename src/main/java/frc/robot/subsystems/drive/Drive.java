@@ -92,6 +92,7 @@ public class Drive extends SubsystemBase {
         });
   }
 
+  @Override
   public void periodic() {
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
@@ -258,7 +259,7 @@ public class Drive extends SubsystemBase {
   }
 
   /** Returns the current odometry pose. */
-  @AutoLogOutput(key = "Odometry/VisionRobot")
+  @AutoLogOutput(key = "Odometry/PoseEstimator")
   public Pose2d getVisionPose() {
     return poseEstimator.getLatestPose();
   }
