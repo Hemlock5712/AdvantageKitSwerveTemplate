@@ -122,7 +122,9 @@ public class AprilTagVision extends SubsystemBase {
   private List<TimestampedVisionUpdate> processVisionUpdates() {
     List<TimestampedVisionUpdate> visionUpdates = new ArrayList<>();
     for (int instanceIndex = 0; instanceIndex < io.length; instanceIndex++) {
-      for (int frameIndex = 0; frameIndex < inputs[instanceIndex].captureTimestamp.length; frameIndex++) {
+      for (int frameIndex = 0;
+          frameIndex < inputs[instanceIndex].captureTimestamp.length;
+          frameIndex++) {
         if (!shouldSkipFrame(instanceIndex)) {
           Pose3d cameraPose = cameraPoses[instanceIndex];
           var timestamp = inputs[instanceIndex].captureTimestamp[frameIndex];
@@ -138,8 +140,11 @@ public class AprilTagVision extends SubsystemBase {
           double avgDistance = calculateAverageDistance(tagPoses, cameraPose);
 
           double xyStdDev = xyStdDevCoefficient * Math.pow(avgDistance, 2.0) / tagPoses.size();
-          double thetaStdDev = thetaStdDevCoefficient * Math.pow(avgDistance, 2.0) / tagPoses.size();
-          visionUpdates.add(new TimestampedVisionUpdate(timestamp, getPose2d(), VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
+          double thetaStdDev =
+              thetaStdDevCoefficient * Math.pow(avgDistance, 2.0) / tagPoses.size();
+          visionUpdates.add(
+              new TimestampedVisionUpdate(
+                  timestamp, getPose2d(), VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
         }
       }
     }
@@ -205,7 +210,8 @@ public class AprilTagVision extends SubsystemBase {
         }
       }
     }
-    Logger.recordOutput("AprilTagVision/TagPoses", allTagPoses.toArray(new Pose3d[allTagPoses.size()]));
+    Logger.recordOutput(
+        "AprilTagVision/TagPoses", allTagPoses.toArray(new Pose3d[allTagPoses.size()]));
   }
 
   private void sendResultsToPoseEstimator(List<TimestampedVisionUpdate> visionUpdates) {

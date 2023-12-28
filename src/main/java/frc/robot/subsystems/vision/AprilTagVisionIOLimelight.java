@@ -7,8 +7,6 @@
 
 package frc.robot.subsystems.vision;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -19,6 +17,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.util.LimelightHelpers;
 import frc.robot.util.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.robot.util.LimelightHelpers.PoseEstimate;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
 
@@ -32,16 +31,16 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
     alliance.set(DriverStation.getAlliance().orElse(Alliance.Blue));
     if (alliance.get() == Alliance.Blue) {
       observationSubscriber =
-        limelightTable
-          .getDoubleArrayTopic("botpose_wpiblue")
-          .subscribe(
-            new double[] {}, PubSubOption.keepDuplicates(true), PubSubOption.sendAll(true));
+          limelightTable
+              .getDoubleArrayTopic("botpose_wpiblue")
+              .subscribe(
+                  new double[] {}, PubSubOption.keepDuplicates(true), PubSubOption.sendAll(true));
     } else {
       observationSubscriber =
-        limelightTable
-          .getDoubleArrayTopic("botpose_wpired")
-          .subscribe(
-            new double[] {}, PubSubOption.keepDuplicates(true), PubSubOption.sendAll(true));
+          limelightTable
+              .getDoubleArrayTopic("botpose_wpired")
+              .subscribe(
+                  new double[] {}, PubSubOption.keepDuplicates(true), PubSubOption.sendAll(true));
     }
   }
 
