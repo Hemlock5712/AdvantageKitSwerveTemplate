@@ -20,7 +20,10 @@ public interface AprilTagVisionIO {
 
     @Override
     public void toLog(LogTable table) {
-      table.put("estimatedPose", estimatedPose);
+      table.put("estimatedPose", estimatedPose.length);
+      for (int i = 0; i < estimatedPose.length; i++) {
+        table.put("estimatedPose/" + Integer.toString(i), estimatedPose[i]);
+      }
       table.put("captureTimestamp", captureTimestamp);
       table.put("valid", valid);
       table.put("currentTags", currentTags);
@@ -28,7 +31,11 @@ public interface AprilTagVisionIO {
 
     @Override
     public void fromLog(LogTable table) {
-      estimatedPose = table.get("estimatedPose", estimatedPose);
+      int estimatedPoseCount = table.get("estimatedPose", 0);
+      estimatedPose = new double[estimatedPoseCount][];
+      for (int i = 0; i < estimatedPoseCount; i++) {
+        estimatedPose[i] = table.get("estimatedPose/" + Integer.toString(i), new double[] {});
+      }
       captureTimestamp = table.get("latency", captureTimestamp);
       valid = table.get("valid", valid);
       currentTags = table.get("currentTags", currentTags);
