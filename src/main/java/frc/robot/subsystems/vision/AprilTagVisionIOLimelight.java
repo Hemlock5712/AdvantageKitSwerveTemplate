@@ -47,12 +47,12 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
   @Override
   public void updateInputs(AprilTagVisionIOInputs inputs) {
     TimestampedDoubleArray[] queue = observationSubscriber.readQueue();
-    inputs.captureTimestamp = new double[queue.length];
-    inputs.estimatedPose = new double[queue.length][];
+    double[] captureTimestamp = new double[queue.length];
+    double[][] estimatedPose = new double[queue.length][];
     for (int i = 0; i < queue.length; i++) {
       PoseEstimate poseEstimate = LimelightHelpers.queueToPoseEstimate(queue, i);
-      inputs.captureTimestamp[i] = poseEstimate.timestampSeconds;
-      inputs.estimatedPose[i] = LimelightHelpers.poseToArray(poseEstimate.pose);
+      captureTimestamp[i] = poseEstimate.timestampSeconds;
+      estimatedPose[i] = LimelightHelpers.poseToArray(poseEstimate.pose);
     }
     LimelightTarget_Fiducial[] tagID =
         LimelightHelpers.getLatestResults(limelightName).targetingResults.targets_Fiducials;
@@ -60,7 +60,9 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
     for (int i = 0; i < tagID.length; i++) {
       temp[i] = (int) tagID[i].fiducialID;
     }
-    inputs.currentTags = temp;
-    inputs.valid = LimelightHelpers.getTV(limelightName);
+    inputs.setCurrentTags(temp);
+    inputs.setValid(LimelightHelpers.getTV(limelightName));
+    inputs.setCaptureTimestamp(captureTimestamp);
+    inputs.setEstimatedPose(estimatedPose);
   }
 }

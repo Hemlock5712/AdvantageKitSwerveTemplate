@@ -123,11 +123,11 @@ public class AprilTagVision extends SubsystemBase {
     List<TimestampedVisionUpdate> visionUpdates = new ArrayList<>();
     for (int instanceIndex = 0; instanceIndex < io.length; instanceIndex++) {
       for (int frameIndex = 0;
-          frameIndex < inputs[instanceIndex].captureTimestamp.length;
+          frameIndex < inputs[instanceIndex].getCaptureTimestamp().length;
           frameIndex++) {
         if (!shouldSkipFrame(instanceIndex)) {
           Pose3d cameraPose = cameraPoses[instanceIndex];
-          var timestamp = inputs[instanceIndex].captureTimestamp[frameIndex];
+          var timestamp = inputs[instanceIndex].getCaptureTimestamp()[frameIndex];
           Pose3d robotPose3d = createRobotPose3d(instanceIndex, frameIndex);
 
           if (isRobotPoseOutOfBounds(robotPose3d)) {
@@ -152,22 +152,22 @@ public class AprilTagVision extends SubsystemBase {
   }
 
   private boolean shouldSkipFrame(int instanceIndex) {
-    return inputs[instanceIndex].currentTags.length < 1
-        || inputs[instanceIndex].estimatedPose == null
+    return inputs[instanceIndex].getCurrentTags().length < 1
+        || inputs[instanceIndex].getEstimatedPose() == null
         || cameraPoses[instanceIndex] == null
-        || !inputs[instanceIndex].valid;
+        || !inputs[instanceIndex].isValid();
   }
 
   private Pose3d createRobotPose3d(int instanceIndex, int frameIndex) {
     return new Pose3d(
         new Translation3d(
-            inputs[instanceIndex].estimatedPose[frameIndex][0],
-            inputs[instanceIndex].estimatedPose[frameIndex][1],
-            inputs[instanceIndex].estimatedPose[frameIndex][2]),
+            inputs[instanceIndex].getEstimatedPose()[frameIndex][0],
+            inputs[instanceIndex].getEstimatedPose()[frameIndex][1],
+            inputs[instanceIndex].getEstimatedPose()[frameIndex][2]),
         new Rotation3d(
-            inputs[instanceIndex].estimatedPose[frameIndex][3],
-            inputs[instanceIndex].estimatedPose[frameIndex][4],
-            inputs[instanceIndex].estimatedPose[frameIndex][5]));
+            inputs[instanceIndex].getEstimatedPose()[frameIndex][3],
+            inputs[instanceIndex].getEstimatedPose()[frameIndex][4],
+            inputs[instanceIndex].getEstimatedPose()[frameIndex][5]));
   }
 
   private boolean isRobotPoseOutOfBounds(Pose3d robotPose3d) {
@@ -181,8 +181,8 @@ public class AprilTagVision extends SubsystemBase {
 
   private List<Pose3d> getTagPoses(int instanceIndex) {
     List<Pose3d> tagPoses = new ArrayList<>();
-    for (int tagCounter = 0; tagCounter < inputs[instanceIndex].currentTags.length; tagCounter++) {
-      int tagId = inputs[instanceIndex].currentTags[tagCounter];
+    for (int tagCounter = 0; tagCounter < inputs[instanceIndex].getCurrentTags().length; tagCounter++) {
+      int tagId = inputs[instanceIndex].getCurrentTags()[tagCounter];
       lastTagDetectionTimes.put(tagId, Timer.getFPGATimestamp());
       Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(tagId);
       if (tagPose.isPresent()) {

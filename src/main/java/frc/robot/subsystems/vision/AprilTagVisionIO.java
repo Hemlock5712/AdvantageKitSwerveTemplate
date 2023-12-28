@@ -13,10 +13,42 @@ import org.littletonrobotics.junction.inputs.LoggableInputs;
 public interface AprilTagVisionIO {
   public static class AprilTagVisionIOInputs implements LoggableInputs {
 
-    public double[][] estimatedPose = new double[][] {};
-    public double[] captureTimestamp = new double[] {};
-    public boolean valid = false;
-    public int[] currentTags = new int[] {};
+    private double[][] estimatedPose = new double[][] {};
+    private double[] captureTimestamp = new double[] {};
+    private boolean valid = false;
+    private int[] currentTags = new int[] {};
+
+    public double[][] getEstimatedPose() {
+      return estimatedPose;
+    }
+
+    public void setEstimatedPose(double[][] estimatedPose) {
+      this.estimatedPose = estimatedPose;
+    }
+
+    public double[] getCaptureTimestamp() {
+      return captureTimestamp;
+    }
+
+    public void setCaptureTimestamp(double[] captureTimestamp) {
+      this.captureTimestamp = captureTimestamp;
+    }
+
+    public boolean isValid() {
+      return valid;
+    }
+
+    public void setValid(boolean valid) {
+      this.valid = valid;
+    }
+
+    public int[] getCurrentTags() {
+      return currentTags;
+    }
+
+    public void setCurrentTags(int[] currentTags) {
+      this.currentTags = currentTags;
+    }
 
     @Override
     public void toLog(LogTable table) {

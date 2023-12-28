@@ -58,36 +58,37 @@ public class ModuleIOTalonFX implements ModuleIO {
   private final StatusSignal<Double> turnCurrent;
 
   // Gear ratios for SDS MK4i L2, adjust as necessary
-  private final double DRIVE_GEAR_RATIO = (50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0);
-  private final double TURN_GEAR_RATIO = 150.0 / 7.0;
+  private static final double DRIVE_GEAR_RATIO = (50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0);
+  private static final double TURN_GEAR_RATIO = 150.0 / 7.0;
 
-  private final boolean isTurnMotorInverted = true;
+  private static final boolean IS_TURN_MOTOR_INVERTED = true;
   private final Rotation2d absoluteEncoderOffset;
 
   public ModuleIOTalonFX(int index) {
+    String canbus = "chassis";
     switch (index) {
       case 0:
-        driveTalon = new TalonFX(1, "chassis");
-        turnTalon = new TalonFX(2, "chassis");
-        cancoder = new CANcoder(9, "chassis");
+        driveTalon = new TalonFX(1, canbus);
+        turnTalon = new TalonFX(2, canbus);
+        cancoder = new CANcoder(9, canbus);
         absoluteEncoderOffset = Rotation2d.fromRotations(-0.383).plus(Rotation2d.fromDegrees(180));
         break;
       case 1:
-        driveTalon = new TalonFX(3, "chassis");
-        turnTalon = new TalonFX(4, "chassis");
-        cancoder = new CANcoder(10, "chassis");
+        driveTalon = new TalonFX(3, canbus);
+        turnTalon = new TalonFX(4, canbus);
+        cancoder = new CANcoder(10, canbus);
         absoluteEncoderOffset = Rotation2d.fromRotations(-0.251).plus(Rotation2d.fromDegrees(180));
         break;
       case 2:
-        driveTalon = new TalonFX(5, "chassis");
-        turnTalon = new TalonFX(6, "chassis");
-        cancoder = new CANcoder(11, "chassis");
+        driveTalon = new TalonFX(5, canbus);
+        turnTalon = new TalonFX(6, canbus);
+        cancoder = new CANcoder(11, canbus);
         absoluteEncoderOffset = Rotation2d.fromRotations(-0.057).plus(Rotation2d.fromDegrees(180));
         break;
       case 3:
-        driveTalon = new TalonFX(7, "chassis");
-        turnTalon = new TalonFX(8, "chassis");
-        cancoder = new CANcoder(12, "chassis");
+        driveTalon = new TalonFX(7, canbus);
+        turnTalon = new TalonFX(8, canbus);
+        cancoder = new CANcoder(12, canbus);
         absoluteEncoderOffset = Rotation2d.fromRotations(-0.470).plus(Rotation2d.fromDegrees(180));
         break;
       default:
@@ -202,7 +203,7 @@ public class ModuleIOTalonFX implements ModuleIO {
   public void setTurnBrakeMode(boolean enable) {
     var config = new MotorOutputConfigs();
     config.Inverted =
-        isTurnMotorInverted
+        IS_TURN_MOTOR_INVERTED
             ? InvertedValue.Clockwise_Positive
             : InvertedValue.CounterClockwise_Positive;
     config.NeutralMode = enable ? NeutralModeValue.Brake : NeutralModeValue.Coast;
