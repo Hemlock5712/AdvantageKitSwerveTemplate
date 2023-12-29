@@ -86,7 +86,7 @@ public class FeedForwardCharacterization extends Command {
     }
 
     public void print() {
-      if (velocityData.size() == 0 || voltageData.size() == 0) {
+      if (velocityData.isEmpty() || voltageData.isEmpty()) {
         return;
       }
 
