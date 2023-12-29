@@ -158,7 +158,7 @@ public class RobotContainer {
     controller
         .start()
         .onTrue(
-            Commands.runOnce(() -> drive.setVisonPose(aprilTagVision.getPose2d()), drive)
+            Commands.runOnce(() -> drive.setVisonPose(aprilTagVision.getRobotPose()), drive)
                 .ignoringDisable(true));
     // controller
     //     .a()

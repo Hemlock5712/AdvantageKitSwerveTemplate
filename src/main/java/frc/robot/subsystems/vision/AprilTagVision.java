@@ -18,8 +18,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Module;
 import frc.robot.subsystems.vision.AprilTagVisionIO.AprilTagVisionIOInputs;
-import frc.robot.util.Alert;
-import frc.robot.util.Alert.AlertType;
 import frc.robot.util.FieldConstants;
 import frc.robot.util.PoseEstimator.TimestampedVisionUpdate;
 import java.util.ArrayList;
@@ -32,6 +30,7 @@ import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
 import org.littletonrobotics.junction.Logger;
+import frc.robot.Constants.Mode;
 
 @Getter
 @Setter
@@ -44,9 +43,8 @@ public class AprilTagVision extends SubsystemBase {
   private static final double thetaStdDevCoefficient;
 
   private boolean enableVisionUpdates = true;
-  private Alert enableVisionUpdatesAlert =
-      new Alert("Vision updates are temporarily disabled.", AlertType.WARNING);
-  private Consumer<List<TimestampedVisionUpdate>> visionConsumer = (x) -> {};
+
+  private Consumer<List<TimestampedVisionUpdate>> visionConsumer = x -> {};
   private Map<Integer, Double> lastFrameTimes = new HashMap<>();
   private Map<Integer, Double> lastTagDetectionTimes = new HashMap<>();
 
@@ -56,34 +54,24 @@ public class AprilTagVision extends SubsystemBase {
   Pose2d robotPose = new Pose2d();
 
   static {
-    switch (Constants.currentMode) {
-      case REAL, REPLAY:
-        cameraPoses =
-            new Pose3d[] {
-              // Front left (forward facing, camera 1)
-              new Pose3d(
-                  Units.inchesToMeters(2),
-                  Units.inchesToMeters(4.5),
-                  Units.inchesToMeters(33.5) + Module.getWheelRadius(),
-                  new Rotation3d(0.0, Units.degreesToRadians(0), 0.0)
-                      .rotateBy(new Rotation3d(0.0, 0.0, 0))),
-            };
-        xyStdDevCoefficient = 0.01;
-        thetaStdDevCoefficient = 0.01;
-        break;
-      default:
-        cameraPoses = new Pose3d[] {};
-        xyStdDevCoefficient = 0.01;
-        thetaStdDevCoefficient = 0.01;
-        break;
+    if (Constants.currentMode == Mode.REAL || Constants.currentMode == Mode.REPLAY) {
+      cameraPoses =
+          new Pose3d[] {
+            // Front left (forward facing, camera 1)
+            new Pose3d(
+                Units.inchesToMeters(2),
+                Units.inchesToMeters(4.5),
+                Units.inchesToMeters(33.5) + Module.getWheelRadius(),
+                new Rotation3d(0.0, Units.degreesToRadians(0), 0.0)
+                    .rotateBy(new Rotation3d(0.0, 0.0, 0))),
+          };
+      xyStdDevCoefficient = 0.01;
+      thetaStdDevCoefficient = 0.01;
+    } else {
+      cameraPoses = new Pose3d[] {};
+      xyStdDevCoefficient = 0.01;
+      thetaStdDevCoefficient = 0.01;
     }
-  }
-
-  /** Sets whether vision updates for odometry are enabled. */
-  // TODO: This is not used yet
-  public void setVisionUpdatesEnabled(boolean enabled) {
-    enableVisionUpdates = enabled;
-    enableVisionUpdatesAlert.set(!enabled);
   }
 
   public void setDataInterfaces(Consumer<List<TimestampedVisionUpdate>> visionConsumer) {
@@ -120,7 +108,6 @@ public class AprilTagVision extends SubsystemBase {
 
   private List<TimestampedVisionUpdate> processVisionUpdates() {
     List<TimestampedVisionUpdate> visionUpdates = new ArrayList<>();
-    // TODO: anytime there's big O^2 re-evaluate
     for (int instanceIndex = 0; instanceIndex < io.length; instanceIndex++) {
       for (int frameIndex = 0;
           frameIndex < inputs[instanceIndex].getCaptureTimestamp().length;
@@ -129,8 +116,6 @@ public class AprilTagVision extends SubsystemBase {
           Pose3d cameraPose = cameraPoses[instanceIndex];
           var timestamp = inputs[instanceIndex].getCaptureTimestamp()[frameIndex];
           Pose3d robotPose3d = createRobotPose3d(instanceIndex, frameIndex);
-
-          // TODO: logging here? osmething to tell you you are out of bounds?
           if (isRobotPoseOutOfBounds(robotPose3d)) {
             continue;
           }
@@ -145,7 +130,7 @@ public class AprilTagVision extends SubsystemBase {
               thetaStdDevCoefficient * Math.pow(avgDistance, 2.0) / tagPoses.size();
           visionUpdates.add(
               new TimestampedVisionUpdate(
-                  timestamp, getPose2d(), VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
+                  timestamp, getRobotPose(), VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
         }
       }
     }
@@ -217,8 +202,7 @@ public class AprilTagVision extends SubsystemBase {
     }
   }
 
-  // TODO: i'd rename this and not have it be getPose2D but getRobotPose to match the member name
-  public Pose2d getPose2d() {
+  public Pose2d getRobotPose() {
     return robotPose;
   }
 }
