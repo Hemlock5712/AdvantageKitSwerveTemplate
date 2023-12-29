@@ -7,7 +7,6 @@
 
 package frc.robot.subsystems.vision;
 
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -24,13 +23,18 @@ import frc.robot.util.Alert.AlertType;
 import frc.robot.util.FieldConstants;
 import frc.robot.util.PoseEstimator.TimestampedVisionUpdate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import lombok.Getter;
+import lombok.Setter;
 import org.littletonrobotics.junction.Logger;
 
+@Getter
+@Setter
 public class AprilTagVision extends SubsystemBase {
   private static final double targetLogTimeSecs = 0.1;
   private static final double fieldBorderMargin = 0.5;
@@ -53,8 +57,7 @@ public class AprilTagVision extends SubsystemBase {
 
   static {
     switch (Constants.currentMode) {
-      case REAL:
-      case REPLAY:
+      case REAL, REPLAY:
         cameraPoses =
             new Pose3d[] {
               // Front left (forward facing, camera 1)
@@ -77,6 +80,7 @@ public class AprilTagVision extends SubsystemBase {
   }
 
   /** Sets whether vision updates for odometry are enabled. */
+  // TODO: This is not used yet
   public void setVisionUpdatesEnabled(boolean enabled) {
     enableVisionUpdates = enabled;
     enableVisionUpdatesAlert.set(!enabled);
@@ -100,12 +104,7 @@ public class AprilTagVision extends SubsystemBase {
     }
 
     // Create map of last detection times for tags
-    FieldConstants.aprilTags
-        .getTags()
-        .forEach(
-            (AprilTag tag) -> {
-              lastTagDetectionTimes.put(tag.ID, 0.0);
-            });
+    FieldConstants.aprilTags.getTags().forEach(tag -> lastTagDetectionTimes.put(tag.ID, 0.0));
   }
 
   @Override
@@ -121,6 +120,7 @@ public class AprilTagVision extends SubsystemBase {
 
   private List<TimestampedVisionUpdate> processVisionUpdates() {
     List<TimestampedVisionUpdate> visionUpdates = new ArrayList<>();
+    // TODO: anytime there's big O^2 re-evaluate
     for (int instanceIndex = 0; instanceIndex < io.length; instanceIndex++) {
       for (int frameIndex = 0;
           frameIndex < inputs[instanceIndex].getCaptureTimestamp().length;
@@ -130,6 +130,7 @@ public class AprilTagVision extends SubsystemBase {
           var timestamp = inputs[instanceIndex].getCaptureTimestamp()[frameIndex];
           Pose3d robotPose3d = createRobotPose3d(instanceIndex, frameIndex);
 
+          // TODO: logging here? osmething to tell you you are out of bounds?
           if (isRobotPoseOutOfBounds(robotPose3d)) {
             continue;
           }
@@ -181,35 +182,31 @@ public class AprilTagVision extends SubsystemBase {
 
   private List<Pose3d> getTagPoses(int instanceIndex) {
     List<Pose3d> tagPoses = new ArrayList<>();
-    for (int tagCounter = 0; tagCounter < inputs[instanceIndex].getCurrentTags().length; tagCounter++) {
-      int tagId = inputs[instanceIndex].getCurrentTags()[tagCounter];
-      lastTagDetectionTimes.put(tagId, Timer.getFPGATimestamp());
-      Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(tagId);
-      if (tagPose.isPresent()) {
-        tagPoses.add(tagPose.get());
-      }
-    }
+    Arrays.stream(inputs[instanceIndex].getCurrentTags())
+        .forEachOrdered(
+            tagId -> {
+              lastTagDetectionTimes.put(tagId, Timer.getFPGATimestamp());
+              Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(tagId);
+              tagPose.ifPresent(tagPoses::add);
+            });
     return tagPoses;
   }
 
   private double calculateAverageDistance(List<Pose3d> tagPoses, Pose3d cameraPose) {
-    double totalDistance = 0.0;
-    for (Pose3d tagPose : tagPoses) {
-      totalDistance += tagPose.getTranslation().getDistance(cameraPose.getTranslation());
-    }
-    return totalDistance / tagPoses.size();
+    // Calculate average distance to tag
+    return tagPoses.stream()
+        .mapToDouble(value -> value.getTranslation().getDistance(cameraPose.getTranslation()))
+        .average()
+        .orElse(0.0);
   }
 
   private void logTagPoses() {
     List<Pose3d> allTagPoses = new ArrayList<>();
-    for (Map.Entry<Integer, Double> detectionEntry : lastTagDetectionTimes.entrySet()) {
-      if (Timer.getFPGATimestamp() - detectionEntry.getValue() < targetLogTimeSecs) {
-        Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(detectionEntry.getKey());
-        if (tagPose.isPresent()) {
-          allTagPoses.add(tagPose.get());
-        }
-      }
-    }
+
+    lastTagDetectionTimes.entrySet().stream()
+        .filter(x -> Timer.getFPGATimestamp() - x.getValue() < targetLogTimeSecs)
+        .forEach(x -> FieldConstants.aprilTags.getTagPose(x.getKey()).ifPresent(allTagPoses::add));
+
     Logger.recordOutput(
         "AprilTagVision/TagPoses", allTagPoses.toArray(new Pose3d[allTagPoses.size()]));
   }
@@ -220,11 +217,8 @@ public class AprilTagVision extends SubsystemBase {
     }
   }
 
-  public void setRobotPose(Pose2d robotPose) {
-    this.robotPose = robotPose;
-  }
-
+  // TODO: i'd rename this and not have it be getPose2D but getRobotPose to match the member name
   public Pose2d getPose2d() {
-    return this.robotPose;
+    return robotPose;
   }
 }
