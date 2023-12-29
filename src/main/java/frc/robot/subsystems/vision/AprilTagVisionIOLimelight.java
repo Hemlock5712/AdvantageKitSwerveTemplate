@@ -29,19 +29,13 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
     NetworkTable limelightTable = NetworkTableInstance.getDefault().getTable(identifier);
     LimelightHelpers.setPipelineIndex(limelightName, 0);
     alliance.set(DriverStation.getAlliance().orElse(Alliance.Blue));
-    if (alliance.get() == Alliance.Blue) {
-      observationSubscriber =
-          limelightTable
-              .getDoubleArrayTopic("botpose_wpiblue")
-              .subscribe(
-                  new double[] {}, PubSubOption.keepDuplicates(true), PubSubOption.sendAll(true));
-    } else {
-      observationSubscriber =
-          limelightTable
-              .getDoubleArrayTopic("botpose_wpired")
-              .subscribe(
-                  new double[] {}, PubSubOption.keepDuplicates(true), PubSubOption.sendAll(true));
-    }
+
+    observationSubscriber =
+        limelightTable
+            .getDoubleArrayTopic(
+                alliance.get() == Alliance.Blue ? "botpose_wpiblue" : "botpose_wpired")
+            .subscribe(
+                new double[] {}, PubSubOption.keepDuplicates(true), PubSubOption.sendAll(true));
   }
 
   @Override
