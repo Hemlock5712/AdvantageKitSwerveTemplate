@@ -37,6 +37,8 @@ import frc.robot.util.PoseEstimator.TimestampedVisionUpdate;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import lombok.Getter;
+import lombok.Setter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -54,7 +56,12 @@ public class Drive extends SubsystemBase {
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
 
   private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
+
+  @Getter
+  @Setter
+  @AutoLogOutput(key = "Odometry/Robot")
   private Pose2d pose = new Pose2d();
+
   private Rotation2d lastGyroRotation = new Rotation2d();
 
   private PoseEstimator poseEstimator = new PoseEstimator(VecBuilder.fill(0.003, 0.003, 0.0002));
@@ -214,20 +221,9 @@ public class Drive extends SubsystemBase {
     return states;
   }
 
-  /** Returns the current odometry pose. */
-  @AutoLogOutput(key = "Odometry/Robot")
-  public Pose2d getPose() {
-    return pose;
-  }
-
   /** Returns the current odometry rotation. */
   public Rotation2d getRotation() {
     return pose.getRotation();
-  }
-
-  /** Resets the current odometry pose. */
-  public void setPose(Pose2d pose) {
-    this.pose = pose;
   }
 
   /** Returns the maximum linear speed in meters per sec. */

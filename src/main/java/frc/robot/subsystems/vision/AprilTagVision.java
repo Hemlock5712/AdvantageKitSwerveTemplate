@@ -16,6 +16,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.Mode;
 import frc.robot.subsystems.drive.Module;
 import frc.robot.subsystems.vision.AprilTagVisionIO.AprilTagVisionIOInputs;
 import frc.robot.util.FieldConstants;
@@ -30,7 +31,6 @@ import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
 import org.littletonrobotics.junction.Logger;
-import frc.robot.Constants.Mode;
 
 @Getter
 @Setter
