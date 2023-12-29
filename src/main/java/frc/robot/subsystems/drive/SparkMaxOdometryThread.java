@@ -27,10 +27,9 @@ import java.util.function.DoubleSupplier;
  * blocking thread. A Notifier thread is used to gather samples with consistent timing.
  */
 public class SparkMaxOdometryThread {
-  private List<DoubleSupplier> signals = new ArrayList<>();
-  private List<Queue<Double>> queues = new ArrayList<>();
+  private final List<DoubleSupplier> signals = new ArrayList<>();
+  private final List<Queue<Double>> queues = new ArrayList<>();
 
-  private final Notifier notifier;
   private static SparkMaxOdometryThread instance = null;
 
   public static SparkMaxOdometryThread getInstance() {
@@ -41,7 +40,7 @@ public class SparkMaxOdometryThread {
   }
 
   private SparkMaxOdometryThread() {
-    notifier = new Notifier(this::periodic);
+    Notifier notifier = new Notifier(this::periodic);
     notifier.setName("SparkMaxOdometryThread");
     notifier.startPeriodic(1.0 / Module.ODOMETRY_FREQUENCY);
   }

@@ -8,16 +8,20 @@
 package frc.robot.subsystems.vision;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import lombok.Getter;
+import lombok.Setter;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 public interface AprilTagVisionIO {
-  public static class AprilTagVisionIOInputs implements LoggableInputs {
+  @Getter
+  @Setter
+  class AprilTagVisionIOInputs implements LoggableInputs {
 
-    public Pose3d estimatedPose = new Pose3d();
-    public double captureTimestamp = 0.0;
-    public boolean valid = false;
-    public int[] currentTags = new int[] {};
+    private Pose3d estimatedPose = new Pose3d();
+    private double captureTimestamp = 0.0;
+    private boolean valid = false;
+    private int[] currentTags = new int[] {};
 
     @Override
     public void toLog(LogTable table) {

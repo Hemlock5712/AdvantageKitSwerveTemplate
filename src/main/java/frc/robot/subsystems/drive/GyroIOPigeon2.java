@@ -35,6 +35,7 @@ public class GyroIOPigeon2 implements GyroIO {
     yaw.setUpdateFrequency(Module.ODOMETRY_FREQUENCY);
     yawVelocity.setUpdateFrequency(100.0);
     pigeon.optimizeBusUtilization();
+
     if (phoenixDrive) {
       yawPositionQueue =
           PhoenixOdometryThread.getInstance().registerSignal(pigeon, pigeon.getYaw());
@@ -52,9 +53,7 @@ public class GyroIOPigeon2 implements GyroIO {
     inputs.yawVelocityRadPerSec = Units.degreesToRadians(yawVelocity.getValueAsDouble());
 
     inputs.odometryYawPositions =
-        yawPositionQueue.stream()
-            .map((Double value) -> Rotation2d.fromDegrees(value))
-            .toArray(Rotation2d[]::new);
+        yawPositionQueue.stream().map(Rotation2d::fromDegrees).toArray(Rotation2d[]::new);
     yawPositionQueue.clear();
   }
 }

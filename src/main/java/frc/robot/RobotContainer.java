@@ -43,7 +43,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  private AprilTagVision aprilTagVision;
+  private final AprilTagVision aprilTagVision;
   // private final Flywheel flywheel;
 
   // Controller
@@ -158,7 +158,7 @@ public class RobotContainer {
     controller
         .start()
         .onTrue(
-            Commands.runOnce(() -> drive.setVisonPose(aprilTagVision.getPose2d()), drive)
+            Commands.runOnce(() -> drive.setVisonPose(aprilTagVision.getRobotPose()), drive)
                 .ignoringDisable(true));
     // controller
     //     .a()
