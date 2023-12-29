@@ -28,13 +28,13 @@ When deploying code to your robot, you'll need to change the value of `currentMo
   * `MAX_LINEAR_SPEED` , `TRACK_WIDTH_X` , `TRACK_WIDTH_Y`
 
 ### GyroIOPigeon2.java
-  * `pigeon` (change id)
+  * `pigeon`
 
 ### Module.java
   * `WHEEL_RADIUS`
 
 ### ModuleIOTalonFX.java or ModuleIOSparkMax.java
-  * `DRIVE_GEAR_RATIO` , `TURN_GEAR_RATIO` , `IS_TURN_MOTOR_INVERTED` , along with all drives, turns, cancoders, canbus, and absoluteEncoderOffsets
+  * `DRIVE_GEAR_RATIO`, `TURN_GEAR_RATIO`, `IS_TURN_MOTOR_INVERTED`, along with all drive, turn, CANcoder, CANbus, and `absoluteEncoderOffsets` values
 
 
 
