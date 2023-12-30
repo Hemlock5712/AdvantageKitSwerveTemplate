@@ -31,7 +31,8 @@ public interface AprilTagVisionIO {
       table.put("poseEstimates", poseEstimates.size());
       for (PoseEstimate poseEstimate : poseEstimates) {
         int posePosition = poseEstimates.indexOf(poseEstimate);
-        table.put("estimatedPose/" + Integer.toString(posePosition), LimelightHelpers.getPose3dToArray(poseEstimate.getPose()));
+        table.put("estimatedPose/" + Integer.toString(posePosition),
+            LimelightHelpers.getPose3dToArray(poseEstimate.getPose()));
         table.put("captureTimestamp/" + Integer.toString(posePosition), poseEstimate.getTimestampSeconds());
         table.put("tagIDs/" + Integer.toString(posePosition), poseEstimate.getTagIDs());
         table.put("averageTagDistance/" + Integer.toString(posePosition), poseEstimate.getAverageTagDistance());
@@ -43,7 +44,8 @@ public interface AprilTagVisionIO {
     public void fromLog(LogTable table) {
       int estimatedPoseCount = table.get("poseEstimates", 0);
       for (int i = 0; i < estimatedPoseCount; i++) {
-        Pose3d poseEstimation = LimelightHelpers.toPose3D(table.get("estimatedPose/" + Integer.toString(i), new double[] {}));
+        Pose3d poseEstimation = LimelightHelpers
+            .toPose3D(table.get("estimatedPose/" + Integer.toString(i), new double[] {}));
         double timestamp = table.get("captureTimestamp/" + Integer.toString(i), 0.0);
         double averageTagDistance = table.get("averageTagDistance/" + Integer.toString(i), 0.0);
         int[] tagIDs = table.get("tagIDs/" + Integer.toString(i), new int[] {});
@@ -53,5 +55,6 @@ public interface AprilTagVisionIO {
     }
   }
 
-  default void updateInputs(AprilTagVisionIOInputs inputs) {}
+  default void updateInputs(AprilTagVisionIOInputs inputs) {
+  }
 }

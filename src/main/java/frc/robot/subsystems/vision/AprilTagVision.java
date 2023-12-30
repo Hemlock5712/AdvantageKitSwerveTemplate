@@ -118,7 +118,8 @@ public class AprilTagVision extends SubsystemBase {
         List<Pose3d> tagPoses = getTagPoses(poseEstimates);
         double xyStdDev = calculateXYStdDev(poseEstimates, tagPoses.size());
         double thetaStdDev = calculateThetaStdDev(poseEstimates, tagPoses.size());
-        visionUpdates.add(new TimestampedVisionUpdate(timestamp, getRobotPose(), VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
+        visionUpdates.add(
+            new TimestampedVisionUpdate(timestamp, getRobotPose(), VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
         logData(instanceIndex, timestamp, robotPose3d, tagPoses);
       }
     }
@@ -126,11 +127,15 @@ public class AprilTagVision extends SubsystemBase {
   }
 
   private boolean shouldSkipPoseEstimate(PoseEstimate poseEstimates, int instanceIndex) {
-    return poseEstimates.getTagIDs().length < 1 || poseEstimates.getPose() == null || cameraPoses[instanceIndex] == null || isOutsideFieldBorder(poseEstimates.getPose());
+    return poseEstimates.getTagIDs().length < 1 || poseEstimates.getPose() == null || cameraPoses[instanceIndex] == null
+        || isOutsideFieldBorder(poseEstimates.getPose());
   }
 
   private boolean isOutsideFieldBorder(Pose3d robotPose3d) {
-    return robotPose3d.getX() < -fieldBorderMargin || robotPose3d.getX() > FieldConstants.fieldLength + fieldBorderMargin || robotPose3d.getY() < -fieldBorderMargin || robotPose3d.getY() > FieldConstants.fieldWidth + fieldBorderMargin || robotPose3d.getZ() < -zMargin || robotPose3d.getZ() > zMargin;
+    return robotPose3d.getX() < -fieldBorderMargin
+        || robotPose3d.getX() > FieldConstants.fieldLength + fieldBorderMargin
+        || robotPose3d.getY() < -fieldBorderMargin || robotPose3d.getY() > FieldConstants.fieldWidth + fieldBorderMargin
+        || robotPose3d.getZ() < -zMargin || robotPose3d.getZ() > zMargin;
   }
 
   private List<Pose3d> getTagPoses(PoseEstimate poseEstimates) {
@@ -154,10 +159,12 @@ public class AprilTagVision extends SubsystemBase {
   }
 
   private void logData(int instanceIndex, double timestamp, Pose3d robotPose3d, List<Pose3d> tagPoses) {
-    Logger.recordOutput(VISION_PATH + Integer.toString(instanceIndex) + "/LatencySecs", Timer.getFPGATimestamp() - timestamp);
+    Logger.recordOutput(VISION_PATH + Integer.toString(instanceIndex) + "/LatencySecs",
+        Timer.getFPGATimestamp() - timestamp);
     Logger.recordOutput(VISION_PATH + Integer.toString(instanceIndex) + "/RobotPose", getRobotPose());
     Logger.recordOutput(VISION_PATH + Integer.toString(instanceIndex) + "/RobotPose3d", robotPose3d);
-    Logger.recordOutput(VISION_PATH + Integer.toString(instanceIndex) + "/TagPoses", tagPoses.toArray(new Pose3d[tagPoses.size()]));
+    Logger.recordOutput(VISION_PATH + Integer.toString(instanceIndex) + "/TagPoses",
+        tagPoses.toArray(new Pose3d[tagPoses.size()]));
     logTagPoses();
   }
 
