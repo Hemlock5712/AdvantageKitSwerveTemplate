@@ -11,7 +11,6 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -20,9 +19,9 @@ import frc.robot.Constants.Mode;
 import frc.robot.subsystems.drive.Module;
 import frc.robot.subsystems.vision.AprilTagVisionIO.AprilTagVisionIOInputs;
 import frc.robot.util.FieldConstants;
+import frc.robot.util.LimelightHelpers.PoseEstimate;
 import frc.robot.util.PoseEstimator.TimestampedVisionUpdate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,10 +40,12 @@ public class AprilTagVision extends SubsystemBase {
   private static final Pose3d[] cameraPoses;
   private static final double xyStdDevCoefficient;
   private static final double thetaStdDevCoefficient;
+  private static final String VISION_PATH = "AprilTagVision/Inst";
 
   private boolean enableVisionUpdates = true;
 
-  private Consumer<List<TimestampedVisionUpdate>> visionConsumer = x -> {};
+  private Consumer<List<TimestampedVisionUpdate>> visionConsumer = x -> {
+  };
   private Map<Integer, Double> lastFrameTimes = new HashMap<>();
   private Map<Integer, Double> lastTagDetectionTimes = new HashMap<>();
 
@@ -55,16 +56,15 @@ public class AprilTagVision extends SubsystemBase {
 
   static {
     if (Constants.currentMode == Mode.REAL || Constants.currentMode == Mode.REPLAY) {
-      cameraPoses =
-          new Pose3d[] {
-            // Front left (forward facing, camera 1)
-            new Pose3d(
-                Units.inchesToMeters(2),
-                Units.inchesToMeters(4.5),
-                Units.inchesToMeters(33.5) + Module.getWheelRadius(),
-                new Rotation3d(0.0, Units.degreesToRadians(0), 0.0)
-                    .rotateBy(new Rotation3d(0.0, 0.0, 0))),
-          };
+      cameraPoses = new Pose3d[] {
+          // Front left (forward facing, camera 1)
+          new Pose3d(
+              Units.inchesToMeters(2),
+              Units.inchesToMeters(4.5),
+              Units.inchesToMeters(33.5) + Module.getWheelRadius(),
+              new Rotation3d(0.0, Units.degreesToRadians(0), 0.0)
+                  .rotateBy(new Rotation3d(0.0, 0.0, 0))),
+      };
       xyStdDevCoefficient = 0.01;
       thetaStdDevCoefficient = 0.01;
     } else {
@@ -99,101 +99,79 @@ public class AprilTagVision extends SubsystemBase {
   public void periodic() {
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
-      Logger.processInputs("AprilTagVision/Inst" + Integer.toString(i), inputs[i]);
+      Logger.processInputs(VISION_PATH + Integer.toString(i), inputs[i]);
     }
-    List<TimestampedVisionUpdate> visionUpdates = processVisionUpdates();
-    logTagPoses();
+    List<TimestampedVisionUpdate> visionUpdates = processPoseEstimates();
     sendResultsToPoseEstimator(visionUpdates);
   }
 
-  private List<TimestampedVisionUpdate> processVisionUpdates() {
+  private List<TimestampedVisionUpdate> processPoseEstimates() {
     List<TimestampedVisionUpdate> visionUpdates = new ArrayList<>();
     for (int instanceIndex = 0; instanceIndex < io.length; instanceIndex++) {
-      for (int frameIndex = 0;
-          frameIndex < inputs[instanceIndex].getCaptureTimestamp().length;
-          frameIndex++) {
-        if (!shouldSkipFrame(instanceIndex)) {
-          Pose3d cameraPose = cameraPoses[instanceIndex];
-          var timestamp = inputs[instanceIndex].getCaptureTimestamp()[frameIndex];
-          Pose3d robotPose3d = createRobotPose3d(instanceIndex, frameIndex);
-          if (isRobotPoseOutOfBounds(robotPose3d)) {
-            continue;
-          }
-
-          setRobotPose(robotPose3d.toPose2d());
-
-          List<Pose3d> tagPoses = getTagPoses(instanceIndex);
-          double avgDistance = calculateAverageDistance(tagPoses, cameraPose);
-
-          double xyStdDev = xyStdDevCoefficient * Math.pow(avgDistance, 2.0) / tagPoses.size();
-          double thetaStdDev =
-              thetaStdDevCoefficient * Math.pow(avgDistance, 2.0) / tagPoses.size();
-          visionUpdates.add(
-              new TimestampedVisionUpdate(
-                  timestamp, getRobotPose(), VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
+      for (PoseEstimate poseEstimates : inputs[instanceIndex].poseEstimates) {
+        if (shouldSkipPoseEstimate(poseEstimates, instanceIndex)) {
+          continue;
         }
+        double timestamp = poseEstimates.getTimestampSeconds();
+        Pose3d robotPose3d = poseEstimates.getPose();
+        setRobotPose(robotPose3d.toPose2d());
+        List<Pose3d> tagPoses = getTagPoses(poseEstimates);
+        double xyStdDev = calculateXYStdDev(poseEstimates, tagPoses.size());
+        double thetaStdDev = calculateThetaStdDev(poseEstimates, tagPoses.size());
+        visionUpdates.add(new TimestampedVisionUpdate(timestamp, getRobotPose(), VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
+        logData(instanceIndex, timestamp, robotPose3d, tagPoses);
       }
     }
     return visionUpdates;
   }
 
-  private boolean shouldSkipFrame(int instanceIndex) {
-    return inputs[instanceIndex].getCurrentTags().length < 1
-        || inputs[instanceIndex].getEstimatedPose() == null
-        || cameraPoses[instanceIndex] == null
-        || !inputs[instanceIndex].isValid();
+  private boolean shouldSkipPoseEstimate(PoseEstimate poseEstimates, int instanceIndex) {
+    return poseEstimates.getTagIDs().length < 1 || poseEstimates.getPose() == null || cameraPoses[instanceIndex] == null || isOutsideFieldBorder(poseEstimates.getPose());
   }
 
-  private Pose3d createRobotPose3d(int instanceIndex, int frameIndex) {
-    return new Pose3d(
-        new Translation3d(
-            inputs[instanceIndex].getEstimatedPose()[frameIndex][0],
-            inputs[instanceIndex].getEstimatedPose()[frameIndex][1],
-            inputs[instanceIndex].getEstimatedPose()[frameIndex][2]),
-        new Rotation3d(
-            inputs[instanceIndex].getEstimatedPose()[frameIndex][3],
-            inputs[instanceIndex].getEstimatedPose()[frameIndex][4],
-            inputs[instanceIndex].getEstimatedPose()[frameIndex][5]));
+  private boolean isOutsideFieldBorder(Pose3d robotPose3d) {
+    return robotPose3d.getX() < -fieldBorderMargin || robotPose3d.getX() > FieldConstants.fieldLength + fieldBorderMargin || robotPose3d.getY() < -fieldBorderMargin || robotPose3d.getY() > FieldConstants.fieldWidth + fieldBorderMargin || robotPose3d.getZ() < -zMargin || robotPose3d.getZ() > zMargin;
   }
 
-  private boolean isRobotPoseOutOfBounds(Pose3d robotPose3d) {
-    return robotPose3d.getX() < -fieldBorderMargin
-        || robotPose3d.getX() > FieldConstants.fieldLength + fieldBorderMargin
-        || robotPose3d.getY() < -fieldBorderMargin
-        || robotPose3d.getY() > FieldConstants.fieldWidth + fieldBorderMargin
-        || robotPose3d.getZ() < -zMargin
-        || robotPose3d.getZ() > zMargin;
-  }
-
-  private List<Pose3d> getTagPoses(int instanceIndex) {
+  private List<Pose3d> getTagPoses(PoseEstimate poseEstimates) {
     List<Pose3d> tagPoses = new ArrayList<>();
-    Arrays.stream(inputs[instanceIndex].getCurrentTags())
-        .forEachOrdered(
-            tagId -> {
-              lastTagDetectionTimes.put(tagId, Timer.getFPGATimestamp());
-              Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(tagId);
-              tagPose.ifPresent(tagPoses::add);
-            });
+    for (int tagId : poseEstimates.getTagIDs()) {
+      lastTagDetectionTimes.put(tagId, Timer.getFPGATimestamp());
+      Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(tagId);
+      if (tagPose.isPresent()) {
+        tagPoses.add(tagPose.get());
+      }
+    }
     return tagPoses;
   }
 
-  private double calculateAverageDistance(List<Pose3d> tagPoses, Pose3d cameraPose) {
-    // Calculate average distance to tag
-    return tagPoses.stream()
-        .mapToDouble(value -> value.getTranslation().getDistance(cameraPose.getTranslation()))
-        .average()
-        .orElse(0.0);
+  private double calculateXYStdDev(PoseEstimate poseEstimates, int tagPosesSize) {
+    return xyStdDevCoefficient * Math.pow(poseEstimates.getAverageTagDistance(), 2.0) / tagPosesSize;
+  }
+
+  private double calculateThetaStdDev(PoseEstimate poseEstimates, int tagPosesSize) {
+    return thetaStdDevCoefficient * Math.pow(poseEstimates.getAverageTagDistance(), 2.0) / tagPosesSize;
+  }
+
+  private void logData(int instanceIndex, double timestamp, Pose3d robotPose3d, List<Pose3d> tagPoses) {
+    Logger.recordOutput(VISION_PATH + Integer.toString(instanceIndex) + "/LatencySecs", Timer.getFPGATimestamp() - timestamp);
+    Logger.recordOutput(VISION_PATH + Integer.toString(instanceIndex) + "/RobotPose", getRobotPose());
+    Logger.recordOutput(VISION_PATH + Integer.toString(instanceIndex) + "/RobotPose3d", robotPose3d);
+    Logger.recordOutput(VISION_PATH + Integer.toString(instanceIndex) + "/TagPoses", tagPoses.toArray(new Pose3d[tagPoses.size()]));
+    logTagPoses();
   }
 
   private void logTagPoses() {
     List<Pose3d> allTagPoses = new ArrayList<>();
-
-    lastTagDetectionTimes.entrySet().stream()
-        .filter(x -> Timer.getFPGATimestamp() - x.getValue() < targetLogTimeSecs)
-        .forEach(x -> FieldConstants.aprilTags.getTagPose(x.getKey()).ifPresent(allTagPoses::add));
-
-    Logger.recordOutput(
-        "AprilTagVision/TagPoses", allTagPoses.toArray(new Pose3d[allTagPoses.size()]));
+    for (Map.Entry<Integer, Double> detectionEntry : lastTagDetectionTimes.entrySet()) {
+      if (Timer.getFPGATimestamp() - detectionEntry.getValue() < targetLogTimeSecs) {
+        Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(detectionEntry.getKey());
+        if (tagPose.isPresent()) {
+          allTagPoses.add(tagPose.get());
+        }
+      }
+    }
+    Logger.recordOutput("AprilTagVision/TagPoses", allTagPoses.toArray(new Pose3d[allTagPoses.size()]));
   }
 
   private void sendResultsToPoseEstimator(List<TimestampedVisionUpdate> visionUpdates) {

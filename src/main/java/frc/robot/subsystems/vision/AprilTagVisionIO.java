@@ -9,40 +9,47 @@ package frc.robot.subsystems.vision;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
+
+import edu.wpi.first.math.geometry.Pose3d;
+import frc.robot.util.LimelightHelpers;
+import frc.robot.util.LimelightHelpers.PoseEstimate;
 
 public interface AprilTagVisionIO {
   @Setter
   @Getter
   class AprilTagVisionIOInputs implements LoggableInputs {
 
-    private double[][] estimatedPose = new double[][] {};
-    private double[] captureTimestamp = new double[] {};
-    private boolean valid = false;
-    private int[] currentTags = new int[] {};
+    ArrayList<PoseEstimate> poseEstimates = new ArrayList<>();
 
     @Override
     public void toLog(LogTable table) {
-      table.put("estimatedPose", estimatedPose.length);
-      for (int i = 0; i < estimatedPose.length; i++) {
-        table.put("estimatedPose/" + Integer.toString(i), estimatedPose[i]);
+      table.put("poseEstimates", poseEstimates.size());
+      for (PoseEstimate poseEstimate : poseEstimates) {
+        int posePosition = poseEstimates.indexOf(poseEstimate);
+        table.put("estimatedPose/" + Integer.toString(posePosition), LimelightHelpers.getPose3dToArray(poseEstimate.getPose()));
+        table.put("captureTimestamp/" + Integer.toString(posePosition), poseEstimate.getTimestampSeconds());
+        table.put("tagIDs/" + Integer.toString(posePosition), poseEstimate.getTagIDs());
+        table.put("averageTagDistance/" + Integer.toString(posePosition), poseEstimate.getAverageTagDistance());
       }
-      table.put("captureTimestamp", captureTimestamp);
-      table.put("valid", valid);
-      table.put("currentTags", currentTags);
+      table.put("valid", poseEstimates.isEmpty());
     }
 
     @Override
     public void fromLog(LogTable table) {
-      int estimatedPoseCount = table.get("estimatedPose", 0);
-      estimatedPose = new double[estimatedPoseCount][];
+      int estimatedPoseCount = table.get("poseEstimates", 0);
       for (int i = 0; i < estimatedPoseCount; i++) {
-        estimatedPose[i] = table.get("estimatedPose/" + Integer.toString(i), new double[] {});
+        Pose3d poseEstimation = LimelightHelpers.toPose3D(table.get("estimatedPose/" + Integer.toString(i), new double[] {}));
+        double timestamp = table.get("captureTimestamp/" + Integer.toString(i), 0.0);
+        double averageTagDistance = table.get("averageTagDistance/" + Integer.toString(i), 0.0);
+        int[] tagIDs = table.get("tagIDs/" + Integer.toString(i), new int[] {});
+        poseEstimates.add(new PoseEstimate(poseEstimation, timestamp, averageTagDistance, tagIDs));
       }
-      captureTimestamp = table.get("latency", captureTimestamp);
-      valid = table.get("valid", valid);
-      currentTags = table.get("currentTags", currentTags);
+      table.get("valid", false);
     }
   }
 
