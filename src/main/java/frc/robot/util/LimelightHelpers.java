@@ -397,15 +397,15 @@ public class LimelightHelpers {
 
         @Override
         public int hashCode() {
-            return Objects.hash(pose, timestampSeconds, averageTagDistance, Arrays.hashCode(tagIDs));
+            return Objects.hash(Arrays.hashCode(LimelightHelpers.getPose3dToArray(pose)), timestampSeconds, averageTagDistance, Arrays.hashCode(tagIDs));
         }
 
         @Override
         public String toString() {
             return "PoseEstimate{" +
-                    "pose=" + pose +
-                    ", timestampSeconds=" + timestampSeconds +
-                    ", averageTagDistance=" + averageTagDistance +
+                    "pose=" + pose.toString() +
+                    ", timestampSeconds=" + Double.toString(timestampSeconds) +
+                    ", averageTagDistance=" + Double.toString(averageTagDistance) +
                     ", tagIDs=" + Arrays.toString(tagIDs) +
                     '}';
         }
