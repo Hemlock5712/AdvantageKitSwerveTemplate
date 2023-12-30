@@ -22,6 +22,7 @@ import frc.robot.util.FieldConstants;
 import frc.robot.util.LimelightHelpers.PoseEstimate;
 import frc.robot.util.PoseEstimator.TimestampedVisionUpdate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,8 +113,8 @@ public class AprilTagVision extends SubsystemBase {
         if (shouldSkipPoseEstimate(poseEstimates, instanceIndex)) {
           continue;
         }
-        double timestamp = poseEstimates.getTimestampSeconds();
-        Pose3d robotPose3d = poseEstimates.getPose();
+        double timestamp = poseEstimates.timestampSeconds();
+        Pose3d robotPose3d = poseEstimates.pose();
         setRobotPose(robotPose3d.toPose2d());
         List<Pose3d> tagPoses = getTagPoses(poseEstimates);
         double xyStdDev = calculateXYStdDev(poseEstimates, tagPoses.size());
@@ -127,8 +128,8 @@ public class AprilTagVision extends SubsystemBase {
   }
 
   private boolean shouldSkipPoseEstimate(PoseEstimate poseEstimates, int instanceIndex) {
-    return poseEstimates.getTagIDs().length < 1 || poseEstimates.getPose() == null || cameraPoses[instanceIndex] == null
-        || isOutsideFieldBorder(poseEstimates.getPose());
+    return poseEstimates.tagIDs().length < 1 || poseEstimates.pose() == null || cameraPoses[instanceIndex] == null
+        || isOutsideFieldBorder(poseEstimates.pose());
   }
 
   private boolean isOutsideFieldBorder(Pose3d robotPose3d) {
@@ -140,22 +141,22 @@ public class AprilTagVision extends SubsystemBase {
 
   private List<Pose3d> getTagPoses(PoseEstimate poseEstimates) {
     List<Pose3d> tagPoses = new ArrayList<>();
-    for (int tagId : poseEstimates.getTagIDs()) {
-      lastTagDetectionTimes.put(tagId, Timer.getFPGATimestamp());
-      Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(tagId);
-      if (tagPose.isPresent()) {
-        tagPoses.add(tagPose.get());
-      }
-    }
+    Arrays.stream(poseEstimates.tagIDs())
+        .forEachOrdered(
+            tagId -> {
+              lastTagDetectionTimes.put(tagId, Timer.getFPGATimestamp());
+              Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(tagId);
+              tagPose.ifPresent(tagPoses::add);
+            });
     return tagPoses;
   }
 
   private double calculateXYStdDev(PoseEstimate poseEstimates, int tagPosesSize) {
-    return xyStdDevCoefficient * Math.pow(poseEstimates.getAverageTagDistance(), 2.0) / tagPosesSize;
+    return xyStdDevCoefficient * Math.pow(poseEstimates.averageTagDistance(), 2.0) / tagPosesSize;
   }
 
   private double calculateThetaStdDev(PoseEstimate poseEstimates, int tagPosesSize) {
-    return thetaStdDevCoefficient * Math.pow(poseEstimates.getAverageTagDistance(), 2.0) / tagPosesSize;
+    return thetaStdDevCoefficient * Math.pow(poseEstimates.averageTagDistance(), 2.0) / tagPosesSize;
   }
 
   private void logData(int instanceIndex, double timestamp, Pose3d robotPose3d, List<Pose3d> tagPoses) {

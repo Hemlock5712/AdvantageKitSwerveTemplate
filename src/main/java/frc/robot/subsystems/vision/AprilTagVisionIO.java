@@ -32,10 +32,10 @@ public interface AprilTagVisionIO {
       for (PoseEstimate poseEstimate : poseEstimates) {
         int posePosition = poseEstimates.indexOf(poseEstimate);
         table.put("estimatedPose/" + Integer.toString(posePosition),
-            LimelightHelpers.getPose3dToArray(poseEstimate.getPose()));
-        table.put("captureTimestamp/" + Integer.toString(posePosition), poseEstimate.getTimestampSeconds());
-        table.put("tagIDs/" + Integer.toString(posePosition), poseEstimate.getTagIDs());
-        table.put("averageTagDistance/" + Integer.toString(posePosition), poseEstimate.getAverageTagDistance());
+            LimelightHelpers.getPose3dToArray(poseEstimate.pose()));
+        table.put("captureTimestamp/" + Integer.toString(posePosition), poseEstimate.timestampSeconds());
+        table.put("tagIDs/" + Integer.toString(posePosition), poseEstimate.tagIDs());
+        table.put("averageTagDistance/" + Integer.toString(posePosition), poseEstimate.averageTagDistance());
       }
       table.put("valid", poseEstimates.isEmpty());
     }

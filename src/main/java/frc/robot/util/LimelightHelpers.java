@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -378,33 +380,34 @@ public class LimelightHelpers {
         return name;
     }
 
-    public static class PoseEstimate {
-        private Pose3d pose;
-        private double timestampSeconds;
-        private double averageTagDistance;
-        private int[] tagIDs;
-
-        public PoseEstimate(Pose3d pose, double timestampSeconds, double averageTagDistance, int[] tagIDs) {
-            this.pose = pose;
-            this.timestampSeconds = timestampSeconds;
-            this.averageTagDistance = averageTagDistance;
-            this.tagIDs = tagIDs;
+    public record PoseEstimate(Pose3d pose, double timestampSeconds, double averageTagDistance, int[] tagIDs) {
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || getClass() != obj.getClass()) {
+                return false;
+            }
+            PoseEstimate other = (PoseEstimate) obj;
+            return Arrays.equals(tagIDs, other.tagIDs) && Objects.equals(pose, other.pose)
+                    && Double.compare(timestampSeconds, other.timestampSeconds) == 0
+                    && Double.compare(averageTagDistance, other.averageTagDistance) == 0;
         }
 
-        public Pose3d getPose() {
-            return pose;
+        @Override
+        public int hashCode() {
+            return Objects.hash(pose, timestampSeconds, averageTagDistance, Arrays.hashCode(tagIDs));
         }
 
-        public double getTimestampSeconds() {
-            return timestampSeconds;
-        }
-
-        public double getAverageTagDistance() {
-            return averageTagDistance;
-        }
-
-        public int[] getTagIDs() {
-            return tagIDs;
+        @Override
+        public String toString() {
+            return "PoseEstimate{" +
+                    "pose=" + pose +
+                    ", timestampSeconds=" + timestampSeconds +
+                    ", averageTagDistance=" + averageTagDistance +
+                    ", tagIDs=" + Arrays.toString(tagIDs) +
+                    '}';
         }
     }
 
