@@ -73,7 +73,7 @@ public class AprilTagVisionIOPhotonVisionSIM implements AprilTagVisionIO {
 
   @Override
   public void updateInputs(AprilTagVisionIOInputs inputs) {
-    Pose2d test = drive.getPoseEstimatorPose();
+    Pose2d test = drive.getPose();
     visionSim.update(test);
     PhotonPipelineResult results = cameraSim.getCamera().getLatestResult();
     ArrayList<PoseEstimate> poseEstimates = new ArrayList<>();
