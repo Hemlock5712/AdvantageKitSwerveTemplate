@@ -10,13 +10,8 @@ package frc.robot.subsystems.vision;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import frc.robot.Constants.Mode;
-import frc.robot.subsystems.drive.Module;
 import frc.robot.subsystems.vision.AprilTagVisionIO.AprilTagVisionIOInputs;
 import frc.robot.util.FieldConstants;
 import frc.robot.util.PoseEstimator.TimestampedVisionUpdate;
@@ -38,7 +33,6 @@ public class AprilTagVision extends SubsystemBase {
   private static final double targetLogTimeSecs = 0.1;
   private static final double fieldBorderMargin = 0.5;
   private static final double zMargin = 0.75;
-  private static final Pose3d[] cameraPoses;
   private static final double xyStdDevCoefficient;
   private static final double thetaStdDevCoefficient;
   private static final String VISION_PATH = "AprilTagVision/Inst";
@@ -55,24 +49,8 @@ public class AprilTagVision extends SubsystemBase {
   Pose2d robotPose = new Pose2d();
 
   static {
-    if (Constants.currentMode == Mode.REAL || Constants.currentMode == Mode.REPLAY) {
-      cameraPoses =
-          new Pose3d[] {
-            // Front left (forward facing, camera 1)
-            new Pose3d(
-                Units.inchesToMeters(2),
-                Units.inchesToMeters(4.5),
-                Units.inchesToMeters(33.5) + Module.getWheelRadius(),
-                new Rotation3d(0.0, Units.degreesToRadians(0), 0.0)
-                    .rotateBy(new Rotation3d(0.0, 0.0, 0))),
-          };
-      xyStdDevCoefficient = 0.01;
-      thetaStdDevCoefficient = 0.01;
-    } else {
-      cameraPoses = new Pose3d[] {};
-      xyStdDevCoefficient = 0.01;
-      thetaStdDevCoefficient = 0.01;
-    }
+    xyStdDevCoefficient = 0.01;
+    thetaStdDevCoefficient = 0.01;
   }
 
   public void setDataInterfaces(Consumer<List<TimestampedVisionUpdate>> visionConsumer) {
@@ -110,7 +88,6 @@ public class AprilTagVision extends SubsystemBase {
     List<TimestampedVisionUpdate> visionUpdates = new ArrayList<>();
     for (int instanceIndex = 0; instanceIndex < io.length; instanceIndex++) {
       for (PoseEstimate poseEstimates : inputs[instanceIndex].poseEstimates) {
-        System.out.println(poseEstimates.toString());
         if (shouldSkipPoseEstimate(poseEstimates, instanceIndex)) {
           continue;
         }
@@ -132,8 +109,6 @@ public class AprilTagVision extends SubsystemBase {
   private boolean shouldSkipPoseEstimate(PoseEstimate poseEstimates, int instanceIndex) {
     return poseEstimates.tagIDs().length < 1
         || poseEstimates.pose() == null
-        || cameraPoses.length == 0
-        || cameraPoses[instanceIndex] == null
         || isOutsideFieldBorder(poseEstimates.pose());
   }
 
