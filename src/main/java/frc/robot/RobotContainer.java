@@ -16,6 +16,9 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,6 +35,7 @@ import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
+import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -88,7 +92,11 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
-        aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
+        aprilTagVision =
+            new AprilTagVision(
+                new AprilTagVisionIOPhotonVisionSIM(
+                    "photonCamera1",
+                    new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0))));
         // flywheel = new Flywheel(new FlywheelIOSim());
         break;
 

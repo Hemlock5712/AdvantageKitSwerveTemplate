@@ -16,8 +16,7 @@ import edu.wpi.first.networktables.TimestampedString;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.util.LimelightHelpers;
-import frc.robot.util.LimelightHelpers.PoseEstimate;
-
+import frc.robot.util.VisionHelpers.PoseEstimate;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -30,9 +29,10 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
     NetworkTable limelightTable = NetworkTableInstance.getDefault().getTable(identifier);
     LimelightHelpers.setPipelineIndex(limelightName, 0);
 
-    observationSubscriber = limelightTable.getStringTopic("json")
-        .subscribe(
-            "", PubSubOption.keepDuplicates(true), PubSubOption.sendAll(true));
+    observationSubscriber =
+        limelightTable
+            .getStringTopic("json")
+            .subscribe("", PubSubOption.keepDuplicates(true), PubSubOption.sendAll(true));
   }
 
   @Override
@@ -41,7 +41,8 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
     ArrayList<PoseEstimate> poseEstimates = new ArrayList<>();
     for (TimestampedString timestampedString : queue) {
       double timestamp = timestampedString.timestamp / 1e6;
-      LimelightHelpers.Results results = LimelightHelpers.parseJsonDump(timestampedString.value).targetingResults;
+      LimelightHelpers.Results results =
+          LimelightHelpers.parseJsonDump(timestampedString.value).targetingResults;
       Optional<Alliance> allianceOptional = DriverStation.getAlliance();
       if (results.targets_Fiducials.length == 0 || !allianceOptional.isPresent()) {
         continue;
@@ -59,7 +60,8 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
       int[] tagIDs = new int[results.targets_Fiducials.length];
       for (int i = 0; i < results.targets_Fiducials.length; i++) {
         tagIDs[i] = (int) results.targets_Fiducials[i].fiducialID;
-        averageTagDistance += results.targets_Fiducials[i].getTargetPose_CameraSpace().getTranslation().getNorm();
+        averageTagDistance +=
+            results.targets_Fiducials[i].getTargetPose_CameraSpace().getTranslation().getNorm();
       }
       averageTagDistance /= tagIDs.length;
       poseEstimates.add(new PoseEstimate(poseEstimation, timestamp, averageTagDistance, tagIDs));

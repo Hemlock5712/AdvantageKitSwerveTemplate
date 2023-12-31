@@ -56,8 +56,7 @@ public class Alert {
     groups.get(group).alerts.add(this);
   }
 
-
-  private void sendAlert(){
+  private void sendAlert() {
     if (active) {
       switch (type) {
         case ERROR:

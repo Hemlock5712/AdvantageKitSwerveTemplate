@@ -163,13 +163,11 @@ public class PoseEstimator {
   public static record VisionUpdate(Pose2d pose, Matrix<N3, N1> stdDevs) {
     public static final Comparator<VisionUpdate> compareDescStdDev =
         (VisionUpdate a, VisionUpdate b) ->
-          -Double.compare(
-              a.stdDevs().get(0, 0) + a.stdDevs().get(1, 0),
-              b.stdDevs().get(0, 0) + b.stdDevs().get(1, 0));
-
+            -Double.compare(
+                a.stdDevs().get(0, 0) + a.stdDevs().get(1, 0),
+                b.stdDevs().get(0, 0) + b.stdDevs().get(1, 0));
   }
 
   /** Represents a single vision pose with a timestamp and associated standard deviations. */
-  public record TimestampedVisionUpdate(
-      double timestamp, Pose2d pose, Matrix<N3, N1> stdDevs) {}
+  public record TimestampedVisionUpdate(double timestamp, Pose2d pose, Matrix<N3, N1> stdDevs) {}
 }
