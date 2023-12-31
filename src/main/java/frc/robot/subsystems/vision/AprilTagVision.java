@@ -88,7 +88,7 @@ public class AprilTagVision extends SubsystemBase {
     List<TimestampedVisionUpdate> visionUpdates = new ArrayList<>();
     for (int instanceIndex = 0; instanceIndex < io.length; instanceIndex++) {
       for (PoseEstimate poseEstimates : inputs[instanceIndex].poseEstimates) {
-        if (shouldSkipPoseEstimate(poseEstimates, instanceIndex)) {
+        if (shouldSkipPoseEstimate(poseEstimates)) {
           continue;
         }
         double timestamp = poseEstimates.timestampSeconds();
@@ -106,7 +106,7 @@ public class AprilTagVision extends SubsystemBase {
     return visionUpdates;
   }
 
-  private boolean shouldSkipPoseEstimate(PoseEstimate poseEstimates, int instanceIndex) {
+  private boolean shouldSkipPoseEstimate(PoseEstimate poseEstimates) {
     return poseEstimates.tagIDs().length < 1
         || poseEstimates.pose() == null
         || isOutsideFieldBorder(poseEstimates.pose());
