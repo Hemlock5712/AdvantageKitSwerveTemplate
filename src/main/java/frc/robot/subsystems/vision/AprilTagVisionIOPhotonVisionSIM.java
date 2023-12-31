@@ -57,7 +57,8 @@ public class AprilTagVisionIOPhotonVisionSIM implements AprilTagVisionIO {
     cameraProp.setFPS(15);
     cameraProp.setAvgLatencyMs(50);
     cameraProp.setLatencyStdDevMs(15);
-    // Create a PhotonCameraSim which will update the linked PhotonCamera's values with visible
+    // Create a PhotonCameraSim which will update the linked PhotonCamera's values
+    // with visible
     // targets.
     cameraSim = new PhotonCameraSim(camera, cameraProp);
     // Add the simulated camera to view the targets on this simulated field.
@@ -71,7 +72,7 @@ public class AprilTagVisionIOPhotonVisionSIM implements AprilTagVisionIO {
     ArrayList<PoseEstimate> poseEstimates = new ArrayList<>();
     double timestamp = results.getTimestampSeconds();
     Optional<Alliance> allianceOptional = DriverStation.getAlliance();
-    if (results.targets.isEmpty() && allianceOptional.isPresent()) {
+    if (!results.targets.isEmpty() && allianceOptional.isPresent()) {
       double latencyMS = results.getLatencyMillis();
       Pose3d poseEstimation;
       Optional<EstimatedRobotPose> estimatedPose = getEstimatedGlobalPose();
