@@ -22,7 +22,7 @@ public interface AprilTagVisionIO {
   @Getter
   class AprilTagVisionIOInputs implements LoggableInputs {
 
-    ArrayList<frc.robot.util.VisionHelpers.PoseEstimate> poseEstimates = new ArrayList<>();
+    ArrayList<PoseEstimate> poseEstimates = new ArrayList<>();
 
     @Override
     public void toLog(LogTable table) {

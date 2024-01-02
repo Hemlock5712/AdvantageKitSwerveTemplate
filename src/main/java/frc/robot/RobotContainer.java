@@ -124,7 +124,7 @@ public class RobotContainer {
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-
+    autoChooser.addDefaultOption("S Curve", AutoBuilder.buildAuto("Example Auto"));
     // Set up FF characterization routines
     autoChooser.addOption(
         "Drive FF Characterization",
@@ -167,7 +167,7 @@ public class RobotContainer {
     controller
         .start()
         .onTrue(
-            Commands.runOnce(() -> drive.setVisonPose(aprilTagVision.getRobotPose()), drive)
+            Commands.runOnce(() -> drive.setAutoStart(aprilTagVision.getRobotPose()), drive)
                 .ignoringDisable(true));
     // controller
     //     .a()
