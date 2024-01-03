@@ -17,10 +17,10 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.VisionHelpers.PoseEstimate;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.function.Supplier;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -38,10 +38,10 @@ public class AprilTagVisionIOPhotonVisionSIM implements AprilTagVisionIO {
   private final AprilTagFieldLayout kTagLayout =
       AprilTagFields.kDefaultField.loadAprilTagLayoutField();
   private double lastEstTimestamp = 0;
-  private Drive drive;
+  private final Supplier<Pose2d> poseSupplier;
 
   public AprilTagVisionIOPhotonVisionSIM(
-      String identifier, Transform3d robotToCamera, Drive drive) {
+      String identifier, Transform3d robotToCamera, Supplier<Pose2d> poseSupplier) {
     camera = new PhotonCamera(identifier);
     photonEstimator =
         new PhotonPoseEstimator(
@@ -68,13 +68,12 @@ public class AprilTagVisionIOPhotonVisionSIM implements AprilTagVisionIO {
     // Add the simulated camera to view the targets on this simulated field.
     visionSim.addCamera(cameraSim, robotToCamera);
     cameraSim.enableDrawWireframe(true);
-    this.drive = drive;
+    this.poseSupplier = poseSupplier;
   }
 
   @Override
   public void updateInputs(AprilTagVisionIOInputs inputs) {
-    Pose2d test = drive.getPose();
-    visionSim.update(test);
+    visionSim.update(poseSupplier.get());
     PhotonPipelineResult results = cameraSim.getCamera().getLatestResult();
     ArrayList<PoseEstimate> poseEstimates = new ArrayList<>();
     double timestamp = results.getTimestampSeconds();
@@ -127,10 +126,5 @@ public class AprilTagVisionIOPhotonVisionSIM implements AprilTagVisionIO {
   public Field2d getSimDebugField() {
     if (!RobotBase.isSimulation()) return null;
     return visionSim.getDebugField();
-  }
-
-  /** Reset pose history of the robot in the vision system simulation. */
-  public void resetSimPose(Pose2d pose) {
-    if (RobotBase.isSimulation()) visionSim.resetRobotPose(pose);
   }
 }

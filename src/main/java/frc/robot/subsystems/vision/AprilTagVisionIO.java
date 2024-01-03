@@ -39,7 +39,7 @@ public interface AprilTagVisionIO {
             "averageTagDistance/" + Integer.toString(posePosition),
             poseEstimate.averageTagDistance());
       }
-      table.put("valid", poseEstimates.isEmpty());
+      table.put("valid", !poseEstimates.isEmpty());
     }
 
     @Override
