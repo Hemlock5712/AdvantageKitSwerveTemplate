@@ -124,7 +124,8 @@ public class RobotContainer {
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-    autoChooser.addDefaultOption("S Curve", AutoBuilder.buildAuto("Example Auto"));
+    autoChooser.addOption("S Curve", AutoBuilder.buildAuto("Example Auto"));
+    // autoChooser.addDefaultOption("Choreo Test", AutoBuilder.buildAuto("Choreo Auto"));
     // Set up FF characterization routines
     autoChooser.addOption(
         "Drive FF Characterization",
