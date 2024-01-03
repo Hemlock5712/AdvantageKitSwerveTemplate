@@ -50,7 +50,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  private AprilTagVision aprilTagVision;
+  private final AprilTagVision aprilTagVision;
   // private final Flywheel flywheel;
 
   // Controller
@@ -81,7 +81,7 @@ public class RobotContainer {
         //        new ModuleIOTalonFX(1),
         //        new ModuleIOTalonFX(2),
         //        new ModuleIOTalonFX(3));
-        
+
         aprilTagVision = new AprilTagVision(new AprilTagVisionIOLimelight("limelight"));
 
         // flywheel = new Flywheel(new FlywheelIOTalonFX());
