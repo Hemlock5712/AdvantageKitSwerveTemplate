@@ -14,6 +14,7 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -125,7 +126,7 @@ public class RobotContainer {
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     autoChooser.addOption("S Curve", AutoBuilder.buildAuto("Example Auto"));
-    // autoChooser.addDefaultOption("Choreo Test", AutoBuilder.buildAuto("Choreo Auto"));
+    autoChooser.addDefaultOption("Choreo Test", new PathPlannerAuto("Choreo Auto"));
     // Set up FF characterization routines
     autoChooser.addOption(
         "Drive FF Characterization",
