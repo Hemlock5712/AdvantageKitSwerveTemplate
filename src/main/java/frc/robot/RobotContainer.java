@@ -14,8 +14,12 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,6 +36,7 @@ import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
+import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -88,7 +93,12 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
-        aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
+        aprilTagVision =
+            new AprilTagVision(
+                new AprilTagVisionIOPhotonVisionSIM(
+                    "photonCamera1",
+                    new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
+                    drive::getPose));
         // flywheel = new Flywheel(new FlywheelIOSim());
         break;
 
@@ -115,7 +125,8 @@ public class RobotContainer {
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-
+    autoChooser.addOption("S Curve", AutoBuilder.buildAuto("Example Auto"));
+    autoChooser.addDefaultOption("Choreo Test", new PathPlannerAuto("Choreo Auto"));
     // Set up FF characterization routines
     autoChooser.addOption(
         "Drive FF Characterization",
@@ -158,7 +169,7 @@ public class RobotContainer {
     controller
         .start()
         .onTrue(
-            Commands.runOnce(() -> drive.setVisonPose(aprilTagVision.getPose2d()), drive)
+            Commands.runOnce(() -> drive.setAutoStart(aprilTagVision.getRobotPose()), drive)
                 .ignoringDisable(true));
     // controller
     //     .a()

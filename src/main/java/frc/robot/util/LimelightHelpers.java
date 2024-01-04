@@ -356,16 +356,6 @@ public class LimelightHelpers {
     }
   }
 
-  public static class PoseEstimate {
-    public Pose3d pose;
-    public double timestampSeconds;
-
-    public PoseEstimate(Pose3d pose, double timestampSeconds) {
-      this.pose = pose;
-      this.timestampSeconds = timestampSeconds;
-    }
-  }
-
   private static ObjectMapper mapper;
 
   /** Print JSON Parse time to the console in milliseconds */
@@ -378,7 +368,7 @@ public class LimelightHelpers {
     return name;
   }
 
-  private static Pose3d toPose3D(double[] inData) {
+  public static Pose3d toPose3D(double[] inData) {
     if (inData.length < 6) {
       System.err.println("Bad LL 3D Pose Data!");
       return new Pose3d();
@@ -399,18 +389,6 @@ public class LimelightHelpers {
     Translation2d tran2d = new Translation2d(inData[0], inData[1]);
     Rotation2d r2d = new Rotation2d(Units.degreesToRadians(inData[5]));
     return new Pose2d(tran2d, r2d);
-  }
-
-  private static PoseEstimate getBotPoseEstimate(String limelightName, String entryName) {
-    var poseEntry = getLimelightNTTableEntry(limelightName, entryName);
-    var poseArray = poseEntry.getDoubleArray(new double[0]);
-    if (poseArray.length == 0) {
-      return new PoseEstimate(new Pose3d(), 0);
-    }
-
-    var pose = toPose3D(poseArray);
-    var timestamp = poseEntry.getLastChange() / 1e6 - poseArray[6] / 1e3;
-    return new PoseEstimate(pose, timestamp);
   }
 
   public static NetworkTable getLimelightNTTable(String tableName) {
@@ -612,17 +590,6 @@ public class LimelightHelpers {
   }
 
   /**
-   * Gets the Pose2d and timestamp for use with WPILib pose estimator (addVisionMeasurement) when
-   * you are on the BLUE alliance
-   *
-   * @param limelightName
-   * @return
-   */
-  public static PoseEstimate getBotPoseEstimate_wpiBlue(String limelightName) {
-    return getBotPoseEstimate(limelightName, "botpose_wpiblue");
-  }
-
-  /**
    * Gets the Pose2d for easy use with Odometry vision pose estimator (addVisionMeasurement)
    *
    * @param limelightName
@@ -632,17 +599,6 @@ public class LimelightHelpers {
 
     double[] result = getBotPose_wpiRed(limelightName);
     return toPose2D(result);
-  }
-
-  /**
-   * Gets the Pose2d and timestamp for use with WPILib pose estimator (addVisionMeasurement) when
-   * you are on the RED alliance
-   *
-   * @param limelightName
-   * @return
-   */
-  public static PoseEstimate getBotPoseEstimate_wpiRed(String limelightName) {
-    return getBotPoseEstimate(limelightName, "botpose_wpired");
   }
 
   /**
@@ -792,6 +748,31 @@ public class LimelightHelpers {
 
     try {
       results = mapper.readValue(getJSONDump(limelightName), LimelightResults.class);
+    } catch (JsonProcessingException e) {
+      System.err.println("lljson error: " + e.getMessage());
+    }
+
+    long end = System.nanoTime();
+    double millis = (end - start) * .000001;
+    results.targetingResults.latency_jsonParse = millis;
+    if (profileJSON) {
+      System.out.printf("lljson: %.2f\r\n", millis);
+    }
+
+    return results;
+  }
+
+  public static LimelightResults parseJsonDump(String jsonDump) {
+
+    long start = System.nanoTime();
+    LimelightHelpers.LimelightResults results = new LimelightHelpers.LimelightResults();
+    if (mapper == null) {
+      mapper =
+          new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    try {
+      results = mapper.readValue(jsonDump, LimelightResults.class);
     } catch (JsonProcessingException e) {
       System.err.println("lljson error: " + e.getMessage());
     }

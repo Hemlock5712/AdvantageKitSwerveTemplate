@@ -14,7 +14,7 @@ import java.util.List;
 public abstract class VirtualSubsystem {
   private static List<VirtualSubsystem> subsystems = new ArrayList<>();
 
-  public VirtualSubsystem() {
+  protected VirtualSubsystem() {
     subsystems.add(this);
   }
 

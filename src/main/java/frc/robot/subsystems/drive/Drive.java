@@ -37,6 +37,8 @@ import frc.robot.util.PoseEstimator.TimestampedVisionUpdate;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import lombok.Getter;
+import lombok.Setter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -54,7 +56,12 @@ public class Drive extends SubsystemBase {
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
 
   private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
+
+  @Getter
+  @Setter
+  @AutoLogOutput(key = "Odometry/Robot")
   private Pose2d pose = new Pose2d();
+
   private Rotation2d lastGyroRotation = new Rotation2d();
 
   private PoseEstimator poseEstimator = new PoseEstimator(VecBuilder.fill(0.003, 0.003, 0.0002));
@@ -73,8 +80,8 @@ public class Drive extends SubsystemBase {
 
     // Configure AutoBuilder for PathPlanner
     AutoBuilder.configureHolonomic(
-        this::getPose,
-        this::setPose,
+        this::getPoseEstimatorPose,
+        this::setAutoStart,
         () -> kinematics.toChassisSpeeds(getModuleStates()),
         this::runVelocity,
         new HolonomicPathFollowerConfig(
@@ -82,16 +89,14 @@ public class Drive extends SubsystemBase {
         this);
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
-        (activePath) -> {
-          Logger.recordOutput(
-              "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
-        });
+        activePath ->
+            Logger.recordOutput(
+                "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()])));
     PathPlannerLogging.setLogTargetPoseCallback(
-        (targetPose) -> {
-          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
-        });
+        targetPose -> Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose));
   }
 
+  @Override
   public void periodic() {
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
@@ -216,20 +221,9 @@ public class Drive extends SubsystemBase {
     return states;
   }
 
-  /** Returns the current odometry pose. */
-  @AutoLogOutput(key = "Odometry/Robot")
-  public Pose2d getPose() {
-    return pose;
-  }
-
   /** Returns the current odometry rotation. */
   public Rotation2d getRotation() {
     return pose.getRotation();
-  }
-
-  /** Resets the current odometry pose. */
-  public void setPose(Pose2d pose) {
-    this.pose = pose;
   }
 
   /** Returns the maximum linear speed in meters per sec. */
@@ -258,19 +252,23 @@ public class Drive extends SubsystemBase {
   }
 
   /** Returns the current odometry pose. */
-  @AutoLogOutput(key = "Odometry/VisionRobot")
-  public Pose2d getVisionPose() {
+  @AutoLogOutput(key = "Odometry/PoseEstimator")
+  public Pose2d getPoseEstimatorPose() {
     return poseEstimator.getLatestPose();
   }
 
   /** Returns the current odometry rotation. */
-  public Rotation2d getVisionRotation() {
+  public Rotation2d getPoseEstimatorRotation() {
     return poseEstimator.getLatestPose().getRotation();
   }
 
   /** Resets the current odometry pose. */
-  public void setVisonPose(Pose2d pose) {
-    setPose(pose);
+  public void setPoseEstimator(Pose2d pose) {
     poseEstimator.resetPose(pose);
+  }
+
+  public void setAutoStart(Pose2d pose) {
+    setPoseEstimator(pose);
+    setPose(pose);
   }
 }

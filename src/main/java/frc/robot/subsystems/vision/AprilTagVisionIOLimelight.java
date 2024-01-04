@@ -7,44 +7,65 @@
 
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.PubSubOption;
+import edu.wpi.first.networktables.StringSubscriber;
+import edu.wpi.first.networktables.TimestampedString;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.util.LimelightHelpers;
-import frc.robot.util.LimelightHelpers.LimelightTarget_Fiducial;
-import java.util.NoSuchElementException;
+import frc.robot.util.VisionHelpers.PoseEstimate;
+import java.util.ArrayList;
+import java.util.Optional;
 
 public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
 
   String limelightName;
-  Alliance alliance = Alliance.Blue;
+  private final StringSubscriber observationSubscriber;
 
   public AprilTagVisionIOLimelight(String identifier) {
-    limelightName = identifier;
+    NetworkTable limelightTable = NetworkTableInstance.getDefault().getTable(identifier);
     LimelightHelpers.setPipelineIndex(limelightName, 0);
-    try {
-      alliance = DriverStation.getAlliance().get();
-    } catch (NoSuchElementException e) {
-      alliance = Alliance.Blue;
-    }
+
+    observationSubscriber =
+        limelightTable
+            .getStringTopic("json")
+            .subscribe("", PubSubOption.keepDuplicates(true), PubSubOption.sendAll(true));
   }
 
+  @Override
   public void updateInputs(AprilTagVisionIOInputs inputs) {
-    if (alliance == Alliance.Blue) {
-      var estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName);
-      inputs.estimatedPose = estimate.pose;
-      inputs.captureTimestamp = estimate.timestampSeconds;
-    } else {
-      var estimate = LimelightHelpers.getBotPoseEstimate_wpiRed(limelightName);
-      inputs.estimatedPose = estimate.pose;
-      inputs.captureTimestamp = estimate.timestampSeconds;
+    TimestampedString[] queue = observationSubscriber.readQueue();
+    ArrayList<PoseEstimate> poseEstimates = new ArrayList<>();
+    for (TimestampedString timestampedString : queue) {
+      double timestamp = timestampedString.timestamp / 1e6;
+      LimelightHelpers.Results results =
+          LimelightHelpers.parseJsonDump(timestampedString.value).targetingResults;
+      Optional<Alliance> allianceOptional = DriverStation.getAlliance();
+      if (results.targets_Fiducials.length == 0 || !allianceOptional.isPresent()) {
+        continue;
+      }
+      double latencyMS = results.latency_capture + results.latency_pipeline;
+      Pose3d poseEstimation;
+      Alliance alliance = allianceOptional.get();
+      if (alliance == Alliance.Blue) {
+        poseEstimation = results.getBotPose3d_wpiBlue();
+      } else {
+        poseEstimation = results.getBotPose3d_wpiRed();
+      }
+      double averageTagDistance = 0.0;
+      timestamp -= (latencyMS / 1e3);
+      int[] tagIDs = new int[results.targets_Fiducials.length];
+      for (int i = 0; i < results.targets_Fiducials.length; i++) {
+        tagIDs[i] = (int) results.targets_Fiducials[i].fiducialID;
+        averageTagDistance +=
+            results.targets_Fiducials[i].getTargetPose_CameraSpace().getTranslation().getNorm();
+      }
+      averageTagDistance /= tagIDs.length;
+      poseEstimates.add(new PoseEstimate(poseEstimation, timestamp, averageTagDistance, tagIDs));
     }
-    inputs.valid = LimelightHelpers.getTV(limelightName);
-    LimelightTarget_Fiducial[] tagID =
-        LimelightHelpers.getLatestResults(limelightName).targetingResults.targets_Fiducials;
-    int temp[] = new int[tagID.length];
-    for (int i = 0; i < tagID.length; i++) {
-      temp[i] = (int) tagID[i].fiducialID;
-    }
-    inputs.currentTags = temp;
+    inputs.poseEstimates = poseEstimates;
   }
 }
