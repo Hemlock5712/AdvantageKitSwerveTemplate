@@ -72,7 +72,6 @@ public class RobotContainer {
                 new ModuleIOSparkMax(2),
                 new ModuleIOSparkMax(3));
 
-
         aprilTagVision = new AprilTagVision(new AprilTagVisionIOLimelight("limelight"));
 
         // flywheel = new Flywheel(new FlywheelIOTalonFX());
