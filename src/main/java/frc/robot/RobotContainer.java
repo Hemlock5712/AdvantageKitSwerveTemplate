@@ -126,9 +126,9 @@ public class RobotContainer {
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     autoChooser.addOption("S Curve", AutoBuilder.buildAuto("Example Auto"));
-    autoChooser.addDefaultOption("Choreo Test", new PathPlannerAuto("Choreo Auto"));
+    autoChooser.addOption("Choreo Test", new PathPlannerAuto("Choreo Auto"));
     // Set up FF characterization routines
-    autoChooser.addOption(
+    autoChooser.addDefaultOption(
         "Drive FF Characterization",
         new FeedForwardCharacterization(
             drive, drive::runCharacterizationVolts, drive::getCharacterizationVelocity));
