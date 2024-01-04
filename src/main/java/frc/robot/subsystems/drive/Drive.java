@@ -55,7 +55,8 @@ public class Drive extends SubsystemBase {
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
 
-  private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
+  private final SwerveDriveKinematics kinematics =
+      new SwerveDriveKinematics(getModuleTranslations());
 
   @Getter
   @Setter
@@ -64,7 +65,8 @@ public class Drive extends SubsystemBase {
 
   private Rotation2d lastGyroRotation = new Rotation2d();
 
-  private final PoseEstimator poseEstimator = new PoseEstimator(VecBuilder.fill(0.003, 0.003, 0.0002));
+  private final PoseEstimator poseEstimator =
+      new PoseEstimator(VecBuilder.fill(0.003, 0.003, 0.0002));
 
   public Drive(
       GyroIO gyroIO,

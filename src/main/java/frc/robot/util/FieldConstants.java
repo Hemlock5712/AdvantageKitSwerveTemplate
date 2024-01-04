@@ -15,7 +15,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import java.net.CookieManager;
 import java.util.List;
 
 /**
@@ -37,7 +36,7 @@ public final class FieldConstants {
   // Dimensions for community and charging station, including the tape.
   public static final class Community {
 
-    private Community(){}
+    private Community() {}
 
     // Region dimensions
     public static final double innerX = 0.0;
