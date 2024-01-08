@@ -14,17 +14,22 @@ public class GyroIONavX2 implements GyroIO {
     navx.reset();
     navx.resetDisplacement();
     navx.zeroYaw();
-    yawPositionQueue = SparkMaxOdometryThread.getInstance().registerSignal(navx::getYaw);
+    yawPositionQueue = SparkMaxOdometryThread.getInstance().registerSignal(() -> -navx.getYaw());
   }
 
   @Override
   public void updateInputs(GyroIOInputs inputs) {
     inputs.connected = navx.isConnected();
-    inputs.yawPosition = Rotation2d.fromDegrees(navx.getYaw());
-    inputs.yawVelocityRadPerSec = Units.degreesToRadians(navx.getRawGyroZ());
+    inputs.yawPosition = Rotation2d.fromDegrees(-navx.getYaw());
+    inputs.yawVelocityRadPerSec = Units.degreesToRadians(-navx.getRawGyroZ());
     inputs.odometryYawPositions =
         yawPositionQueue.stream().map(Rotation2d::fromDegrees).toArray(Rotation2d[]::new);
 
     yawPositionQueue.clear();
+  }
+
+  @Override
+  public void resetGyro() {
+    navx.reset();
   }
 }
