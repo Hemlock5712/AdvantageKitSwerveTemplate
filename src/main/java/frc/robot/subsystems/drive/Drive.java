@@ -274,4 +274,8 @@ public class Drive extends SubsystemBase {
     setPoseEstimator(pose);
     setPose(pose);
   }
+
+  public void resetGyro() {
+    gyroIO.resetGyro();
+  }
 }

@@ -169,6 +169,7 @@ public class RobotContainer {
     //     .whileTrue(
     //         Commands.startEnd(
     //             () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
+    controller.a().onTrue(Commands.runOnce(drive::resetGyro));
   }
 
   /**
