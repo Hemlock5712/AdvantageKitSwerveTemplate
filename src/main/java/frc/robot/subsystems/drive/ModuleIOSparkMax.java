@@ -158,7 +158,7 @@ public class ModuleIOSparkMax implements ModuleIO {
             .toArray();
     inputs.odometryTurnPositions =
         turnPositionQueue.stream()
-            .map(value  -> Rotation2d.fromRotations(value / TURN_GEAR_RATIO))
+            .map(value -> Rotation2d.fromRotations(value / TURN_GEAR_RATIO))
             .toArray(Rotation2d[]::new);
     drivePositionQueue.clear();
     turnPositionQueue.clear();

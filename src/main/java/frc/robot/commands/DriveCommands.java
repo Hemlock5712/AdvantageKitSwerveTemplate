@@ -30,7 +30,6 @@ public class DriveCommands {
   private static final double X_RATE_LIMIT = 7.75;
   private static final double Y_RATE_LIMIT = 7.75;
 
-
   private DriveCommands() {}
 
   /**
@@ -50,7 +49,10 @@ public class DriveCommands {
           // Apply deadband
           double linearMagnitude =
               MathUtil.applyDeadband(
-                  Math.hypot(translateXRateLimiter.calculate(xSupplier.getAsDouble()), translateYRateLimiter.calculate(ySupplier.getAsDouble())), DEADBAND);
+                  Math.hypot(
+                      translateXRateLimiter.calculate(xSupplier.getAsDouble()),
+                      translateYRateLimiter.calculate(ySupplier.getAsDouble())),
+                  DEADBAND);
           Rotation2d linearDirection =
               new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
           double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
