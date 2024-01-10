@@ -48,8 +48,7 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
         continue;
       }
       double latencyMS = results.latency_capture + results.latency_pipeline;
-      Pose3d poseEstimation;
-      poseEstimation = results.getBotPose3d_wpiBlue();
+      Pose3d poseEstimation = results.getBotPose3d_wpiBlue();
       double averageTagDistance = 0.0;
       timestamp -= (latencyMS / 1e3);
       int[] tagIDs = new int[results.targets_Fiducials.length];
