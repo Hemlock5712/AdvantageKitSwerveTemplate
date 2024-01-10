@@ -1,4 +1,4 @@
-// Copyright 2021-2023 FRC 6328
+// Copyright 2021-2024 FRC 6328
 // http://github.com/Mechanical-Advantage
 //
 // This program is free software; you can redistribute it and/or
@@ -121,7 +121,8 @@ public class RobotContainer {
     // NamedCommands.registerCommand(
     //     "Run Flywheel",
     //     Commands.startEnd(
-    //         () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
+    //         () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop,
+    // flywheel).withTimeout(5.0));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());

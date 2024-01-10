@@ -1,4 +1,4 @@
-// Copyright 2021-2023 FRC 6328
+// Copyright 2021-2024 FRC 6328
 // http://github.com/Mechanical-Advantage
 //
 // This program is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.util.PolynomialRegression;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -87,7 +86,7 @@ public class FeedForwardCharacterization extends Command {
     }
 
     public void print() {
-      if (velocityData.isEmpty() || voltageData.isEmpty()) {
+      if (velocityData.size() == 0 || voltageData.size() == 0) {
         return;
       }
 
@@ -102,7 +101,6 @@ public class FeedForwardCharacterization extends Command {
       System.out.println(String.format("\tR2=%.5f", regression.R2()));
       System.out.println(String.format("\tkS=%.5f", regression.beta(0)));
       System.out.println(String.format("\tkV=%.5f", regression.beta(1)));
-      System.out.println(String.format("\tMax Speed=%.5f", Collections.max(velocityData)));
     }
   }
 }

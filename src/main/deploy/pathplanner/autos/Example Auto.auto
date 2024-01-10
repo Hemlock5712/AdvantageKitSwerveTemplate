@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 2.184368212152796,
-      "y": 4.516870243704901
+      "x": 2.0,
+      "y": 7.0
     },
     "rotation": 180.0
   },
@@ -12,16 +12,15 @@
     "data": {
       "commands": [
         {
-          "type": "sequential",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Example Path"
-                }
-              }
-            ]
+            "name": "Run Flywheel"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Example Path"
           }
         }
       ]
