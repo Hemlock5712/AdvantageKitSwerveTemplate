@@ -53,6 +53,14 @@ public class IntakeSubsystem extends SubsystemBase {
     return encoder.getVelocity();
   }
 
+  public double getTemperature() {
+    return motor.getMotorTemperature();
+  }
+
+  public void stop() {
+    motor.set(0);
+  }
+
   private void configMotor() {
     motor.restoreFactoryDefaults();
     motor.setCANTimeout(250);
