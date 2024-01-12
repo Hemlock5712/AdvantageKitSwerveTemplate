@@ -34,21 +34,4 @@ public final class Constants {
     /** Replaying from a log file. */
     REPLAY
   }
-
-  public static final class IntakeConstants {
-    public static int MOTOR_ID = 0;
-    public static double ROT_TO_RAD = 0;
-    public static double RAD_PER_SEC = ROT_TO_RAD / 60.0;
-    public static final class FeedForwardConstants {
-      public static double kS = 0;
-      public static double kV = 0;
-    }
-
-    public static final class PIDControllerConstants {
-      public static final double kP = 0;
-      public static final double kI = 0;
-      public static final double kD = 0;
-    }
-
-  }
 }
