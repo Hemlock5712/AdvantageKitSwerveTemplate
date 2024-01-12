@@ -1,6 +1,5 @@
 package frc.robot.subsystems.shooter;
 
-
 import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -15,8 +14,10 @@ public class ShooterTopWheelsSubsystem extends SubsystemBase {
   private final RelativeEncoder encoder;
   private final SimpleMotorFeedforward feedForward;
   private final PIDController pidController;
+
   public ShooterTopWheelsSubsystem() {
-    motor = new CANSparkMax(
+    motor =
+        new CANSparkMax(
             Constants.ShooterConstants.TopWheelsConstants.MOTOR_ID,
             CANSparkLowLevel.MotorType.kBrushless);
 
@@ -25,15 +26,16 @@ public class ShooterTopWheelsSubsystem extends SubsystemBase {
     configMotor();
     configEncoder();
 
-    feedForward = new SimpleMotorFeedforward(
+    feedForward =
+        new SimpleMotorFeedforward(
             Constants.ShooterConstants.TopWheelsConstants.FeedForwardConstants.kS,
             Constants.ShooterConstants.TopWheelsConstants.FeedForwardConstants.kV);
 
-    pidController = new PIDController(
+    pidController =
+        new PIDController(
             Constants.ShooterConstants.TopWheelsConstants.PIDControllerConstants.kP,
             Constants.ShooterConstants.TopWheelsConstants.PIDControllerConstants.kI,
             Constants.ShooterConstants.TopWheelsConstants.PIDControllerConstants.kD);
-
   }
 
   public void setVelocity(double velocityRadPerSec) {
@@ -46,7 +48,8 @@ public class ShooterTopWheelsSubsystem extends SubsystemBase {
   }
 
   private double calculateVoltage(double velocityRadPerSec) {
-    return feedForward.calculate(velocityRadPerSec) + pidController.calculate(this.getVelocity(), velocityRadPerSec);
+    return feedForward.calculate(velocityRadPerSec)
+        + pidController.calculate(this.getVelocity(), velocityRadPerSec);
   }
 
   public double getVelocity() {
