@@ -34,7 +34,7 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.IntakeIOSparkMax;
+import frc.robot.subsystems.intake.IntakeIOTalonFX;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
@@ -79,7 +79,7 @@ public class RobotContainer {
         aprilTagVision = new AprilTagVision(new AprilTagVisionIOLimelight("limelight"));
 
         // flywheel = new Flywheel(new FlywheelIOTalonFX());
-        intake = new Intake(new IntakeIOSparkMax());
+        intake = new Intake(new IntakeIOTalonFX());
         break;
 
       case SIM:
@@ -98,7 +98,7 @@ public class RobotContainer {
                     new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
                     drive::getPose));
         // flywheel = new Flywheel(new FlywheelIOSim());
-        intake = new Intake(new IntakeIOSparkMax());
+        intake = new Intake(new IntakeIOTalonFX());
 
         break;
 
@@ -113,7 +113,7 @@ public class RobotContainer {
                 new ModuleIO() {});
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
         // flywheel = new Flywheel(new FlywheelIO() {});
-        intake = new Intake(new IntakeIOSparkMax());
+        intake = new Intake(new IntakeIOTalonFX());
 
         break;
     }
