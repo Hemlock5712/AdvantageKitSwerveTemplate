@@ -33,6 +33,8 @@ import frc.robot.subsystems.drive.GyroIONavX2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
@@ -50,6 +52,8 @@ public class RobotContainer {
   private final Drive drive;
   private final AprilTagVision aprilTagVision;
   // private final Flywheel flywheel;
+
+  private final Intake intake;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -75,6 +79,7 @@ public class RobotContainer {
         aprilTagVision = new AprilTagVision(new AprilTagVisionIOLimelight("limelight"));
 
         // flywheel = new Flywheel(new FlywheelIOTalonFX());
+        intake = new Intake(new IntakeIOSparkMax());
         break;
 
       case SIM:
@@ -93,6 +98,8 @@ public class RobotContainer {
                     new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
                     drive::getPose));
         // flywheel = new Flywheel(new FlywheelIOSim());
+        intake = new Intake(new IntakeIOSparkMax());
+
         break;
 
       default:
@@ -106,6 +113,7 @@ public class RobotContainer {
                 new ModuleIO() {});
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
         // flywheel = new Flywheel(new FlywheelIO() {});
+        intake = new Intake(new IntakeIOSparkMax());
 
         break;
     }
@@ -169,7 +177,9 @@ public class RobotContainer {
     //     .whileTrue(
     //         Commands.startEnd(
     //             () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
-    controller.a().onTrue(Commands.runOnce(drive::resetGyro));
+    controller
+        .a()
+        .whileTrue(Commands.startEnd(() -> intake.runVolts(12.0 * 0.5), intake::stop, intake));
   }
 
   /**

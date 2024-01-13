@@ -53,4 +53,9 @@ public class IntakeIOSparkMax implements IntakeIO {
     pid.setD(kD, 0);
     pid.setFF(0, 0);
   }
+
+  @Override
+  public void runVolts(double volts) {
+    motor.setVoltage(volts);
+  }
 }

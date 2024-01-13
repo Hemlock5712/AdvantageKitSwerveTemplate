@@ -70,4 +70,8 @@ public class Intake extends SubsystemBase {
   public double getCharacterizationVelocity() {
     return inputs.velocityRadPerSec;
   }
+
+  public void runVolts(double volts) {
+    io.runVolts(volts);
+  }
 }
