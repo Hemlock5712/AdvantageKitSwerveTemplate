@@ -1,43 +1,79 @@
 package frc.robot.subsystems.shooter;
 
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class ShooterSubsystem extends SubsystemBase {
-  private final ShooterTopWheelsSubsystem shooterTopWheelsSubsystem;
-  private final ShooterBottomWheelsSubsystem shooterBottomWheelsSubsystem;
+  private final ShooterIO io;
+  private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
+  private final SimpleMotorFeedforward feedForward;
 
-  public ShooterSubsystem() {
-    shooterTopWheelsSubsystem = new ShooterTopWheelsSubsystem();
-    shooterBottomWheelsSubsystem = new ShooterBottomWheelsSubsystem();
+  public ShooterSubsystem(ShooterIO io) {
+    this.io = io;
+
+    // Switch constants based on mode (the physics simulator is treated as a
+    // separate robot with different tuning)
+    switch (Constants.currentMode) {
+      case REAL:
+      case REPLAY:
+        feedForward =
+            new SimpleMotorFeedforward(
+                ShooterConstants.Real.FeedForwardConstants.kS,
+                ShooterConstants.Real.FeedForwardConstants.kV);
+        io.configurePID(
+            ShooterConstants.Real.PIDConstants.kP,
+            ShooterConstants.Real.PIDConstants.kI,
+            ShooterConstants.Real.PIDConstants.kD);
+        break;
+      case SIM:
+        feedForward =
+            new SimpleMotorFeedforward(
+                ShooterConstants.Sim.FeedForwardConstants.kS,
+                ShooterConstants.Sim.FeedForwardConstants.kV);
+        io.configurePID(
+            ShooterConstants.Sim.PIDConstants.kP,
+            ShooterConstants.Sim.PIDConstants.kI,
+            ShooterConstants.Sim.PIDConstants.kD);
+        break;
+      default:
+        feedForward = new SimpleMotorFeedforward(0.0, 0.0);
+        break;
+    }
   }
 
-  public double getVelocity() {
-    return (getTopVelocity() + getBottomVelocity()) / 2.0;
+  @Override
+  public void periodic() {
+    io.updateInputs(inputs);
+    Logger.processInputs("Shooter", inputs);
   }
 
-  public double getTopVelocity() {
-    return shooterTopWheelsSubsystem.getVelocity();
-  }
+  public void runVelocity(double velocityRPM) {
+    double velocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(velocityRPM);
+    io.setVelocity(velocityRadPerSec, feedForward.calculate(velocityRadPerSec));
 
-  public double getBottomVelocity() {
-    return shooterBottomWheelsSubsystem.getVelocity();
-  }
-
-  public double getTopTemperature() {
-    return shooterTopWheelsSubsystem.getTemperature();
-  }
-
-  public double getBottomTemperature() {
-    return shooterBottomWheelsSubsystem.getTemperature();
-  }
-
-  public void setVelocity(double velocity) {
-    shooterTopWheelsSubsystem.setVelocity(velocity);
-    shooterBottomWheelsSubsystem.setVelocity(velocity);
+    Logger.recordOutput("Shooter Setpoint RPM", velocityRPM);
   }
 
   public void stop() {
-    shooterTopWheelsSubsystem.stop();
-    shooterBottomWheelsSubsystem.stop();
+    io.stop();
+  }
+
+  @AutoLogOutput
+  public double getVelocityRPM() {
+    return Units.radiansPerSecondToRotationsPerMinute(inputs.velocityRadPerSec);
+  }
+
+  /** Runs forwards at the commanded voltage. */
+  public void runCharacterizationVolts(double volts) {
+    io.setVoltage(volts);
+  }
+
+  /** Returns the average drive velocity in radians/sec. */
+  public double getCharacterizationVelocity() {
+    return inputs.velocityRadPerSec;
   }
 }

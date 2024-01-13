@@ -8,10 +8,12 @@ public interface ShooterIO {
     public double positionRad = 0.0;
     public double velocityRadPerSec = 0.0;
     public double appliedVolts = 0.0;
-    public double currentAmps = 0.0;
+    public double[] currentAmps = new double[] {};
   }
 
   public default void updateInputs(ShooterIOInputs inputs) {}
+
+  public default void setVoltage(double volts) {}
 
   public default void setVelocity(double velocityRadPerSec, double feedForwardVolts) {}
 
