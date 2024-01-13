@@ -19,10 +19,10 @@ public class IntakeCommands {
         intakeSubsystem);
   }
 
-  public static Command buttonIntake(Intake intakeSubsystem, BooleanSupplier isIntakeNote) {
+  public static Command buttonIntake(Intake intakeSubsystem, boolean isIntakeNote) {
     return Commands.run(
         () -> {
-          if (isIntakeNote.getAsBoolean()) {
+          if (isIntakeNote) {
             intakeSubsystem.runVelocity(IntakeConstants.AUTO_RAD_PER_SEC);
           } else {
             intakeSubsystem.runVelocity(-IntakeConstants.AUTO_RAD_PER_SEC);
