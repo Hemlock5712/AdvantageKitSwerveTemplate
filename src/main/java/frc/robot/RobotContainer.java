@@ -15,8 +15,6 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -27,7 +25,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeedForwardCharacterization;
-import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIONavX2;
@@ -157,15 +154,15 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-    controller
-        .b() // Button B to reset rotation part of robot pose
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
+    //    controller
+    //        .b() // Button B to reset rotation part of robot pose
+    //        .onTrue(
+    //            Commands.runOnce(
+    //                    () ->
+    //                        drive.setPose(
+    //                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+    //                    drive)
+    //                .ignoringDisable(true));
     controller
         .start()
         .onTrue(
@@ -176,7 +173,9 @@ public class RobotContainer {
     //     .whileTrue(
     //         Commands.startEnd(
     //             () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
-    controller.b().whileTrue(ShooterCommands.scoreAmp(shooter));
+    controller
+        .b()
+        .whileTrue(Commands.startEnd(() -> shooter.runVolts(12.0 * 0.3), shooter::stop, shooter));
   }
 
   /**

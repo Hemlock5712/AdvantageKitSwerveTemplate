@@ -58,6 +58,10 @@ public class ShooterSubsystem extends SubsystemBase {
     Logger.recordOutput("Shooter Setpoint RPM", velocityRPM);
   }
 
+  public void runVolts(double volts) {
+    io.setVoltage(volts);
+  }
+
   public void stop() {
     io.stop();
   }

@@ -35,4 +35,8 @@ public class ShooterCommands {
                 Units.radiansPerSecondToRotationsPerMinute(
                     velocityRadPerSecSupplier.getAsDouble())));
   }
+
+  public static Command runVoltage(ShooterSubsystem shooter) {
+    return Commands.run(() -> shooter.runVolts(12.0 * 0.5));
+  }
 }
