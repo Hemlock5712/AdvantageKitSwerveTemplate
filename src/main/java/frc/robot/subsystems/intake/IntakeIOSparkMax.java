@@ -13,7 +13,7 @@ public class IntakeIOSparkMax implements IntakeIO {
 
   public IntakeIOSparkMax() {
     motor.restoreFactoryDefaults();
-    motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
+    motor.setIdleMode(CANSparkBase.IdleMode.kCoast);
     motor.setCANTimeout(250);
     motor.enableVoltageCompensation(12.0);
     motor.setSmartCurrentLimit(30);
@@ -58,5 +58,10 @@ public class IntakeIOSparkMax implements IntakeIO {
   @Override
   public void runVolts(double volts) {
     motor.setVoltage(volts);
+  }
+
+  @Override
+  public void stop() {
+    motor.stopMotor();
   }
 }
