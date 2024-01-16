@@ -38,29 +38,6 @@ public class IntakeIOSparkMax implements IntakeIO {
   }
 
   @Override
-  public void setVelocity(double velocityRadPerSec, double feedForwardVolts) {
-    pid.setReference(
-        Units.radiansPerSecondToRotationsPerMinute(velocityRadPerSec) * GEAR_RATIO,
-        CANSparkBase.ControlType.kVelocity,
-        0,
-        feedForwardVolts,
-        SparkPIDController.ArbFFUnits.kVoltage);
-  }
-
-  @Override
-  public void configurePID(double kP, double kI, double kD) {
-    pid.setP(kP, 0);
-    pid.setI(kI, 0);
-    pid.setD(kD, 0);
-    pid.setFF(0, 0);
-  }
-
-  @Override
-  public void runVolts(double volts) {
-    motor.setVoltage(volts);
-  }
-
-  @Override
   public void stop() {
     motor.stopMotor();
   }

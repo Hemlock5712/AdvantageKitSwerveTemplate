@@ -21,7 +21,7 @@ public class IntakeIOTalonFX implements IntakeIO {
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.CurrentLimits.StatorCurrentLimit = 30.0;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     motor.getConfigurator().apply(config);
 
     BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, appliedVolts, current);
@@ -43,30 +43,7 @@ public class IntakeIOTalonFX implements IntakeIO {
   }
 
   @Override
-  public void setVelocity(double velocityRadPerSec, double feedForwardVolts) {
-    motor.setControl(
-        new VelocityVoltage(
-            Units.radiansToRotations(velocityRadPerSec),
-            0.0,
-            true,
-            feedForwardVolts,
-            0,
-            false,
-            false,
-            false));
-  }
-
-  @Override
   public void stop() {
     motor.stopMotor();
-  }
-
-  @Override
-  public void configurePID(double kP, double kI, double kD) {
-    Slot0Configs config = new Slot0Configs();
-    config.kP = kP;
-    config.kI = kI;
-    config.kD = kD;
-    motor.getConfigurator().apply(config);
   }
 }
