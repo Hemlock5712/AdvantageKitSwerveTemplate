@@ -29,10 +29,10 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeedForwardCharacterization;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
-import frc.robot.subsystems.drive.GyroIOPigeon2;
+import frc.robot.subsystems.drive.GyroIONavX2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
-import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.drive.ModuleIOSparkMax;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
@@ -48,7 +48,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  private AprilTagVision aprilTagVision;
+  private final AprilTagVision aprilTagVision;
   // private final Flywheel flywheel;
 
   // Controller
@@ -64,21 +64,14 @@ public class RobotContainer {
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
-        // drive =
-        //     new Drive(
-        //         new GyroIOPigeon2(false),
-        //         new ModuleIOSparkMax(0),
-        //         new ModuleIOSparkMax(1),
-        //         new ModuleIOSparkMax(2),
-        //         new ModuleIOSparkMax(3));
-        // flywheel = new Flywheel(new FlywheelIOSparkMax());
         drive =
             new Drive(
-                new GyroIOPigeon2(true),
-                new ModuleIOTalonFX(0),
-                new ModuleIOTalonFX(1),
-                new ModuleIOTalonFX(2),
-                new ModuleIOTalonFX(3));
+                new GyroIONavX2(),
+                new ModuleIOSparkMax(0),
+                new ModuleIOSparkMax(1),
+                new ModuleIOSparkMax(2),
+                new ModuleIOSparkMax(3));
+
         aprilTagVision = new AprilTagVision(new AprilTagVisionIOLimelight("limelight"));
 
         // flywheel = new Flywheel(new FlywheelIOTalonFX());
@@ -175,6 +168,7 @@ public class RobotContainer {
     //     .whileTrue(
     //         Commands.startEnd(
     //             () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
+    controller.a().onTrue(Commands.runOnce(drive::resetGyro));
   }
 
   /**

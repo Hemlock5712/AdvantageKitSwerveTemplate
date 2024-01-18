@@ -35,6 +35,9 @@ public final class FieldConstants {
 
   // Dimensions for community and charging station, including the tape.
   public static final class Community {
+
+    private Community() {}
+
     // Region dimensions
     public static final double innerX = 0.0;
     public static final double midX =

@@ -55,4 +55,9 @@ public class GyroIOPigeon2 implements GyroIO {
         yawPositionQueue.stream().map(Rotation2d::fromDegrees).toArray(Rotation2d[]::new);
     yawPositionQueue.clear();
   }
+
+  @Override
+  public void resetGyro() {
+    pigeon.reset();
+  }
 }

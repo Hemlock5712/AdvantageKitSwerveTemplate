@@ -20,8 +20,8 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Queue;
 
 /**
@@ -38,7 +38,7 @@ import java.util.Queue;
  */
 public class ModuleIOSparkMax implements ModuleIO {
   // Gear ratios for SDS MK4i L2, adjust as necessary
-  private static final double DRIVE_GEAR_RATIO = (50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0);
+  private static final double DRIVE_GEAR_RATIO = (50.0 / 14.0) * (19.0 / 25.0) * (45.0 / 15.0);
   private static final double TURN_GEAR_RATIO = 150.0 / 7.0;
 
   private final CANSparkMax driveSparkMax;
@@ -46,7 +46,7 @@ public class ModuleIOSparkMax implements ModuleIO {
 
   private final RelativeEncoder driveEncoder;
   private final RelativeEncoder turnRelativeEncoder;
-  private final AnalogInput turnAbsoluteEncoder;
+  private final DutyCycleEncoder turnAbsoluteEncoder;
   private final Queue<Double> drivePositionQueue;
   private final Queue<Double> turnPositionQueue;
 
@@ -55,33 +55,40 @@ public class ModuleIOSparkMax implements ModuleIO {
 
   public ModuleIOSparkMax(int index) {
     switch (index) {
-      case 0:
-        driveSparkMax = new CANSparkMax(1, MotorType.kBrushless);
-        turnSparkMax = new CANSparkMax(2, MotorType.kBrushless);
-        turnAbsoluteEncoder = new AnalogInput(0);
-        absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
-        break;
       case 1:
-        driveSparkMax = new CANSparkMax(3, MotorType.kBrushless);
-        turnSparkMax = new CANSparkMax(4, MotorType.kBrushless);
-        turnAbsoluteEncoder = new AnalogInput(1);
-        absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
-        break;
-      case 2:
-        driveSparkMax = new CANSparkMax(5, MotorType.kBrushless);
-        turnSparkMax = new CANSparkMax(6, MotorType.kBrushless);
-        turnAbsoluteEncoder = new AnalogInput(2);
-        absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
+        // FR
+        driveSparkMax = new CANSparkMax(2, MotorType.kBrushless);
+        turnSparkMax = new CANSparkMax(1, MotorType.kBrushless);
+        turnAbsoluteEncoder = new DutyCycleEncoder(0);
+        absoluteEncoderOffset = new Rotation2d(0.286655);
         break;
       case 3:
-        driveSparkMax = new CANSparkMax(7, MotorType.kBrushless);
-        turnSparkMax = new CANSparkMax(8, MotorType.kBrushless);
-        turnAbsoluteEncoder = new AnalogInput(3);
-        absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
+        // BR
+        driveSparkMax = new CANSparkMax(4, MotorType.kBrushless);
+        turnSparkMax = new CANSparkMax(3, MotorType.kBrushless);
+        turnAbsoluteEncoder = new DutyCycleEncoder(6);
+        absoluteEncoderOffset = new Rotation2d(2.43631);
+        break;
+      case 2:
+        // BL
+        driveSparkMax = new CANSparkMax(6, MotorType.kBrushless);
+        turnSparkMax = new CANSparkMax(5, MotorType.kBrushless);
+        turnAbsoluteEncoder = new DutyCycleEncoder(4);
+        absoluteEncoderOffset = new Rotation2d(1.54025);
+        break;
+      case 0:
+        // FL
+        driveSparkMax = new CANSparkMax(8, MotorType.kBrushless);
+        turnSparkMax = new CANSparkMax(7, MotorType.kBrushless);
+        turnAbsoluteEncoder = new DutyCycleEncoder(2);
+        absoluteEncoderOffset = new Rotation2d(1.52214 + Math.PI);
         break;
       default:
         throw new RuntimeException("Invalid module index");
     }
+
+    // set distance per rotation on dutycycleencoder
+    turnAbsoluteEncoder.setDistancePerRotation(2 * Math.PI);
 
     driveSparkMax.restoreFactoryDefaults();
     turnSparkMax.restoreFactoryDefaults();
@@ -94,7 +101,7 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     turnSparkMax.setInverted(IS_TURN_MOTOR_INVERTED);
     driveSparkMax.setSmartCurrentLimit(40);
-    turnSparkMax.setSmartCurrentLimit(30);
+    turnSparkMax.setSmartCurrentLimit(40);
     driveSparkMax.enableVoltageCompensation(12.0);
     turnSparkMax.enableVoltageCompensation(12.0);
 
@@ -133,7 +140,9 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     inputs.turnAbsolutePosition =
         new Rotation2d(
-                turnAbsoluteEncoder.getVoltage() / RobotController.getVoltage5V() * 2.0 * Math.PI)
+                // turnAbsoluteEncoder.getVoltage() / RobotController.getVoltage5V() * 2.0 *
+                // Math.PI)
+                turnAbsoluteEncoder.getDistance())
             .minus(absoluteEncoderOffset);
     inputs.turnPosition =
         Rotation2d.fromRotations(turnRelativeEncoder.getPosition() / TURN_GEAR_RATIO);
@@ -145,11 +154,11 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     inputs.odometryDrivePositionsRad =
         drivePositionQueue.stream()
-            .mapToDouble((Double value) -> Units.rotationsToRadians(value) / DRIVE_GEAR_RATIO)
+            .mapToDouble(value -> Units.rotationsToRadians(value) / DRIVE_GEAR_RATIO)
             .toArray();
     inputs.odometryTurnPositions =
         turnPositionQueue.stream()
-            .map((Double value) -> Rotation2d.fromRotations(value / TURN_GEAR_RATIO))
+            .map(value -> Rotation2d.fromRotations(value / TURN_GEAR_RATIO))
             .toArray(Rotation2d[]::new);
     drivePositionQueue.clear();
     turnPositionQueue.clear();
@@ -158,6 +167,7 @@ public class ModuleIOSparkMax implements ModuleIO {
   @Override
   public void setDriveVoltage(double volts) {
     driveSparkMax.setVoltage(volts);
+    SmartDashboard.putNumber("real volts", volts);
   }
 
   @Override
