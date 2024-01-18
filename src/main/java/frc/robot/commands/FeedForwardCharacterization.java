@@ -1,4 +1,4 @@
-// Copyright 2021-2023 FRC 6328
+// Copyright 2021-2024 FRC 6328
 // http://github.com/Mechanical-Advantage
 //
 // This program is free software; you can redistribute it and/or
@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.util.PolynomialRegression;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -88,7 +87,7 @@ public class FeedForwardCharacterization extends Command {
     }
 
     public void print() {
-      if (velocityData.isEmpty() || voltageData.isEmpty()) {
+      if (velocityData.size() == 0 || voltageData.size() == 0) {
         return;
       }
 
