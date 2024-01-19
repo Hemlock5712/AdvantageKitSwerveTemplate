@@ -175,7 +175,7 @@ public class RobotContainer {
     //             () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
     controller
         .b()
-        .whileTrue(Commands.startEnd(() -> shooter.runVolts(12.0 * 0.3), shooter::stop, shooter));
+        .whileTrue(Commands.startEnd(() -> shooter.runVolts(12.0 * .99), shooter::stop, shooter));
   }
 
   /**

@@ -5,6 +5,8 @@ public final class ShooterConstants {
   public static final int BOTTOM_MOTOR_ID = 10;
   public static final double AMP_VELOCITY_RAD_PER_SEC = 2 * Math.PI;
   public static final double SPEAKER_VELOCITY_RAD_PER_SEC = 0.0;
+  public static final double CLOSED_LOOP_RAMP_RATE = 0.2;
+  public static final double OPEN_LOOP_RAMP_RATE = 0.2;
 
   public static final class Real {
     public static final class FeedForwardConstants {

@@ -24,6 +24,9 @@ public class ShooterIOSparkMax implements ShooterIO {
     leader.enableVoltageCompensation(12.0);
     leader.setSmartCurrentLimit(30);
 
+    leader.setClosedLoopRampRate(ShooterConstants.CLOSED_LOOP_RAMP_RATE);
+    leader.setOpenLoopRampRate(ShooterConstants.OPEN_LOOP_RAMP_RATE);
+
     leader.burnFlash();
     follower.burnFlash();
   }
