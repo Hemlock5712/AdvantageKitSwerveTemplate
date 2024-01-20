@@ -1,4 +1,4 @@
-// Copyright 2021-2023 FRC 6328
+// Copyright 2021-2024 FRC 6328
 // http://github.com/Mechanical-Advantage
 //
 // This program is free software; you can redistribute it and/or
@@ -14,7 +14,6 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -115,13 +114,13 @@ public class RobotContainer {
     // NamedCommands.registerCommand(
     //     "Run Flywheel",
     //     Commands.startEnd(
-    //         () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
+    //         () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop,
+    // flywheel).withTimeout(5.0));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     autoChooser.addOption("S Curve", AutoBuilder.buildAuto("Example Auto"));
     autoChooser.addOption("color sensor", new ColorSensorTester());
-    autoChooser.addOption("Choreo Test", new PathPlannerAuto("Choreo Auto"));
     // Set up FF characterization routines
     autoChooser.addDefaultOption(
         "Drive FF Characterization",

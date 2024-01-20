@@ -1,4 +1,4 @@
-// Copyright 2021-2023 FRC 6328
+// Copyright 2021-2024 FRC 6328
 // http://github.com/Mechanical-Advantage
 //
 // This program is free software; you can redistribute it and/or
@@ -88,7 +88,7 @@ public class FeedForwardCharacterization extends Command {
     }
 
     public void print() {
-      if (velocityData.isEmpty() || voltageData.isEmpty()) {
+      if (velocityData.size() == 0 || voltageData.size() == 0) {
         return;
       }
 
