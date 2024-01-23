@@ -16,6 +16,7 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -35,6 +36,8 @@ import frc.robot.subsystems.drive.GyroIONavX2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.subsystems.shooter.ShooterIOSparkMax;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
@@ -51,6 +54,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final AprilTagVision aprilTagVision;
+  private final ShooterSubsystem shooter;
   // private final Flywheel flywheel;
 
   // Controller
@@ -76,7 +80,9 @@ public class RobotContainer {
 
         aprilTagVision = new AprilTagVision(new AprilTagVisionIOLimelight("limelight"));
 
+        shooter = new ShooterSubsystem(new ShooterIOSparkMax());
         // flywheel = new Flywheel(new FlywheelIOTalonFX());
+
         break;
 
       case SIM:
@@ -95,6 +101,7 @@ public class RobotContainer {
                     new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
                     drive::getPose));
         // flywheel = new Flywheel(new FlywheelIOSim());
+        shooter = new ShooterSubsystem(new ShooterIOSparkMax());
         break;
 
       default:
@@ -108,7 +115,7 @@ public class RobotContainer {
                 new ModuleIO() {});
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
         // flywheel = new Flywheel(new FlywheelIO() {});
-
+        shooter = new ShooterSubsystem(new ShooterIOSparkMax());
         break;
     }
 
@@ -154,15 +161,15 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-    controller
-        .b()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
+    //    controller
+    //        .b() // Button B to reset rotation part of robot pose
+    //        .onTrue(
+    //            Commands.runOnce(
+    //                    () ->
+    //                        drive.setPose(
+    //                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+    //                    drive)
+    //                .ignoringDisable(true));
     controller
         .start()
         .onTrue(
@@ -173,7 +180,9 @@ public class RobotContainer {
     //     .whileTrue(
     //         Commands.startEnd(
     //             () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
-    controller.a().onTrue(Commands.runOnce(drive::resetGyro));
+    controller
+        .b()
+        .whileTrue(Commands.startEnd(() -> shooter.runVolts(12.0 * .99), shooter::stop, shooter));
   }
 
   /**

@@ -34,4 +34,39 @@ public final class Constants {
     /** Replaying from a log file. */
     REPLAY
   }
+
+  public static final class ShooterConstants {
+    public static final double ROT_TO_RAD = 0;
+    public static final double RAD_PER_SEC = ROT_TO_RAD / 60.0;
+
+    public static final class TopWheelsConstants {
+      public static final int MOTOR_ID = 0;
+
+      public static final class FeedForwardConstants {
+        public static final double kV = 0;
+        public static final double kS = 0;
+      }
+
+      public static final class PIDControllerConstants {
+        public static final double kP = 0;
+        public static final double kI = 0;
+        public static final double kD = 0;
+      }
+    }
+
+    public static final class BottomWheelsConstants {
+      public static final int MOTOR_ID = 0;
+
+      public static final class FeedForwardConstants {
+        public static final double kV = 0;
+        public static final double kS = 0;
+      }
+
+      public static final class PIDControllerConstants {
+        public static final double kP = 0;
+        public static final double kI = 0;
+        public static final double kD = 0;
+      }
+    }
+  }
 }
