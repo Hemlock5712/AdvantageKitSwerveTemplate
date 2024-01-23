@@ -25,7 +25,8 @@ public class ColorSensor extends SubsystemBase {
     colorSensorIO.updateInputs(colorSensorInputs);
     Logger.processInputs("ColorSensor", colorSensorInputs);
 
-    Logger.recordOutput("DetectingNote", detectNote(0.8));
+    //    Logger.recordOutput("DetectingNote", detectNote(0.8));
+
   }
 
   public Color getColor() {
