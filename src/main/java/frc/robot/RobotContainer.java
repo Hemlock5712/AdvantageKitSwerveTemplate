@@ -21,11 +21,14 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.ColorSensorTester;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeedForwardCharacterization;
 import frc.robot.subsystems.ColorSensor.ColorSensor;
@@ -38,6 +41,9 @@ import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
 import frc.robot.subsystems.shooter.ShooterIOSparkMax;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeConstants;
+import frc.robot.subsystems.intake.IntakeIOTalonFX;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
@@ -57,8 +63,10 @@ public class RobotContainer {
   private final ShooterSubsystem shooter;
   // private final Flywheel flywheel;
 
+  private final Intake intake;
+
   // Controller
-  private final CommandXboxController controller = new CommandXboxController(0);
+  private final XboxController controller = new XboxController(0);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -83,6 +91,7 @@ public class RobotContainer {
         shooter = new ShooterSubsystem(new ShooterIOSparkMax());
         // flywheel = new Flywheel(new FlywheelIOTalonFX());
 
+        intake = new Intake(new IntakeIOTalonFX());
         break;
 
       case SIM:
@@ -102,6 +111,8 @@ public class RobotContainer {
                     drive::getPose));
         // flywheel = new Flywheel(new FlywheelIOSim());
         shooter = new ShooterSubsystem(new ShooterIOSparkMax());
+        intake = new Intake(new IntakeIOTalonFX());
+
         break;
 
       default:
@@ -116,6 +127,8 @@ public class RobotContainer {
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
         // flywheel = new Flywheel(new FlywheelIO() {});
         shooter = new ShooterSubsystem(new ShooterIOSparkMax());
+        intake = new Intake(new IntakeIOTalonFX());
+
         break;
     }
 
@@ -183,6 +196,21 @@ public class RobotContainer {
     controller
         .b()
         .whileTrue(Commands.startEnd(() -> shooter.runVolts(12.0 * .99), shooter::stop, shooter));
+//    new JoystickButton(controller, XboxController.Button.kX.value)
+//            .onTrue(Commands.run(drive::stopWithX, drive));
+//    new JoystickButton(controller, XboxController.Button.kB.value)
+//            .onTrue(Commands.runOnce(
+//                            () ->
+//                                    drive.setPose(
+//                                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+//                            drive)
+//                    .ignoringDisable(true));
+//    new JoystickButton(controller, XboxController.Button.kStart.value)
+//            .onTrue(Commands.runOnce(() -> drive.setAutoStart(aprilTagVision.getRobotPose()), drive)
+//                    .ignoringDisable(true));
+//    new JoystickButton(controller, XboxController.Button.kA.value)
+//            .whileTrue(Commands.startEnd( () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE),
+//                            intake::stop, intake));
   }
 
   /**
