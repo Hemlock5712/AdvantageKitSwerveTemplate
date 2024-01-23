@@ -27,6 +27,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.ColorSensorTester;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeedForwardCharacterization;
+import frc.robot.subsystems.ColorSensor.ColorSensor;
+import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIONavX2;
@@ -120,7 +122,8 @@ public class RobotContainer {
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     autoChooser.addOption("S Curve", AutoBuilder.buildAuto("Example Auto"));
-    autoChooser.addOption("color sensor", new ColorSensorTester());
+    autoChooser.addOption(
+        "color sensor", new ColorSensorTester(new ColorSensor(new ColorSensorIOReal())));
     // Set up FF characterization routines
     autoChooser.addDefaultOption(
         "Drive FF Characterization",
