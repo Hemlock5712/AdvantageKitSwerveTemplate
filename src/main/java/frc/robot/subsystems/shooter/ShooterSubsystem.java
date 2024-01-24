@@ -85,6 +85,9 @@ public class ShooterSubsystem extends SubsystemBase {
   @Override
   public void initSendable(SendableBuilder builder) {
     super.initSendable(builder);
-    builder.addDoubleProperty("Shooter RPM", () -> Units.radiansPerSecondToRotationsPerMinute(inputs.velocityRadPerSec), null);
+    builder.addDoubleProperty(
+        "Shooter RPM",
+        () -> Units.radiansPerSecondToRotationsPerMinute(inputs.velocityRadPerSec),
+        null);
   }
 }

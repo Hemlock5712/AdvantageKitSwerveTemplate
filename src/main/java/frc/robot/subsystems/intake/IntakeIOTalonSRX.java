@@ -4,10 +4,9 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
-import com.ctre.phoenix6.StatusSignal;
 import edu.wpi.first.math.util.Units;
 
-public class IntakeIOTalonSRX implements IntakeIO{
+public class IntakeIOTalonSRX implements IntakeIO {
   private static final double GEAR_RATIO = IntakeConstants.GEAR_RATIO;
   private final TalonSRX motor = new TalonSRX(IntakeConstants.MOTOR_ID);
 
@@ -25,10 +24,11 @@ public class IntakeIOTalonSRX implements IntakeIO{
 
   @Override
   public void updateInputs(IntakeIOInputs inputs) {
-    inputs.positionRad = Units.rotationsToRadians(motor.getSensorCollection().getQuadraturePosition() / GEAR_RATIO);
+    inputs.positionRad =
+        Units.rotationsToRadians(motor.getSensorCollection().getQuadraturePosition() / GEAR_RATIO);
     inputs.velocityRadPerSec =
-            Units.rotationsPerMinuteToRadiansPerSecond(
-                    motor.getSensorCollection().getQuadratureVelocity() / GEAR_RATIO);
+        Units.rotationsPerMinuteToRadiansPerSecond(
+            motor.getSensorCollection().getQuadratureVelocity() / GEAR_RATIO);
     inputs.appliedVolts = motor.getMotorOutputVoltage();
     inputs.currentAmps = new double[] {motor.getStatorCurrent()};
   }
