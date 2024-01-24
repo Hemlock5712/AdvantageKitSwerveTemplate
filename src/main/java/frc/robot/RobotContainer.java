@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeedForwardCharacterization;
 import frc.robot.commands.IntakeUntilNoteCommand;
+import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.ColorSensor.ColorSensor;
 import frc.robot.subsystems.ColorSensor.ColorSensorIO;
 import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
@@ -171,15 +172,6 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-    //    controller
-    //        .b() // Button B to reset rotation part of robot pose
-    //        .onTrue(
-    //            Commands.runOnce(
-    //                    () ->
-    //                        drive.setPose(
-    //                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
-    //                    drive)
-    //                .ignoringDisable(true));
     controller
         .start()
         .onTrue(
@@ -188,20 +180,9 @@ public class RobotContainer {
     controller
         .b()
         .whileTrue(Commands.startEnd(() -> shooter.runVolts(12.0 * .99), shooter::stop, shooter));
-    //    new JoystickButton(controller, XboxController.Button.kX.value)
-    //            .onTrue(Commands.run(drive::stopWithX, drive));
-    //    new JoystickButton(controller, XboxController.Button.kB.value)
-    //            .onTrue(Commands.runOnce(
-    //                            () ->
-    //                                    drive.setPose(
-    //                                            new Pose2d(drive.getPose().getTranslation(), new
-    // Rotation2d())),
-    //                            drive)
-    //                    .ignoringDisable(true));
-    //    new JoystickButton(controller, XboxController.Button.kStart.value)
-    //            .onTrue(Commands.runOnce(() -> drive.setAutoStart(aprilTagVision.getRobotPose()),
-    // drive)
-    //                    .ignoringDisable(true));
+
+    controller.rightBumper().onTrue(ShooterCommands.fullshot(shooter, intake, colorSensor));
+
     controller.a().whileTrue(new IntakeUntilNoteCommand(colorSensor, intake));
     controller
         .y()
