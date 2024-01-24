@@ -14,8 +14,6 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -24,10 +22,11 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.ColorSensorTester;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeedForwardCharacterization;
+import frc.robot.commands.IntakeUntilNoteCommand;
 import frc.robot.subsystems.ColorSensor.ColorSensor;
+import frc.robot.subsystems.ColorSensor.ColorSensorIO;
 import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -35,6 +34,10 @@ import frc.robot.subsystems.drive.GyroIONavX2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.subsystems.intake.*;
+import frc.robot.subsystems.shooter.ShooterIO;
+import frc.robot.subsystems.shooter.ShooterIOSparkMax;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
@@ -51,7 +54,11 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final AprilTagVision aprilTagVision;
+  private final ShooterSubsystem shooter;
   // private final Flywheel flywheel;
+
+  private final Intake intake;
+  private final ColorSensor colorSensor;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -76,7 +83,12 @@ public class RobotContainer {
 
         aprilTagVision = new AprilTagVision(new AprilTagVisionIOLimelight("limelight"));
 
+        colorSensor = new ColorSensor(new ColorSensorIOReal());
+
+        shooter = new ShooterSubsystem(new ShooterIOSparkMax());
         // flywheel = new Flywheel(new FlywheelIOTalonFX());
+
+        intake = new Intake(new IntakeIOTalonSRX());
         break;
 
       case SIM:
@@ -95,6 +107,10 @@ public class RobotContainer {
                     new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
                     drive::getPose));
         // flywheel = new Flywheel(new FlywheelIOSim());
+        shooter = new ShooterSubsystem(new ShooterIO() {});
+        intake = new Intake(new IntakeIO() {});
+        colorSensor = new ColorSensor(new ColorSensorIO() {});
+
         break;
 
       default:
@@ -108,6 +124,9 @@ public class RobotContainer {
                 new ModuleIO() {});
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
         // flywheel = new Flywheel(new FlywheelIO() {});
+        shooter = new ShooterSubsystem(new ShooterIO() {});
+        intake = new Intake(new IntakeIO() {});
+        colorSensor = new ColorSensor(new ColorSensorIO() {});
 
         break;
     }
@@ -122,8 +141,6 @@ public class RobotContainer {
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     autoChooser.addOption("S Curve", AutoBuilder.buildAuto("Example Auto"));
-    autoChooser.addOption(
-        "color sensor", new ColorSensorTester(new ColorSensor(new ColorSensorIOReal())));
     // Set up FF characterization routines
     autoChooser.addDefaultOption(
         "Drive FF Characterization",
@@ -154,26 +171,43 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-    controller
-        .b()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
+    //    controller
+    //        .b() // Button B to reset rotation part of robot pose
+    //        .onTrue(
+    //            Commands.runOnce(
+    //                    () ->
+    //                        drive.setPose(
+    //                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+    //                    drive)
+    //                .ignoringDisable(true));
     controller
         .start()
         .onTrue(
             Commands.runOnce(() -> drive.setAutoStart(aprilTagVision.getRobotPose()), drive)
                 .ignoringDisable(true));
-    // controller
-    //     .a()
-    //     .whileTrue(
-    //         Commands.startEnd(
-    //             () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
-    controller.a().onTrue(Commands.runOnce(drive::resetGyro));
+    controller
+        .b()
+        .whileTrue(Commands.startEnd(() -> shooter.runVolts(12.0 * .99), shooter::stop, shooter));
+    //    new JoystickButton(controller, XboxController.Button.kX.value)
+    //            .onTrue(Commands.run(drive::stopWithX, drive));
+    //    new JoystickButton(controller, XboxController.Button.kB.value)
+    //            .onTrue(Commands.runOnce(
+    //                            () ->
+    //                                    drive.setPose(
+    //                                            new Pose2d(drive.getPose().getTranslation(), new
+    // Rotation2d())),
+    //                            drive)
+    //                    .ignoringDisable(true));
+    //    new JoystickButton(controller, XboxController.Button.kStart.value)
+    //            .onTrue(Commands.runOnce(() -> drive.setAutoStart(aprilTagVision.getRobotPose()),
+    // drive)
+    //                    .ignoringDisable(true));
+    controller.a().whileTrue(new IntakeUntilNoteCommand(colorSensor, intake));
+    controller
+        .y()
+        .whileTrue(
+            Commands.startEnd(
+                () -> intake.setVoltage(-IntakeConstants.INTAKE_VOLTAGE), intake::stop, intake));
   }
 
   /**

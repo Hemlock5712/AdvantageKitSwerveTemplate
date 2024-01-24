@@ -2,6 +2,7 @@ package frc.robot.subsystems.ColorSensor;
 
 import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.wpilibj.I2C;
+import edu.wpi.first.wpilibj.util.Color;
 import org.littletonrobotics.junction.Logger;
 
 public class ColorSensorIOReal implements ColorSensorIO {
@@ -18,9 +19,10 @@ public class ColorSensorIOReal implements ColorSensorIO {
   @Override
   public void updateInputs(ColorSensorIOInputs inputs) {
     Logger.recordOutput("colorsensorconnected", colorSensor.isConnected());
-    inputs.red = colorSensor.getRed();
-    inputs.blue = colorSensor.getBlue();
-    inputs.green = colorSensor.getGreen();
+    Color color = colorSensor.getColor();
+    inputs.red = color.red;
+    inputs.blue = color.blue;
+    inputs.green = color.green;
     inputs.proximity = colorSensor.getProximity();
     inputs.IR = colorSensor.getIR();
   }
