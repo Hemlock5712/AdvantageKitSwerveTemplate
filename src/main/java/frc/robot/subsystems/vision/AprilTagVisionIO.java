@@ -12,14 +12,10 @@ import frc.robot.util.LimelightHelpers;
 import frc.robot.util.VisionHelpers;
 import frc.robot.util.VisionHelpers.PoseEstimate;
 import java.util.ArrayList;
-import lombok.Getter;
-import lombok.Setter;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 public interface AprilTagVisionIO {
-  @Setter
-  @Getter
   class AprilTagVisionIOInputs implements LoggableInputs {
 
     ArrayList<PoseEstimate> poseEstimates = new ArrayList<>();
