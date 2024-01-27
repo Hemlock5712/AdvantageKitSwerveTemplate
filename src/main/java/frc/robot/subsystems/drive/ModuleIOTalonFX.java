@@ -64,9 +64,9 @@ public class ModuleIOTalonFX implements ModuleIO {
   private final Rotation2d absoluteEncoderOffset;
 
   public ModuleIOTalonFX(ModuleConfig config) {
-    driveTalon = new TalonFX(config.driveID());
-    turnTalon = new TalonFX(config.turnID());
-    cancoder = new CANcoder(config.absoluteEncoderChannel());
+    driveTalon = new TalonFX(config.driveID(), canbus);
+    turnTalon = new TalonFX(config.turnID(), canbus);
+    cancoder = new CANcoder(config.absoluteEncoderChannel(), canbus);
     absoluteEncoderOffset = config.absoluteEncoderOffset();
 
     var driveConfig = new TalonFXConfiguration();

@@ -56,6 +56,11 @@ public final class DriveConstants {
         default -> 0.01;
       };
 
+  public static final int gyroID = 13;
+
+  //Turn to "" for no canbus name
+  public static final String canbus = "chassis";
+
   public static ModuleConfig[] moduleConfigs =
       switch (Constants.getRobot()) {
         case COMPBOT ->
