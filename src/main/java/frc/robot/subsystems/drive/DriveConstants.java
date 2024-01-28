@@ -58,7 +58,7 @@ public final class DriveConstants {
 
   public static final int gyroID = 13;
 
-  //Turn to "" for no canbus name
+  // Turn to "" for no canbus name
   public static final String canbus = "chassis";
 
   public static ModuleConfig[] moduleConfigs =
