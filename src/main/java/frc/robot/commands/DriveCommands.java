@@ -64,6 +64,7 @@ public class DriveCommands {
           double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
           if (driveMode.isHeadingControlled()) {
             final var targetAngle = driveMode.getHeadingAngle();
+            thetaController.enableContinuousInput(-Math.PI, Math.PI);
             omega =
                 thetaController.calculate(
                     drive.getPose().getRotation().getRadians(), targetAngle.getRadians());
