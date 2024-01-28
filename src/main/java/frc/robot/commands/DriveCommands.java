@@ -16,14 +16,11 @@ package frc.robot.commands;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -36,14 +33,12 @@ import java.util.function.Supplier;
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
   private static DriveController driveMode = new DriveController();
-  private static ProfiledPIDController thetaController =
-      new ProfiledPIDController(2, 0, 0, new TrapezoidProfile.Constraints(8, 8));
 
-  private DriveCommands() {
+  static {
     driveMode.disableHeadingSupplier();
-    thetaController.enableContinuousInput(-Math.PI, Math.PI);
-    thetaController.setTolerance(Units.degreesToRadians(1.5));
   }
+
+  private DriveCommands() {}
 
   /**
    * Field relative drive command using two joysticks (controlling linear and angular velocities).
@@ -64,11 +59,11 @@ public class DriveCommands {
           double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
           if (driveMode.isHeadingControlled()) {
             final var targetAngle = driveMode.getHeadingAngle();
-            thetaController.enableContinuousInput(-Math.PI, Math.PI);
             omega =
-                thetaController.calculate(
-                    drive.getPose().getRotation().getRadians(), targetAngle.getRadians());
-            if (thetaController.atGoal()) {
+                Drive.getThetaController()
+                    .calculate(
+                        drive.getPose().getRotation().getRadians(), targetAngle.getRadians());
+            if (Drive.getThetaController().atGoal()) {
               omega = 0;
             }
             omega = Math.copySign(Math.min(1, Math.abs(omega)), omega);
