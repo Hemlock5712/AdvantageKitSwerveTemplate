@@ -17,8 +17,6 @@ import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -173,18 +171,22 @@ public class RobotContainer {
     controller
         .x()
         .whileTrue(
-            Commands.startEnd(
-                () -> DriveCommands.setDriveHeading(() -> Rotation2d.fromDegrees(90)),
-                DriveCommands::disableDriveHeading));
+            Commands.startEnd(DriveCommands::setAmpMode, DriveCommands::disableDriveHeading));
     controller
         .b()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
+        .whileTrue(
+            Commands.startEnd(
+                () -> DriveCommands.setSpeakerMode(drive::getPose),
+                DriveCommands::disableDriveHeading));
+    // controller
+    //     .b()
+    //     .onTrue(
+    //         Commands.runOnce(
+    //                 () ->
+    //                     drive.setPose(
+    //                         new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+    //                 drive)
+    //             .ignoringDisable(true));
     controller
         .a()
         .whileTrue(
