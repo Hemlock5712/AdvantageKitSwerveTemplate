@@ -30,13 +30,10 @@ public final class Constants {
   public static final boolean tuningMode = true;
   public static final boolean characterizationMode = false;
 
-  private static boolean invalidRobotAlertSent = false;
-
   public static RobotType getRobot() {
     if (RobotBase.isReal() && robotType == RobotType.SIMBOT) {
       new Alert("Invalid Robot Selected, using COMPBOT as default", Alert.AlertType.ERROR)
           .set(true);
-      invalidRobotAlertSent = true;
       robotType = RobotType.COMPBOT;
     }
     return robotType;

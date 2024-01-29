@@ -113,14 +113,14 @@ public class Drive extends SubsystemBase {
         this);
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
-        (activePath) -> {
+        activePath ->
           Logger.recordOutput(
-              "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
-        });
+              "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]))
+        );
     PathPlannerLogging.setLogTargetPoseCallback(
-        (targetPose) -> {
-          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
-        });
+        targetPose -> 
+          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose)
+        );
 
     // Configure SysId
     sysId =
@@ -129,9 +129,9 @@ public class Drive extends SubsystemBase {
                 null,
                 null,
                 null,
-                (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+                state -> Logger.recordOutput("Drive/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
-                (voltage) -> {
+                voltage -> {
                   for (int i = 0; i < 4; i++) {
                     modules[i].runCharacterization(voltage.in(Volts));
                   }
@@ -142,6 +142,7 @@ public class Drive extends SubsystemBase {
     thetaController.setTolerance(Units.degreesToRadians(1.5));
   }
 
+  @Override
   public void periodic() {
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);

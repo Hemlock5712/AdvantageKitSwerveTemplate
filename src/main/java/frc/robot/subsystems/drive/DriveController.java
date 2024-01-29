@@ -41,6 +41,8 @@ public class DriveController {
     AMP,
     SPEAKER,
     SHOOT_WHILE_MOVING,
+    SPIN_TO_WIN,
+    GAME_PICKUP,
   }
 
   public void setDriveMode(DriveModeType driveModeType) {

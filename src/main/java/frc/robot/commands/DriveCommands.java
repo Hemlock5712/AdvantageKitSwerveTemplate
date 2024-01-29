@@ -106,14 +106,13 @@ public class DriveCommands {
   }
 
   public static void setSpeakerMode(Supplier<Pose2d> poseSupplier) {
-    Supplier<Rotation2d> headingSupplier =
+    setDriveHeading(
         () ->
             new Rotation2d(
                 poseSupplier.get().getX()
                     - FieldConstants.Speaker.centerSpeakerOpening.getTranslation().getX(),
                 poseSupplier.get().getY()
-                    - FieldConstants.Speaker.centerSpeakerOpening.getTranslation().getY());
-    setDriveHeading(headingSupplier);
+                    - FieldConstants.Speaker.centerSpeakerOpening.getTranslation().getY()));
     driveMode.setDriveMode(DriveController.DriveModeType.SPEAKER);
   }
 

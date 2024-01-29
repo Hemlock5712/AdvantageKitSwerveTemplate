@@ -59,7 +59,6 @@ public class ModuleIOTalonFX implements ModuleIO {
   private final StatusSignal<Double> turnVelocity;
   private final StatusSignal<Double> turnAppliedVolts;
   private final StatusSignal<Double> turnCurrent;
-  private final boolean isTurnMotorInverted = true;
 
   private final Rotation2d absoluteEncoderOffset;
 
