@@ -57,7 +57,7 @@ public class Drive extends SubsystemBase {
   private final SysIdRoutine sysId;
 
   private static ProfiledPIDController thetaController =
-      new ProfiledPIDController(headingControllerConstants.Kp, 0, headingControllerConstants.Kd, new TrapezoidProfile.Constraints(drivetrainConfig.maxAngularVelocity, drivetrainConfig.maxAngularAcceleration));
+      new ProfiledPIDController(headingControllerConstants.Kp(), 0, headingControllerConstants.Kd(), new TrapezoidProfile.Constraints(drivetrainConfig.maxAngularVelocity(), drivetrainConfig.maxAngularAcceleration()));
 
   private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
   private Rotation2d rawGyroRotation = new Rotation2d();
