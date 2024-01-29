@@ -7,8 +7,6 @@
 
 package frc.robot.subsystems.vision;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -17,6 +15,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import frc.robot.util.FieldConstants;
 import frc.robot.util.VisionHelpers.PoseEstimate;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -35,8 +34,7 @@ public class AprilTagVisionIOPhotonVisionSIM implements AprilTagVisionIO {
   private final PhotonPoseEstimator photonEstimator;
   private VisionSystemSim visionSim;
   private PhotonCameraSim cameraSim;
-  private final AprilTagFieldLayout kTagLayout =
-      AprilTagFields.kDefaultField.loadAprilTagLayoutField();
+
   private double lastEstTimestamp = 0;
   private final Supplier<Pose2d> poseSupplier;
 
@@ -45,14 +43,17 @@ public class AprilTagVisionIOPhotonVisionSIM implements AprilTagVisionIO {
     camera = new PhotonCamera(identifier);
     photonEstimator =
         new PhotonPoseEstimator(
-            kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera, robotToCamera);
+            FieldConstants.aprilTags,
+            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            camera,
+            robotToCamera);
     photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
     // Create the vision system simulation which handles cameras and targets on the
     // field.
     visionSim = new VisionSystemSim("main");
     // Add all the AprilTags inside the tag layout as visible targets to this
     // simulated field.
-    visionSim.addAprilTags(kTagLayout);
+    visionSim.addAprilTags(FieldConstants.aprilTags);
     // Create simulated camera properties. These can be set to mimic your actual
     // camera.
     var cameraProp = new SimCameraProperties();
