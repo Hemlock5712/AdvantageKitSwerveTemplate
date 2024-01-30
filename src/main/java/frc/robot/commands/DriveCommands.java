@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveController;
+import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.FieldConstants;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -110,9 +111,13 @@ public class DriveCommands {
         () ->
             new Rotation2d(
                 poseSupplier.get().getX()
-                    - FieldConstants.Speaker.centerSpeakerOpening.getTranslation().getX(),
+                    - AllianceFlipUtil.apply(
+                            FieldConstants.Speaker.centerSpeakerOpening.getTranslation())
+                        .getX(),
                 poseSupplier.get().getY()
-                    - FieldConstants.Speaker.centerSpeakerOpening.getTranslation().getY()));
+                    - AllianceFlipUtil.apply(
+                            FieldConstants.Speaker.centerSpeakerOpening.getTranslation())
+                        .getY()));
     driveMode.setDriveMode(DriveController.DriveModeType.SPEAKER);
   }
 
