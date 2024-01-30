@@ -110,9 +110,9 @@ public class DriveCommands {
         () ->
             new Rotation2d(
                 poseSupplier.get().getX()
-                    - FieldConstants.Speaker.centerSpeakerOpening.getTranslation().getX(),
+                    - AllianceFlipUtil.apply(FieldConstants.Speaker.centerSpeakerOpening.getTranslation()).getX(),
                 poseSupplier.get().getY()
-                    - FieldConstants.Speaker.centerSpeakerOpening.getTranslation().getY()));
+                    - AllianceFlipUtil.apply(FieldConstants.Speaker.centerSpeakerOpening.getTranslation()).getY()));
     driveMode.setDriveMode(DriveController.DriveModeType.SPEAKER);
   }
 
