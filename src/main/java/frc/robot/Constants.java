@@ -26,7 +26,7 @@ import frc.robot.util.Alert;
  */
 public final class Constants {
   public static final int loopPeriodMs = 20;
-  private static RobotType robotType = RobotType.COMPBOT;
+  private static RobotType robotType = RobotType.SIMBOT;
   public static final boolean tuningMode = true;
   public static final boolean characterizationMode = false;
 
@@ -40,7 +40,7 @@ public final class Constants {
   }
 
   public static Mode getMode() {
-    return switch (robotType) {
+    return switch (getRobot()) {
       case COMPBOT -> RobotBase.isReal() ? Mode.REAL : Mode.REPLAY;
       case SIMBOT -> Mode.SIM;
     };
