@@ -107,7 +107,7 @@ public class Drive extends SubsystemBase {
     // Configure AutoBuilder for PathPlanner
     AutoBuilder.configureHolonomic(
         this::getPose,
-        this::setPose,
+        this::setAutoStartPose,
         () -> kinematics.toChassisSpeeds(getModuleStates()),
         this::runVelocity,
         new HolonomicPathFollowerConfig(
@@ -296,6 +296,11 @@ public class Drive extends SubsystemBase {
   /** Resets the current odometry pose. */
   public void setPose(Pose2d pose) {
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+  }
+
+  public void setAutoStartPose(Pose2d pose){
+    poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+    odometryDrive.resetPosition(rawGyroRotation, getModulePositions(), pose);
   }
 
   /**
