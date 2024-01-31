@@ -16,8 +16,12 @@ package frc.robot;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
@@ -176,6 +180,7 @@ public class RobotContainer {
                 () -> DriveCommands.setSpeakerMode(drive::getPose),
                 DriveCommands::disableDriveHeading));
     controller.y().whileTrue(drive.runToAmp());
+    controller.a().whileTrue(Commands.run(() -> drive.setAutoStartPose(new Pose2d(new Translation2d(4,5), Rotation2d.fromDegrees(0)))));
     // controller
     //     .b()
     //     .onTrue(
