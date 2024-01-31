@@ -16,7 +16,6 @@ package frc.robot;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -33,16 +32,11 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
-import frc.robot.subsystems.flywheel.Flywheel;
-import frc.robot.subsystems.flywheel.FlywheelIO;
-import frc.robot.subsystems.flywheel.FlywheelIOSim;
-import frc.robot.subsystems.flywheel.FlywheelIOSparkMax;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
 import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -53,7 +47,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  private final Flywheel flywheel;
+  //   private final Flywheel flywheel;
   private AprilTagVision aprilTagVision;
 
   // Controller
@@ -61,8 +55,9 @@ public class RobotContainer {
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
-  private final LoggedDashboardNumber flywheelSpeedInput =
-      new LoggedDashboardNumber("Flywheel Speed", 1500.0);
+
+  //   private final LoggedDashboardNumber flywheelSpeedInput =
+  //       new LoggedDashboardNumber("Flywheel Speed", 1500.0);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -71,12 +66,12 @@ public class RobotContainer {
         // Real robot, instantiate hardware IO implementations
         drive =
             new Drive(
-                new GyroIOPigeon2(false),
+                new GyroIOPigeon2(true),
                 new ModuleIOTalonFX(moduleConfigs[0]),
                 new ModuleIOTalonFX(moduleConfigs[1]),
                 new ModuleIOTalonFX(moduleConfigs[2]),
                 new ModuleIOTalonFX(moduleConfigs[3]));
-        flywheel = new Flywheel(new FlywheelIOSparkMax());
+        // flywheel = new Flywheel(new FlywheelIOSparkMax());
         // drive = new Drive(
         // new GyroIOPigeon2(true),
         // new ModuleIOTalonFX(0),
@@ -96,7 +91,7 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
-        flywheel = new Flywheel(new FlywheelIOSim());
+        // flywheel = new Flywheel(new FlywheelIOSim());
         aprilTagVision =
             new AprilTagVision(
                 new AprilTagVisionIOPhotonVisionSIM(
@@ -114,18 +109,18 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        flywheel = new Flywheel(new FlywheelIO() {});
+        // flywheel = new Flywheel(new FlywheelIO() {});
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
 
         break;
     }
 
     // Set up auto routines
-    NamedCommands.registerCommand(
-        "Run Flywheel",
-        Commands.startEnd(
-                () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel)
-            .withTimeout(5.0));
+    // NamedCommands.registerCommand(
+    //     "Run Flywheel",
+    //     Commands.startEnd(
+    //             () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel)
+    //         .withTimeout(5.0));
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     // Set up SysId routines
@@ -139,16 +134,18 @@ public class RobotContainer {
         "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Flywheel SysId (Quasistatic Forward)",
-        flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Flywheel SysId (Quasistatic Reverse)",
-        flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Flywheel SysId (Dynamic Forward)", flywheel.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Flywheel SysId (Dynamic Reverse)", flywheel.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Flywheel SysId (Quasistatic Forward)",
+    //     flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Flywheel SysId (Quasistatic Reverse)",
+    //     flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Flywheel SysId (Dynamic Forward)",
+    // flywheel.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Flywheel SysId (Dynamic Reverse)",
+    // flywheel.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
     aprilTagVision.setDataInterfaces(drive::addVisionData);
@@ -178,6 +175,7 @@ public class RobotContainer {
             Commands.startEnd(
                 () -> DriveCommands.setSpeakerMode(drive::getPose),
                 DriveCommands::disableDriveHeading));
+    controller.y().whileTrue(drive.runToAmp());
     // controller
     //     .b()
     //     .onTrue(
@@ -187,11 +185,11 @@ public class RobotContainer {
     //                         new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
     //                 drive)
     //             .ignoringDisable(true));
-    controller
-        .a()
-        .whileTrue(
-            Commands.startEnd(
-                () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
+    // controller
+    //     .a()
+    //     .whileTrue(
+    //         Commands.startEnd(
+    //             () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
   }
 
   /**

@@ -17,6 +17,8 @@ import static edu.wpi.first.units.Units.*;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -317,5 +319,12 @@ public class Drive extends SubsystemBase {
 
   public static ProfiledPIDController getThetaController() {
     return thetaController;
+  }
+
+  public Command runToAmp() {
+    PathPlannerPath ampPath = PathPlannerPath.fromPathFile("Amp Placement Path");
+    PathConstraints constraints =
+        new PathConstraints(3.0, 4.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+    return AutoBuilder.pathfindThenFollowPath(ampPath, constraints, 0.0);
   }
 }
