@@ -40,7 +40,6 @@ import java.util.Queue;
  */
 public class ModuleIOSparkMax implements ModuleIO {
 
-
   private final CANSparkMax driveSparkMax;
   private final CANSparkMax turnSparkMax;
 
