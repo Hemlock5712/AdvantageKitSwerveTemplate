@@ -66,28 +66,32 @@ public final class DriveConstants {
       switch (Constants.getRobot()) {
         case COMPBOT ->
             new ModuleConfig[] {
+              //Front left
               new ModuleConfig(
-                  1,
-                  2,
+                  6,
+                  5,
                   9,
                   Rotation2d.fromRotations(-0.383).plus(Rotation2d.fromDegrees(180)),
                   true),
+              //Front right
               new ModuleConfig(
-                  3,
-                  4,
-                  10,
+                  8,
+                  7,
+                  7,
                   Rotation2d.fromRotations(-0.251).plus(Rotation2d.fromDegrees(180)),
                   true),
+              //Back left
               new ModuleConfig(
-                  5,
-                  6,
-                  11,
+                  4,
+                  3,
+                  8,
                   Rotation2d.fromRotations(-0.057).plus(Rotation2d.fromDegrees(180)),
                   true),
+              //Back right
               new ModuleConfig(
-                  7,
-                  8,
-                  12,
+                  2,
+                  1,
+                  6,
                   Rotation2d.fromRotations(-0.470).plus(Rotation2d.fromDegrees(180)),
                   true)
             };
