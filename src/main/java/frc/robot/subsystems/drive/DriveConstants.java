@@ -9,7 +9,6 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
-import lombok.Builder;
 
 /** All Constants Measured in Meters and Radians (m/s, m/s^2, rad/s, rad/s^2) */
 public final class DriveConstants {
@@ -17,13 +16,13 @@ public final class DriveConstants {
       switch (Constants.getRobot()) {
         default ->
             new DrivetrainConfig(
-                Units.inchesToMeters(2.0),
-                Units.inchesToMeters(26.0),
-                Units.inchesToMeters(26.0),
-                Units.feetToMeters(12.16),
-                Units.feetToMeters(21.32),
-                7.93,
-                29.89);
+                Units.inchesToMeters(2.0),//Wheel radius
+                Units.inchesToMeters(29.0),//Track width x
+                Units.inchesToMeters(29.0),//Track width y
+                Units.feetToMeters(12.5),//Max linear velocity
+                Units.feetToMeters(21.32),//max linear acceleration
+                7.93,//Max angular velocity
+                29.89);//Max angular acceleration
       };
   public static final double wheelRadius = Units.inchesToMeters(2.0);
   public static final Translation2d[] moduleTranslations =
@@ -42,7 +41,7 @@ public final class DriveConstants {
   public static final double odometryFrequency =
       switch (Constants.getRobot()) {
         case SIMBOT -> 50.0;
-        case COMPBOT -> 250.0;
+        case COMPBOT -> 50.0;
       };
   public static final Matrix<N3, N1> stateStdDevs =
       switch (Constants.getRobot()) {
@@ -66,34 +65,26 @@ public final class DriveConstants {
       switch (Constants.getRobot()) {
         case COMPBOT ->
             new ModuleConfig[] {
-              //Front left
+              // Front left
               new ModuleConfig(
                   6,
                   5,
                   9,
-                  Rotation2d.fromRotations(-0.383).plus(Rotation2d.fromDegrees(180)),
+                  Rotation2d.fromRotations(-0.022).plus(Rotation2d.fromDegrees(180)),
                   true),
-              //Front right
+              // Front right
               new ModuleConfig(
-                  8,
-                  7,
-                  7,
-                  Rotation2d.fromRotations(-0.251).plus(Rotation2d.fromDegrees(180)),
-                  true),
-              //Back left
+                  8, 7, 7, Rotation2d.fromRotations(3.039).plus(Rotation2d.fromDegrees(180)), true),
+              // Back left
               new ModuleConfig(
                   4,
                   3,
                   8,
-                  Rotation2d.fromRotations(-0.057).plus(Rotation2d.fromDegrees(180)),
+                  Rotation2d.fromRotations(-2.914).plus(Rotation2d.fromDegrees(180)),
                   true),
-              //Back right
+              // Back right
               new ModuleConfig(
-                  2,
-                  1,
-                  6,
-                  Rotation2d.fromRotations(-0.470).plus(Rotation2d.fromDegrees(180)),
-                  true)
+                  2, 1, 6, Rotation2d.fromRotations(2.415).plus(Rotation2d.fromDegrees(180)), true)
             };
         case SIMBOT -> {
           ModuleConfig[] configs = new ModuleConfig[4];
@@ -113,7 +104,7 @@ public final class DriveConstants {
                 0.0,
                 10.0,
                 0.0,
-                Mk4iReductions.L2.reduction,
+                Mk4iReductions.L1.reduction,
                 Mk4iReductions.TURN.reduction);
         case SIMBOT ->
             new ModuleConstants(
@@ -123,7 +114,7 @@ public final class DriveConstants {
                 0.0,
                 10.0,
                 0.0,
-                Mk4iReductions.L2.reduction,
+                Mk4iReductions.L1.reduction,
                 Mk4iReductions.TURN.reduction);
       };
 
@@ -163,9 +154,10 @@ public final class DriveConstants {
       double driveReduction,
       double turnReduction) {}
 
-    public record HeadingControllerConstants(double Kp, double Kd) {}
+  public record HeadingControllerConstants(double Kp, double Kd) {}
 
   private enum Mk4iReductions {
+    L1((50.0 / 14.0) * (19.0 / 25.0) * (45.0 / 15.0)),
     L2((50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0)),
     L3((50.0 / 14.0) * (16.0 / 28.0) * (45.0 / 15.0)),
     TURN((150.0 / 7.0));
