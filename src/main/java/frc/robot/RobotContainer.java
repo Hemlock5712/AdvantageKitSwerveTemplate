@@ -16,7 +16,6 @@ package frc.robot;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -68,17 +67,17 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drive =
-                /*         new ModuleIOTalonFX(moduleConfigs[0]),
-                new ModuleIOTalonFX(moduleConfigs[1]),
-                new ModuleIOTalonFX(moduleConfigs[2]),
-                new ModuleIOTalonFX(moduleConfigs[3]));
-                 */
+            /*         new ModuleIOTalonFX(moduleConfigs[0]),
+            new ModuleIOTalonFX(moduleConfigs[1]),
+            new ModuleIOTalonFX(moduleConfigs[2]),
+            new ModuleIOTalonFX(moduleConfigs[3]));
+             */
             new Drive(
                 new GyroIONavX2(),
-                new ModuleIOSparkMax(0),
-                new ModuleIOSparkMax(1),
-                new ModuleIOSparkMax(2),
-                new ModuleIOSparkMax(3));
+                new ModuleIOSparkMax(moduleConfigs[0]),
+                new ModuleIOSparkMax(moduleConfigs[1]),
+                new ModuleIOSparkMax(moduleConfigs[2]),
+                new ModuleIOSparkMax(moduleConfigs[3]));
 
         aprilTagVision = new AprilTagVision(new AprilTagVisionIOLimelight("limelight"));
         break;
@@ -177,7 +176,13 @@ public class RobotContainer {
                 () -> DriveCommands.setSpeakerMode(drive::getPose),
                 DriveCommands::disableDriveHeading));
     controller.y().whileTrue(drive.runToAmp());
-    controller.a().whileTrue(Commands.run(() -> drive.setAutoStartPose(new Pose2d(new Translation2d(4,5), Rotation2d.fromDegrees(0)))));
+    controller
+        .a()
+        .whileTrue(
+            Commands.run(
+                () ->
+                    drive.setAutoStartPose(
+                        new Pose2d(new Translation2d(4, 5), Rotation2d.fromDegrees(0)))));
     // controller
     //     .b()
     //     .onTrue(

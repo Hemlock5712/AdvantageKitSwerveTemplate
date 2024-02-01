@@ -49,7 +49,6 @@ public class ModuleIOSparkMax implements ModuleIO {
   private final RelativeEncoder driveEncoder;
   private final RelativeEncoder turnRelativeEncoder;
   private final DutyCycleEncoder turnAbsoluteEncoder;
-  private final AnalogInput turnAbsoluteEncoder;
   private final Queue<Double> timestampQueue;
   private final Queue<Double> drivePositionQueue;
   private final Queue<Double> turnPositionQueue;
@@ -60,7 +59,7 @@ public class ModuleIOSparkMax implements ModuleIO {
     // Init motor & encoder objects
     driveSparkMax = new CANSparkMax(config.driveID(), MotorType.kBrushless);
     turnSparkMax = new CANSparkMax(config.turnID(), MotorType.kBrushless);
-    turnAbsoluteEncoder = new AnalogInput(config.absoluteEncoderChannel());
+    turnAbsoluteEncoder = new DutyCycleEncoder(config.absoluteEncoderChannel());
     absoluteEncoderOffset = config.absoluteEncoderOffset(); // MUST BE CALIBRATED
 
     // set distance per rotation on dutycycleencoder

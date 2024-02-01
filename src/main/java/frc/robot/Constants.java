@@ -56,17 +56,17 @@ public final class Constants {
     /** Replaying from a log file. */
     REPLAY
   }
-    public enum RobotType {
-        SIMBOT,
-        COMPBOT
-    }
 
-    /** Checks whether the robot the correct robot is selected when deploying. */
-    public static void main(String... args) {
-        if (robotType == RobotType.SIMBOT) {
-            System.err.println("Cannot deploy, invalid robot selected: " + robotType.toString());
-            System.exit(1);
-        }
+  public enum RobotType {
+    SIMBOT,
+    COMPBOT
+  }
+
+  /** Checks whether the robot the correct robot is selected when deploying. */
+  public static void main(String... args) {
+    if (robotType == RobotType.SIMBOT) {
+      System.err.println("Cannot deploy, invalid robot selected: " + robotType.toString());
+      System.exit(1);
     }
+  }
 }
-
