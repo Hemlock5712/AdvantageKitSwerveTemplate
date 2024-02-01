@@ -57,29 +57,29 @@ public class ModuleIOSparkMax implements ModuleIO {
     switch (index) {
       case 1:
         // FR
-        driveSparkMax = new CANSparkMax(2, MotorType.kBrushless);
-        turnSparkMax = new CANSparkMax(1, MotorType.kBrushless);
+        driveSparkMax = new CANSparkMax(8, MotorType.kBrushless);
+        turnSparkMax = new CANSparkMax(7, MotorType.kBrushless);
         turnAbsoluteEncoder = new DutyCycleEncoder(0);
         absoluteEncoderOffset = new Rotation2d(0.286655);
         break;
       case 3:
         // BR
-        driveSparkMax = new CANSparkMax(4, MotorType.kBrushless);
-        turnSparkMax = new CANSparkMax(3, MotorType.kBrushless);
+        driveSparkMax = new CANSparkMax(2, MotorType.kBrushless);
+        turnSparkMax = new CANSparkMax(1, MotorType.kBrushless);
         turnAbsoluteEncoder = new DutyCycleEncoder(6);
         absoluteEncoderOffset = new Rotation2d(2.43631);
         break;
       case 2:
         // BL
-        driveSparkMax = new CANSparkMax(6, MotorType.kBrushless);
-        turnSparkMax = new CANSparkMax(5, MotorType.kBrushless);
+        driveSparkMax = new CANSparkMax(4, MotorType.kBrushless);
+        turnSparkMax = new CANSparkMax(3, MotorType.kBrushless);
         turnAbsoluteEncoder = new DutyCycleEncoder(4);
         absoluteEncoderOffset = new Rotation2d(1.54025);
         break;
       case 0:
         // FL
-        driveSparkMax = new CANSparkMax(8, MotorType.kBrushless);
-        turnSparkMax = new CANSparkMax(7, MotorType.kBrushless);
+        driveSparkMax = new CANSparkMax(6, MotorType.kBrushless);
+        turnSparkMax = new CANSparkMax(5, MotorType.kBrushless);
         turnAbsoluteEncoder = new DutyCycleEncoder(2);
         absoluteEncoderOffset = new Rotation2d(1.52214 + Math.PI);
         break;
