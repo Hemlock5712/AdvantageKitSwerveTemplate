@@ -16,7 +16,6 @@ package frc.robot;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -30,16 +29,23 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ShootDistance;
+import frc.robot.commands.ShootPoint;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.flywheel.Flywheel;
+import frc.robot.subsystems.flywheel.FlywheelIO;
+import frc.robot.subsystems.flywheel.FlywheelIOSim;
+import frc.robot.subsystems.flywheel.FlywheelIOTalonFX;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
 import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
+import frc.robot.util.FieldConstants;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -51,7 +57,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  //   private final Flywheel flywheel;
+  private final Flywheel flywheel;
   private AprilTagVision aprilTagVision;
 
   // Controller
@@ -82,7 +88,7 @@ public class RobotContainer {
         // new ModuleIOTalonFX(1),
         // new ModuleIOTalonFX(2),
         // new ModuleIOTalonFX(3));
-        // flywheel = new Flywheel(new FlywheelIOTalonFX());
+        flywheel = new Flywheel(new FlywheelIOTalonFX());
         aprilTagVision = new AprilTagVision(new AprilTagVisionIOLimelight("limelight"));
         break;
 
@@ -95,7 +101,7 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
-        // flywheel = new Flywheel(new FlywheelIOSim());
+        flywheel = new Flywheel(new FlywheelIOSim());
         aprilTagVision =
             new AprilTagVision(
                 new AprilTagVisionIOPhotonVisionSIM(
@@ -113,7 +119,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        // flywheel = new Flywheel(new FlywheelIO() {});
+        flywheel = new Flywheel(new FlywheelIO() {});
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
 
         break;
@@ -180,7 +186,25 @@ public class RobotContainer {
                 () -> DriveCommands.setSpeakerMode(drive::getPose),
                 DriveCommands::disableDriveHeading));
     controller.y().whileTrue(drive.runToAmp());
-    controller.a().whileTrue(Commands.run(() -> drive.setAutoStartPose(new Pose2d(new Translation2d(4,5), Rotation2d.fromDegrees(0)))));
+    controller
+        .a()
+        .whileTrue(
+            Commands.run(
+                () ->
+                    drive.setAutoStartPose(
+                        new Pose2d(new Translation2d(4, 5), Rotation2d.fromDegrees(0)))));
+    controller
+        .povDown()
+        .whileTrue(
+            new ShootPoint(
+                drive, new Pose2d(new Translation2d(2.954, 3.621), Rotation2d.fromRadians(2.617))));
+
+    controller
+        .povUp()
+        .whileTrue(
+            new ShootDistance(
+                drive::getPose, FieldConstants.Speaker.centerSpeakerOpening, flywheel));
+
     // controller
     //     .b()
     //     .onTrue(
