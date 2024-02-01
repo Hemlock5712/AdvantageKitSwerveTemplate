@@ -39,9 +39,7 @@ import java.util.Queue;
  * "/Drive/ModuleX/TurnAbsolutePositionRad"
  */
 public class ModuleIOSparkMax implements ModuleIO {
-  // Gear ratios for SDS MK4i L2, adjust as necessary
-  private static final double DRIVE_GEAR_RATIO = (50.0 / 14.0) * (19.0 / 25.0) * (45.0 / 15.0);
-  private static final double TURN_GEAR_RATIO = 150.0 / 7.0;
+
 
   private final CANSparkMax driveSparkMax;
   private final CANSparkMax turnSparkMax;
@@ -76,7 +74,7 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     turnSparkMax.setInverted(config.turnMotorInverted());
     driveSparkMax.setSmartCurrentLimit(40);
-    turnSparkMax.setSmartCurrentLimit(40);
+    turnSparkMax.setSmartCurrentLimit(30);
     driveSparkMax.enableVoltageCompensation(12.0);
     turnSparkMax.enableVoltageCompensation(12.0);
 
