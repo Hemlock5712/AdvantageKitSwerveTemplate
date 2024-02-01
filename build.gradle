@@ -1,9 +1,8 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2024.1.1"
-    id "com.peterabeles.gversion" version "1.10"
-    id "com.diffplug.spotless" version "6.12.0"
-    id "io.freefair.lombok" version "8.4"
+    id "edu.wpi.first.GradleRIO" version "2024.2.1"
+    id "com.peterabeles.gversion" version "1.10.2"
+    id "com.diffplug.spotless" version "6.25.0"
 }
 
 java {
@@ -97,8 +96,6 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.1'
 
-    implementation "gov.nist.math:jama:1.0.3"
-
     def akitJson = new groovy.json.JsonSlurper().parseText(new File(projectDir.getAbsolutePath() + "/vendordeps/AdvantageKit.json").text)
     annotationProcessor "org.littletonrobotics.akit.junction:junction-autolog:$akitJson.version"
 }
@@ -109,14 +106,23 @@ test {
 }
 
 // Simulation configuration (e.g. environment variables).
-wpi.sim.addGui()
+//
+// The sim GUI is *disabled* by default to support running
+// AdvantageKit log replay from the command line. Set the
+// value to "true" to enable the sim GUI by default (this
+// is the standard WPILib behavior).
+wpi.sim.addGui().defaultEnabled = false
 wpi.sim.addDriverstation()
 
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')
 // in order to make them all available at runtime. Also adding the manifest so WPILib
 // knows where to look for our Robot Class.
 jar {
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
     from sourceSets.main.allSource
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
