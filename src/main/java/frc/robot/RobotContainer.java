@@ -16,12 +16,7 @@ package frc.robot;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -29,12 +24,21 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.IntakeUntilNoteCommand;
+import frc.robot.commands.ShooterCommands;
+import frc.robot.subsystems.ColorSensor.ColorSensor;
+import frc.robot.subsystems.ColorSensor.ColorSensorIO;
+import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIONavX2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.subsystems.intake.*;
+import frc.robot.subsystems.shooter.ShooterIO;
+import frc.robot.subsystems.shooter.ShooterIOSparkMax;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
@@ -51,6 +55,10 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private AprilTagVision aprilTagVision;
+  private final ShooterSubsystem shooter;
+
+  private final Intake intake;
+  private final ColorSensor colorSensor;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -80,6 +88,12 @@ public class RobotContainer {
                 new ModuleIOSparkMax(moduleConfigs[3]));
 
         aprilTagVision = new AprilTagVision(new AprilTagVisionIOLimelight("limelight"));
+
+        colorSensor = new ColorSensor(new ColorSensorIOReal());
+
+        shooter = new ShooterSubsystem(new ShooterIOSparkMax());
+
+        intake = new Intake(new IntakeIOTalonSRX());
         break;
 
       case SIM:
@@ -98,6 +112,11 @@ public class RobotContainer {
                     "photonCamera1",
                     new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
                     drive::getDrive));
+        // flywheel = new Flywheel(new FlywheelIOSim());
+        shooter = new ShooterSubsystem(new ShooterIO() {});
+        intake = new Intake(new IntakeIO() {});
+        colorSensor = new ColorSensor(new ColorSensorIO() {});
+
         break;
 
       default:
@@ -111,6 +130,9 @@ public class RobotContainer {
                 new ModuleIO() {});
         // flywheel = new Flywheel(new FlywheelIO() {});
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
+        shooter = new ShooterSubsystem(new ShooterIO() {});
+        intake = new Intake(new IntakeIO() {});
+        colorSensor = new ColorSensor(new ColorSensorIO() {});
 
         break;
     }
@@ -175,7 +197,7 @@ public class RobotContainer {
             Commands.startEnd(
                 () -> DriveCommands.setSpeakerMode(drive::getPose),
                 DriveCommands::disableDriveHeading));
-    controller.y().whileTrue(drive.runToAmp());
+    //    controller.y().whileTrue(drive.runToAmp());
     controller
         .a()
         .whileTrue(
@@ -198,6 +220,18 @@ public class RobotContainer {
     //         Commands.startEnd(
     //             () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
     controller.a().onTrue(Commands.runOnce(drive::resetGyro));
+    controller
+        .rightBumper()
+        .whileTrue(Commands.startEnd(() -> shooter.runVolts(12.0 * .99), shooter::stop, shooter));
+
+    controller.rightBumper().onTrue(ShooterCommands.fullshot(shooter, intake, colorSensor));
+
+    controller.back().whileTrue(new IntakeUntilNoteCommand(colorSensor, intake));
+    controller
+        .y()
+        .whileTrue(
+            Commands.startEnd(
+                () -> intake.setVoltage(-IntakeConstants.INTAKE_VOLTAGE), intake::stop, intake));
   }
 
   /**
