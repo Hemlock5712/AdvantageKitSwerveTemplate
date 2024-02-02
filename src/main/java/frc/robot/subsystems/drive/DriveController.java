@@ -1,12 +1,15 @@
 package frc.robot.subsystems.drive;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import frc.robot.util.AllianceFlipUtil;
+import frc.robot.util.FieldConstants;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 public class DriveController {
   private Optional<Supplier<Rotation2d>> headingSupplier = Optional.empty();
-  private DriveModeType driveModeType = DriveModeType.STANDARD;
+  private DriveModeType driveModeType = DriveModeType.SPEAKER;
 
   public void setHeadingSupplier(Supplier<Rotation2d> headingSupplier) {
     this.headingSupplier = Optional.of(headingSupplier);
@@ -37,15 +40,35 @@ public class DriveController {
   }
 
   public enum DriveModeType {
-    STANDARD,
     AMP,
     SPEAKER,
-    SHOOT_WHILE_MOVING,
-    SPIN_TO_WIN,
-    GAME_PICKUP,
   }
 
   public void setDriveMode(DriveModeType driveModeType) {
     this.driveModeType = driveModeType;
+  }
+
+  public void setAmpMode() {
+    setHeadingSupplier(() -> Rotation2d.fromDegrees(90));
+    setDriveMode(DriveController.DriveModeType.AMP);
+  }
+
+  public void setSpeakerMode(Supplier<Pose2d> poseSupplier) {
+    setHeadingSupplier(
+        () ->
+            new Rotation2d(
+                poseSupplier.get().getX()
+                    - AllianceFlipUtil.apply(
+                            FieldConstants.Speaker.centerSpeakerOpening.getTranslation())
+                        .getX(),
+                poseSupplier.get().getY()
+                    - AllianceFlipUtil.apply(
+                            FieldConstants.Speaker.centerSpeakerOpening.getTranslation())
+                        .getY()));
+    setDriveMode(DriveController.DriveModeType.SPEAKER);
+  }
+
+  public void disableDriveHeading() {
+    disableHeadingSupplier();
   }
 }

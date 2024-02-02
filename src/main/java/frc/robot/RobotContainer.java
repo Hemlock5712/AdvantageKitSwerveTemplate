@@ -28,10 +28,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.AutoRun;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ShootDistance;
 import frc.robot.commands.ShootPoint;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveController;
+import frc.robot.subsystems.drive.DriveController.DriveModeType;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
@@ -59,6 +62,7 @@ public class RobotContainer {
   private final Drive drive;
   private final Flywheel flywheel;
   private AprilTagVision aprilTagVision;
+  private static DriveController driveMode = new DriveController();
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -159,6 +163,7 @@ public class RobotContainer {
 
     // Configure the button bindings
     aprilTagVision.setDataInterfaces(drive::addVisionData);
+    driveMode.disableHeadingSupplier();
     configureButtonBindings();
   }
 
@@ -172,22 +177,26 @@ public class RobotContainer {
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
+            driveMode,
             () -> -controller.getLeftY(),
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
     controller
-        .x()
-        .whileTrue(
-            Commands.startEnd(DriveCommands::setAmpMode, DriveCommands::disableDriveHeading));
+        .leftBumper()
+        .whileTrue(Commands.run(() -> driveMode.setDriveMode(DriveModeType.AMP)));
+    controller
+        .rightBumper()
+        .whileTrue(Commands.run(() -> driveMode.setDriveMode(DriveModeType.SPEAKER)));
+
+    controller.a().whileTrue(new AutoRun(driveMode::getDriveModeType));
+
     controller
         .b()
         .whileTrue(
-            Commands.startEnd(
-                () -> DriveCommands.setSpeakerMode(drive::getPose),
-                DriveCommands::disableDriveHeading));
-    controller.y().whileTrue(drive.runToAmp());
+            Commands.startEnd(() -> driveMode.setAmpMode(), () -> driveMode.disableDriveHeading()));
+
     controller
-        .a()
+        .y()
         .whileTrue(
             Commands.run(
                 () ->
