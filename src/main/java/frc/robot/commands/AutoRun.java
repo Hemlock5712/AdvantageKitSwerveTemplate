@@ -28,17 +28,7 @@ public class AutoRun extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    driveMode = driveModeSupplier.get();
-    String pathName = "Amp Placement Path";
-    if (driveMode == DriveModeType.SPEAKER) {
-      pathName = "Speaker Placement Path";
-    }
-    PathPlannerPath ampPath = PathPlannerPath.fromPathFile(pathName);
-    PathConstraints constraints =
-        new PathConstraints(3.0, 4.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
-    pathRun = AutoBuilder.pathfindThenFollowPath(ampPath, constraints, 0.0);
-    scoreCommand = Commands.sequence(pathRun);
-    scoreCommand.schedule();
+    runNewAutonPath();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -46,8 +36,7 @@ public class AutoRun extends Command {
   public void execute() {
     if (driveMode != driveModeSupplier.get()) {
       scoreCommand.cancel();
-      driveMode = driveModeSupplier.get();
-      initialize();
+      runNewAutonPath();
     }
   }
 
@@ -62,5 +51,19 @@ public class AutoRun extends Command {
   @Override
   public boolean isFinished() {
     return pathRun.isFinished();
+  }
+
+  public void runNewAutonPath() {
+    driveMode = driveModeSupplier.get();
+    String pathName = "Amp Placement Path";
+    if (driveMode == DriveModeType.SPEAKER) {
+      pathName = "Speaker Placement Path";
+    }
+    PathPlannerPath ampPath = PathPlannerPath.fromPathFile(pathName);
+    PathConstraints constraints =
+        new PathConstraints(3.0, 4.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+    pathRun = AutoBuilder.pathfindThenFollowPath(ampPath, constraints, 0.0);
+    scoreCommand = Commands.sequence(pathRun);
+    scoreCommand.schedule();
   }
 }
