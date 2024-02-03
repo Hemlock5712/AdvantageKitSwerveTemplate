@@ -14,7 +14,8 @@ public class ArmIOSparkMax implements ArmIO {
       new DutyCycleEncoder(ArmConstants.DUTY_CYCLE_ENCODER_PORT);
 
   public ArmIOSparkMax() {
-    follower.follow(leader, false);
+    //The motors are mirrored, so invert
+    follower.follow(leader, true);
     encoder.reset();
     encoder.setDistancePerRotation(2 * Math.PI);
     // todo tune encoder
@@ -24,7 +25,6 @@ public class ArmIOSparkMax implements ArmIO {
   public void updateInputs(ArmIOInputs inputs) {
     // todo update switches
     inputs.positionRad = encoder.getDistance();
-//    inputs.velocityRadPerSec =
     inputs.appliedVolts = leader.getAppliedOutput() * leader.getBusVoltage();
     inputs.currentAmps = new double[] {leader.getOutputCurrent(), follower.getOutputCurrent()};
   }

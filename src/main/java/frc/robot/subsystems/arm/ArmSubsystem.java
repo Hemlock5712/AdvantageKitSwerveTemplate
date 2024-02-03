@@ -51,6 +51,10 @@ public class ArmSubsystem extends SubsystemBase {
     armIO.stop();
   }
 
+  public void setVoltage(double volts) {
+    armIO.setVoltage(volts);
+  }
+
   public double getPositionRad() {
     return armIOInputs.positionRad;
   }

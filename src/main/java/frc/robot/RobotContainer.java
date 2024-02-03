@@ -23,11 +23,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.AutoRun;
-import frc.robot.commands.DriveCommands;
-import frc.robot.commands.IntakeUntilNoteCommand;
-import frc.robot.commands.ShootPoint;
-import frc.robot.commands.ShooterCommands;
+import frc.robot.commands.*;
 import frc.robot.subsystems.ColorSensor.ColorSensor;
 import frc.robot.subsystems.ColorSensor.ColorSensorIO;
 import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
@@ -202,6 +198,9 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    arm.setDefaultCommand(ArmCommands.manuelArmCommand(
+            arm,
+            () -> controller.getLeftTriggerAxis() - controller.getRightTriggerAxis()));
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
@@ -209,28 +208,28 @@ public class RobotContainer {
             () -> -controller.getLeftY(),
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
-    controller.leftBumper().whileTrue(Commands.runOnce(() -> driveMode.toggleDriveMode()));
+//    controller.leftBumper().whileTrue(Commands.runOnce(() -> driveMode.toggleDriveMode()));
 
-    controller.a().whileTrue(new AutoRun(driveMode.getDriveModeType()));
+//    controller.a().whileTrue(new AutoRun(driveMode.getDriveModeType()));
 
-    controller
-        .b()
-        .whileTrue(
-            Commands.startEnd(
-                () -> driveMode.enableHeadingControl(), () -> driveMode.disableHeadingControl()));
+//    controller
+//        .b()
+//        .whileTrue(
+//            Commands.startEnd(
+//                () -> driveMode.enableHeadingControl(), () -> driveMode.disableHeadingControl()));
 
-    controller
-        .y()
-        .whileTrue(
-            Commands.runOnce(
-                () ->
-                    drive.setAutoStartPose(
-                        new Pose2d(new Translation2d(4, 5), Rotation2d.fromDegrees(0)))));
-    controller
-        .povDown()
-        .whileTrue(
-            new ShootPoint(
-                drive, new Pose2d(new Translation2d(2.954, 3.621), Rotation2d.fromRadians(2.617))));
+//    controller
+//        .y()
+//        .whileTrue(
+//            Commands.runOnce(
+//                () ->
+//                    drive.setAutoStartPose(
+//                        new Pose2d(new Translation2d(4, 5), Rotation2d.fromDegrees(0)))));
+//    controller
+//        .povDown()
+//        .whileTrue(
+//            new ShootPoint(
+//                drive, new Pose2d(new Translation2d(2.954, 3.621), Rotation2d.fromRadians(2.617))));
 
     // controller
     //     .b()
@@ -259,6 +258,7 @@ public class RobotContainer {
         .whileTrue(
             Commands.startEnd(
                 () -> intake.setVoltage(-IntakeConstants.INTAKE_VOLTAGE), intake::stop, intake));
+
   }
 
   /**
