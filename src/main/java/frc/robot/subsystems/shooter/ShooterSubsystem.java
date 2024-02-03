@@ -99,7 +99,10 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @AutoLogOutput
   public double getVelocityRPM() {
-    return Units.radiansPerSecondToRotationsPerMinute(inputs.velocityRadPerSec);
+    return
+            (Units.radiansPerSecondToRotationsPerMinute(topInputs.velocityRadPerSec) +
+            Units.radiansPerSecondToRotationsPerMinute(bottomInputs.velocityRadPerSec))
+    / 2.0;
   }
 
   /** Runs forwards at the commanded voltage. */
