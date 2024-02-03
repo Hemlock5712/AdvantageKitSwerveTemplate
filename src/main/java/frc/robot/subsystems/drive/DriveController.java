@@ -9,51 +9,77 @@ import java.util.function.Supplier;
 
 public class DriveController {
   private Optional<Supplier<Rotation2d>> headingSupplier = Optional.empty();
+  private Supplier<Pose2d> poseSupplier = Pose2d::new;
   private DriveModeType driveModeType = DriveModeType.SPEAKER;
 
+  // Sets the heading you want the robot to be facing
   public void setHeadingSupplier(Supplier<Rotation2d> headingSupplier) {
     this.headingSupplier = Optional.of(headingSupplier);
   }
 
+  // Passes the current pose of the robot
+  public void setPoseSupplier(Supplier<Pose2d> poseSupplier) {
+    this.poseSupplier = poseSupplier;
+  }
+
+  // Checks if the heading is being controlled
   public boolean isHeadingControlled() {
     return this.headingSupplier.isPresent();
   }
 
-  public boolean isSpeakerControlled() {
-    return this.headingSupplier.isPresent() && this.driveModeType == DriveModeType.SPEAKER;
+  // Gets the current drive mode
+  public Supplier<DriveModeType> getDriveModeType() {
+    return () -> this.driveModeType;
   }
 
-  public boolean isAmpControlled() {
-    return this.headingSupplier.isPresent() && this.driveModeType == DriveModeType.AMP;
+  // Gets the current heading angle
+  public Supplier<Rotation2d> getHeadingAngle() {
+    return headingSupplier.get();
   }
 
-  public DriveModeType getDriveModeType() {
-    return this.driveModeType;
+  // Sets the drive mode (amp or speaker mode)
+  public void setDriveMode(DriveModeType driveModeType) {
+    this.driveModeType = driveModeType;
+    updateHeading();
   }
 
-  public void disableHeadingSupplier() {
+  // Toggles the drive mode
+  public void toggleDriveMode() {
+    if (getDriveModeType().get() == DriveModeType.AMP) {
+      setDriveMode(DriveController.DriveModeType.SPEAKER);
+    } else {
+      setDriveMode(DriveController.DriveModeType.AMP);
+    }
+  }
+
+  // Engages based on the current drive mode
+  public void enableHeadingControl() {
+    if (this.driveModeType == DriveModeType.AMP) {
+      enableAmpHeading();
+    } else {
+      enableSpeakerHeading();
+    }
+  }
+
+  // Disables the heading supplier (heading control is disabled)
+  public void disableHeadingControl() {
     this.headingSupplier = Optional.empty();
   }
 
-  public Rotation2d getHeadingAngle() {
-    return headingSupplier.get().get();
+  // Updates the heading if it is being controlled
+  private void updateHeading() {
+    if (isHeadingControlled()) {
+      enableHeadingControl();
+    }
   }
 
-  public enum DriveModeType {
-    AMP,
-    SPEAKER,
-  }
-
-  public void setDriveMode(DriveModeType driveModeType) {
-    this.driveModeType = driveModeType;
-  }
-
-  public void setAmpMode() {
+  // Turns on heading control and sets to amp mode
+  private void enableAmpHeading() {
     setHeadingSupplier(() -> Rotation2d.fromDegrees(90));
-    setDriveMode(DriveController.DriveModeType.AMP);
   }
 
-  public void setSpeakerMode(Supplier<Pose2d> poseSupplier) {
+  // Turns on heading control and sets to speaker mode
+  private void enableSpeakerHeading() {
     setHeadingSupplier(
         () ->
             new Rotation2d(
@@ -65,10 +91,11 @@ public class DriveController {
                     - AllianceFlipUtil.apply(
                             FieldConstants.Speaker.centerSpeakerOpening.getTranslation())
                         .getY()));
-    setDriveMode(DriveController.DriveModeType.SPEAKER);
   }
 
-  public void disableDriveHeading() {
-    disableHeadingSupplier();
+  // Possible Drive Modes
+  public enum DriveModeType {
+    AMP,
+    SPEAKER,
   }
 }

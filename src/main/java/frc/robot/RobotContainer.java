@@ -34,7 +34,6 @@ import frc.robot.commands.ShootDistance;
 import frc.robot.commands.ShootPoint;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveController;
-import frc.robot.subsystems.drive.DriveController.DriveModeType;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
@@ -163,7 +162,8 @@ public class RobotContainer {
 
     // Configure the button bindings
     aprilTagVision.setDataInterfaces(drive::addVisionData);
-    driveMode.disableHeadingSupplier();
+    driveMode.setPoseSupplier(drive::getPose);
+    driveMode.disableHeadingControl();
     configureButtonBindings();
   }
 
@@ -181,24 +181,20 @@ public class RobotContainer {
             () -> -controller.getLeftY(),
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
-    controller
-        .leftBumper()
-        .whileTrue(Commands.run(() -> driveMode.setDriveMode(DriveModeType.AMP)));
-    controller
-        .rightBumper()
-        .whileTrue(Commands.run(() -> driveMode.setDriveMode(DriveModeType.SPEAKER)));
+    controller.leftBumper().whileTrue(Commands.runOnce(() -> driveMode.toggleDriveMode()));
 
-    controller.a().whileTrue(new AutoRun(driveMode::getDriveModeType));
+    controller.a().whileTrue(new AutoRun(driveMode.getDriveModeType()));
 
     controller
         .b()
         .whileTrue(
-            Commands.startEnd(() -> driveMode.setAmpMode(), () -> driveMode.disableDriveHeading()));
+            Commands.startEnd(
+                () -> driveMode.enableHeadingControl(), () -> driveMode.disableHeadingControl()));
 
     controller
         .y()
         .whileTrue(
-            Commands.run(
+            Commands.runOnce(
                 () ->
                     drive.setAutoStartPose(
                         new Pose2d(new Translation2d(4, 5), Rotation2d.fromDegrees(0)))));
