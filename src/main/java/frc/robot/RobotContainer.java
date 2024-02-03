@@ -198,7 +198,7 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    arm.setDefaultCommand(ArmCommands.manuelArmCommand(
+    arm.setDefaultCommand(ArmCommands.manualArmCommand(
             arm,
             () -> controller.getLeftTriggerAxis() - controller.getRightTriggerAxis()));
     drive.setDefaultCommand(
