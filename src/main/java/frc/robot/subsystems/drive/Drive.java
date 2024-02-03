@@ -17,9 +17,8 @@ import static edu.wpi.first.units.Units.*;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.Matrix;
@@ -109,6 +108,10 @@ public class Drive extends SubsystemBase {
         () -> kinematics.toChassisSpeeds(getModuleStates()),
         this::runVelocity,
         new HolonomicPathFollowerConfig(
+            new PIDConstants(
+                PPtranslationConstants.kP, PPtranslationConstants.kI, PPtranslationConstants.kD),
+            new PIDConstants(
+                PProtationConstants.kP, PProtationConstants.kI, PProtationConstants.kD),
             drivetrainConfig.maxLinearVelocity(),
             drivetrainConfig.driveBaseRadius(),
             new ReplanningConfig()),
@@ -321,13 +324,6 @@ public class Drive extends SubsystemBase {
 
   public static ProfiledPIDController getThetaController() {
     return thetaController;
-  }
-
-  public Command runToAmp() {
-    PathPlannerPath ampPath = PathPlannerPath.fromPathFile("Amp Placement Path");
-    PathConstraints constraints =
-        new PathConstraints(3.0, 4.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
-    return AutoBuilder.pathfindThenFollowPath(ampPath, constraints, 0.0);
   }
 
   public void resetGyro() {

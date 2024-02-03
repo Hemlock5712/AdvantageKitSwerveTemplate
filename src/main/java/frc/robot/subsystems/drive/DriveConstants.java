@@ -1,5 +1,6 @@
 package frc.robot.subsystems.drive;
 
+import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -9,7 +10,6 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
-import lombok.Builder;
 
 /** All Constants Measured in Meters and Radians (m/s, m/s^2, rad/s, rad/s^2) */
 public final class DriveConstants {
@@ -125,8 +125,20 @@ public final class DriveConstants {
 
   public static HeadingControllerConstants headingControllerConstants =
       switch (Constants.getRobot()) {
-        case COMPBOT -> new HeadingControllerConstants(8.0, 0.0);
-        case SIMBOT -> new HeadingControllerConstants(4.0, 0.0);
+        case COMPBOT -> new HeadingControllerConstants(3.0, 0.0);
+        case SIMBOT -> new HeadingControllerConstants(3.0, 0.0);
+      };
+
+  public static final PIDConstants PPtranslationConstants =
+      switch (Constants.getRobot()) {
+        case COMPBOT -> new PIDConstants(10, 0.0, 0.0);
+        case SIMBOT -> new PIDConstants(10, 0.0, 0.0);
+      };
+
+  public static final PIDConstants PProtationConstants =
+      switch (Constants.getRobot()) {
+        case COMPBOT -> new PIDConstants(10, 0.0, 0.0);
+        case SIMBOT -> new PIDConstants(10, 0.0, 0.0);
       };
 
   public record DrivetrainConfig(
@@ -159,7 +171,7 @@ public final class DriveConstants {
       double driveReduction,
       double turnReduction) {}
 
-    public record HeadingControllerConstants(double Kp, double Kd) {}
+  public record HeadingControllerConstants(double Kp, double Kd) {}
 
   private enum Mk4iReductions {
     L2((50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0)),
