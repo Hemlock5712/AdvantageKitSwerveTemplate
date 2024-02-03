@@ -9,62 +9,90 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class ShooterSubsystem extends SubsystemBase {
-  private final ShooterIO io;
+  private final ShooterIO topIO;
+  private final ShooterIO bottomIO;
   private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
-  private final SimpleMotorFeedforward feedForward;
+  private final SimpleMotorFeedforward topFeedForward;
+  private final SimpleMotorFeedforward bottomFeedForward;
 
-  public ShooterSubsystem(ShooterIO io) {
-    this.io = io;
+  public ShooterSubsystem(ShooterIO topIO, ShooterIO bottomIO) {
+    this.topIO = topIO;
+    this.bottomIO = bottomIO;
 
     // Switch constants based on mode (the physics simulator is treated as a
     // separate robot with different tuning)
     switch (Constants.getMode()) {
       case REAL:
       case REPLAY:
-        feedForward =
+        topFeedForward =
             new SimpleMotorFeedforward(
-                ShooterConstants.Real.FeedForwardConstants.kS,
-                ShooterConstants.Real.FeedForwardConstants.kV);
-        io.configurePID(
-            ShooterConstants.Real.PIDConstants.kP,
-            ShooterConstants.Real.PIDConstants.kI,
-            ShooterConstants.Real.PIDConstants.kD);
+                ShooterConstants.Real.FeedForwardConstants.TopConstants.kS,
+                ShooterConstants.Real.FeedForwardConstants.TopConstants.kV);
+        topIO.configurePID(
+            ShooterConstants.Real.PIDConstants.TopConstants.kP,
+            ShooterConstants.Real.PIDConstants.TopConstants.kI,
+            ShooterConstants.Real.PIDConstants.TopConstants.kD);
+
+        bottomFeedForward =
+                new SimpleMotorFeedforward(
+                        ShooterConstants.Real.FeedForwardConstants.TopConstants.kS,
+                        ShooterConstants.Real.FeedForwardConstants.TopConstants.kV);
+        bottomIO.configurePID(
+                ShooterConstants.Real.PIDConstants.TopConstants.kP,
+                ShooterConstants.Real.PIDConstants.TopConstants.kI,
+                ShooterConstants.Real.PIDConstants.TopConstants.kD);
         break;
       case SIM:
-        feedForward =
-            new SimpleMotorFeedforward(
-                ShooterConstants.Sim.FeedForwardConstants.kS,
-                ShooterConstants.Sim.FeedForwardConstants.kV);
-        io.configurePID(
-            ShooterConstants.Sim.PIDConstants.kP,
-            ShooterConstants.Sim.PIDConstants.kI,
-            ShooterConstants.Sim.PIDConstants.kD);
+        topFeedForward =
+                new SimpleMotorFeedforward(
+                        ShooterConstants.Sim.FeedForwardConstants.TopConstants.kS,
+                        ShooterConstants.Sim.FeedForwardConstants.TopConstants.kV);
+        topIO.configurePID(
+                ShooterConstants.Sim.PIDConstants.TopConstants.kP,
+                ShooterConstants.Sim.PIDConstants.TopConstants.kI,
+                ShooterConstants.Sim.PIDConstants.TopConstants.kD);
+
+        bottomFeedForward =
+                new SimpleMotorFeedforward(
+                        ShooterConstants.Sim.FeedForwardConstants.TopConstants.kS,
+                        ShooterConstants.Sim.FeedForwardConstants.TopConstants.kV);
+        bottomIO.configurePID(
+                ShooterConstants.Sim.PIDConstants.TopConstants.kP,
+                ShooterConstants.Sim.PIDConstants.TopConstants.kI,
+                ShooterConstants.Sim.PIDConstants.TopConstants.kD);
         break;
       default:
-        feedForward = new SimpleMotorFeedforward(0.0, 0.0);
+        topFeedForward = new SimpleMotorFeedforward(0.0, 0.0);
+        bottomFeedForward = new SimpleMotorFeedforward(0.0, 0.0);
         break;
     }
   }
 
   @Override
   public void periodic() {
-    io.updateInputs(inputs);
+    //I'm not sure if this updates the inputs correctly, since the two ios are
+    //using the same inputs
+    topIO.updateInputs(inputs);
+    bottomIO.updateInputs(inputs);
     Logger.processInputs("Shooter", inputs);
   }
 
   public void runVelocity(double velocityRPM) {
     double velocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(velocityRPM);
-    io.setVelocity(velocityRadPerSec, feedForward.calculate(velocityRadPerSec));
+    topIO.setVelocity(velocityRadPerSec, topFeedForward.calculate(velocityRadPerSec));
+    bottomIO.setVelocity(velocityRadPerSec, bottomFeedForward.calculate(velocityRadPerSec));
 
     Logger.recordOutput("Shooter Setpoint RPM", velocityRPM);
   }
 
   public void runVolts(double volts) {
-    io.setVoltage(volts);
+    topIO.setVoltage(volts);
+    bottomIO.setVoltage(volts);
   }
 
   public void stop() {
-    io.stop();
+    topIO.stop();
+    bottomIO.stop();
   }
 
   @AutoLogOutput
@@ -73,8 +101,9 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   /** Runs forwards at the commanded voltage. */
+  //Change this to bottomIO when characterizing the bottom wheels
   public void runCharacterizationVolts(double volts) {
-    io.setVoltage(volts);
+    topIO.setVoltage(volts);
   }
 
   /** Returns the average drive velocity in radians/sec. */

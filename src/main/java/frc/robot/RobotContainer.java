@@ -42,6 +42,7 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
 import frc.robot.subsystems.intake.*;
+import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOSparkMax;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
@@ -99,7 +100,9 @@ public class RobotContainer {
 
         colorSensor = new ColorSensor(new ColorSensorIOReal());
 
-        shooter = new ShooterSubsystem(new ShooterIOSparkMax());
+        shooter = new ShooterSubsystem(
+                new ShooterIOSparkMax(ShooterConstants.ShooterWheels.TOP),
+                new ShooterIOSparkMax(ShooterConstants.ShooterWheels.BOTTOM));
 
         intake = new Intake(new IntakeIOTalonSRX());
 
@@ -123,7 +126,9 @@ public class RobotContainer {
                     new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
                     drive::getDrive));
         // flywheel = new Flywheel(new FlywheelIOSim());
-        shooter = new ShooterSubsystem(new ShooterIO() {});
+        shooter = new ShooterSubsystem(
+                new ShooterIO() {},
+                new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
         colorSensor = new ColorSensor(new ColorSensorIO() {});
         arm = new ArmSubsystem(new ArmIO() {});
@@ -141,7 +146,9 @@ public class RobotContainer {
                 new ModuleIO() {});
         // flywheel = new Flywheel(new FlywheelIO() {});
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
-        shooter = new ShooterSubsystem(new ShooterIO() {});
+        shooter = new ShooterSubsystem(
+                new ShooterIO() {},
+                new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
         colorSensor = new ColorSensor(new ColorSensorIO() {});
         arm = new ArmSubsystem(new ArmIO() {});

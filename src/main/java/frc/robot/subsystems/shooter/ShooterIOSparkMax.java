@@ -4,44 +4,47 @@ import com.revrobotics.*;
 import edu.wpi.first.math.util.Units;
 
 public class ShooterIOSparkMax implements ShooterIO {
-  private final CANSparkMax leader =
-      new CANSparkMax(ShooterConstants.TOP_MOTOR_ID, CANSparkLowLevel.MotorType.kBrushless);
-  private final CANSparkMax follower =
-      new CANSparkMax(ShooterConstants.BOTTOM_MOTOR_ID, CANSparkLowLevel.MotorType.kBrushless);
-  private final RelativeEncoder encoder = leader.getEncoder();
-  private final SparkPIDController pidController = leader.getPIDController();
+  private final CANSparkMax motor;
+  private final RelativeEncoder encoder;
+  private final SparkPIDController pidController;
 
-  public ShooterIOSparkMax() {
-    leader.restoreFactoryDefaults();
-    follower.restoreFactoryDefaults();
+  public ShooterIOSparkMax(ShooterConstants.ShooterWheels topOrBottom) {
+    switch(topOrBottom) {
+      case TOP:
+        motor = new CANSparkMax(ShooterConstants.TOP_MOTOR_ID, CANSparkLowLevel.MotorType.kBrushless);
+        break;
+      case BOTTOM:
+        motor = new CANSparkMax(ShooterConstants.BOTTOM_MOTOR_ID, CANSparkLowLevel.MotorType.kBrushless);
+        break;
+      default:
+        System.out.println("Shooter top/bottom not valid");
+        motor = null;
+        break;
+    }
+    motor.restoreFactoryDefaults();
+    motor.setCANTimeout(250);
+    motor.setInverted(false);
+    motor.enableVoltageCompensation(12.0);
+    motor.setSmartCurrentLimit(30);
+    motor.setClosedLoopRampRate(ShooterConstants.CLOSED_LOOP_RAMP_RATE);
+    motor.setOpenLoopRampRate(ShooterConstants.OPEN_LOOP_RAMP_RATE);
+    motor.burnFlash();
 
-    leader.setCANTimeout(250);
-    follower.setCANTimeout(250);
-
-    leader.setInverted(false);
-    follower.follow(leader, false);
-
-    leader.enableVoltageCompensation(12.0);
-    leader.setSmartCurrentLimit(30);
-
-    leader.setClosedLoopRampRate(ShooterConstants.CLOSED_LOOP_RAMP_RATE);
-    leader.setOpenLoopRampRate(ShooterConstants.OPEN_LOOP_RAMP_RATE);
-
-    leader.burnFlash();
-    follower.burnFlash();
+    encoder = motor.getEncoder();
+    pidController = motor.getPIDController();
   }
 
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
     inputs.positionRad = Units.rotationsToRadians(encoder.getPosition());
     inputs.velocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(encoder.getVelocity());
-    inputs.appliedVolts = leader.getAppliedOutput() * leader.getBusVoltage();
-    inputs.currentAmps = new double[] {leader.getOutputCurrent(), follower.getOutputCurrent()};
+    inputs.appliedVolts = motor.getAppliedOutput() * motor.getBusVoltage();
+    inputs.currentAmps = new double[] {motor.getOutputCurrent()};
   }
 
   @Override
   public void setVoltage(double volts) {
-    leader.setVoltage(volts);
+    motor.setVoltage(volts);
   }
 
   @Override
@@ -56,7 +59,7 @@ public class ShooterIOSparkMax implements ShooterIO {
 
   @Override
   public void stop() {
-    leader.stopMotor();
+    motor.stopMotor();
   }
 
   @Override
