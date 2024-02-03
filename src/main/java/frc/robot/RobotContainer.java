@@ -29,6 +29,9 @@ import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.ColorSensor.ColorSensor;
 import frc.robot.subsystems.ColorSensor.ColorSensorIO;
 import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
+import frc.robot.subsystems.arm.ArmIO;
+import frc.robot.subsystems.arm.ArmIOSparkMax;
+import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIONavX2;
@@ -59,6 +62,7 @@ public class RobotContainer {
 
   private final Intake intake;
   private final ColorSensor colorSensor;
+  private final ArmSubsystem arm;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -94,6 +98,8 @@ public class RobotContainer {
         shooter = new ShooterSubsystem(new ShooterIOSparkMax());
 
         intake = new Intake(new IntakeIOTalonSRX());
+
+        arm = new ArmSubsystem(new ArmIOSparkMax());
         break;
 
       case SIM:
@@ -116,6 +122,7 @@ public class RobotContainer {
         shooter = new ShooterSubsystem(new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
         colorSensor = new ColorSensor(new ColorSensorIO() {});
+        arm = new ArmSubsystem(new ArmIO() {});
 
         break;
 
@@ -133,6 +140,8 @@ public class RobotContainer {
         shooter = new ShooterSubsystem(new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
         colorSensor = new ColorSensor(new ColorSensorIO() {});
+        arm = new ArmSubsystem(new ArmIO() {});
+
 
         break;
     }
