@@ -11,7 +11,8 @@ import org.littletonrobotics.junction.Logger;
 public class ShooterSubsystem extends SubsystemBase {
   private final ShooterIO topIO;
   private final ShooterIO bottomIO;
-  private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
+  private final ShooterIOInputsAutoLogged topInputs = new ShooterIOInputsAutoLogged();
+  private final ShooterIOInputsAutoLogged bottomInputs = new ShooterIOInputsAutoLogged();
   private final SimpleMotorFeedforward topFeedForward;
   private final SimpleMotorFeedforward bottomFeedForward;
 
@@ -72,9 +73,10 @@ public class ShooterSubsystem extends SubsystemBase {
   public void periodic() {
     //I'm not sure if this updates the inputs correctly, since the two ios are
     //using the same inputs
-    topIO.updateInputs(inputs);
-    bottomIO.updateInputs(inputs);
-    Logger.processInputs("Shooter", inputs);
+    topIO.updateInputs(topInputs);
+    bottomIO.updateInputs(bottomInputs);
+    Logger.processInputs("Shooter/Top", topInputs);
+    Logger.processInputs("Shooter/Bottom", bottomInputs);
   }
 
   public void runVelocity(double velocityRPM) {
@@ -108,15 +110,19 @@ public class ShooterSubsystem extends SubsystemBase {
 
   /** Returns the average drive velocity in radians/sec. */
   public double getCharacterizationVelocity() {
-    return inputs.velocityRadPerSec;
+    return topInputs.velocityRadPerSec;
   }
 
   @Override
   public void initSendable(SendableBuilder builder) {
     super.initSendable(builder);
     builder.addDoubleProperty(
-        "Shooter RPM",
-        () -> Units.radiansPerSecondToRotationsPerMinute(inputs.velocityRadPerSec),
+        "Shooter RPM Top",
+        () -> Units.radiansPerSecondToRotationsPerMinute(topInputs.velocityRadPerSec),
         null);
+    builder.addDoubleProperty(
+            "Shooter RPM Bottom",
+            () -> Units.radiansPerSecondToRotationsPerMinute(bottomInputs.velocityRadPerSec),
+            null);
   }
 }
