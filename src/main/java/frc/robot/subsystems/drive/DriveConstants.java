@@ -1,5 +1,6 @@
 package frc.robot.subsystems.drive;
 
+import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -124,8 +125,20 @@ public final class DriveConstants {
 
   public static HeadingControllerConstants headingControllerConstants =
       switch (Constants.getRobot()) {
-        case COMPBOT -> new HeadingControllerConstants(8.0, 0.0);
-        case SIMBOT -> new HeadingControllerConstants(4.0, 0.0);
+        case COMPBOT -> new HeadingControllerConstants(3.0, 0.0);
+        case SIMBOT -> new HeadingControllerConstants(3.0, 0.0);
+      };
+
+  public static final PIDConstants PPtranslationConstants =
+      switch (Constants.getRobot()) {
+        case COMPBOT -> new PIDConstants(10, 0.0, 0.0);
+        case SIMBOT -> new PIDConstants(10, 0.0, 0.0);
+      };
+
+  public static final PIDConstants PProtationConstants =
+      switch (Constants.getRobot()) {
+        case COMPBOT -> new PIDConstants(10, 0.0, 0.0);
+        case SIMBOT -> new PIDConstants(10, 0.0, 0.0);
       };
 
   public record DrivetrainConfig(

@@ -27,18 +27,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveController;
-import frc.robot.util.AllianceFlipUtil;
-import frc.robot.util.FieldConstants;
 import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
-  private static DriveController driveMode = new DriveController();
-
-  static {
-    driveMode.disableHeadingSupplier();
-  }
 
   private DriveCommands() {}
 
@@ -47,6 +39,7 @@ public class DriveCommands {
    */
   public static Command joystickDrive(
       Drive drive,
+      DriveController driveMode,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
@@ -59,12 +52,12 @@ public class DriveCommands {
           Rotation2d linearDirection =
               new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
           double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
-          if (driveMode.isAmpControlled() || driveMode.isSpeakerControlled()) {
+          if (driveMode.isHeadingControlled()) {
             final var targetAngle = driveMode.getHeadingAngle();
             omega =
                 Drive.getThetaController()
                     .calculate(
-                        drive.getPose().getRotation().getRadians(), targetAngle.getRadians());
+                        drive.getPose().getRotation().getRadians(), targetAngle.get().getRadians());
             if (Drive.getThetaController().atGoal()) {
               omega = 0;
             }
@@ -95,34 +88,5 @@ public class DriveCommands {
                       : drive.getRotation()));
         },
         drive);
-  }
-
-  public static void setDriveHeading(Supplier<Rotation2d> headingSupplier) {
-    driveMode.setHeadingSupplier(headingSupplier);
-  }
-
-  public static void setAmpMode() {
-    setDriveHeading(() -> Rotation2d.fromDegrees(90));
-    driveMode.setDriveMode(DriveController.DriveModeType.AMP);
-  }
-
-  public static void setSpeakerMode(Supplier<Pose2d> poseSupplier) {
-    setDriveHeading(
-        () ->
-            new Rotation2d(
-                poseSupplier.get().getX()
-                    - AllianceFlipUtil.apply(
-                            FieldConstants.Speaker.centerSpeakerOpening.getTranslation())
-                        .getX(),
-                poseSupplier.get().getY()
-                    - AllianceFlipUtil.apply(
-                            FieldConstants.Speaker.centerSpeakerOpening.getTranslation())
-                        .getY()));
-    driveMode.setDriveMode(DriveController.DriveModeType.SPEAKER);
-  }
-
-  public static void disableDriveHeading() {
-    driveMode.disableHeadingSupplier();
-    driveMode.setDriveMode(DriveController.DriveModeType.STANDARD);
   }
 }

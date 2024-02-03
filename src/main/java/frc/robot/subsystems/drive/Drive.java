@@ -17,10 +17,8 @@ import static edu.wpi.first.units.Units.*;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.Matrix;
@@ -43,7 +41,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.util.LocalADStarAK;
 import frc.robot.util.VisionHelpers.TimestampedVisionUpdate;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -111,6 +108,10 @@ public class Drive extends SubsystemBase {
         () -> kinematics.toChassisSpeeds(getModuleStates()),
         this::runVelocity,
         new HolonomicPathFollowerConfig(
+            new PIDConstants(
+                PPtranslationConstants.kP, PPtranslationConstants.kI, PPtranslationConstants.kD),
+            new PIDConstants(
+                PProtationConstants.kP, PProtationConstants.kI, PProtationConstants.kD),
             drivetrainConfig.maxLinearVelocity(),
             drivetrainConfig.driveBaseRadius(),
             new ReplanningConfig()),
@@ -297,7 +298,7 @@ public class Drive extends SubsystemBase {
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
   }
 
-  public void setAutoStartPose(Pose2d pose){
+  public void setAutoStartPose(Pose2d pose) {
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
     odometryDrive.resetPosition(rawGyroRotation, getModulePositions(), pose);
   }
@@ -323,12 +324,5 @@ public class Drive extends SubsystemBase {
 
   public static ProfiledPIDController getThetaController() {
     return thetaController;
-  }
-
-  public Command runToAmp() {
-    PathPlannerPath ampPath = PathPlannerPath.fromPathFile("Amp Placement Path");
-    PathConstraints constraints =
-        new PathConstraints(3.0, 4.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
-    return AutoBuilder.pathfindThenFollowPath(ampPath, constraints, 0.0);
   }
 }
