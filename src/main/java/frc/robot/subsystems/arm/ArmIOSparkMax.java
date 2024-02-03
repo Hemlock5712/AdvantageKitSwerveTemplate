@@ -2,28 +2,21 @@ package frc.robot.subsystems.arm;
 
 import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.ColorSensorV3;
-import com.revrobotics.SparkPIDController;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.I2C;
-import edu.wpi.first.wpilibj.util.Color;
-import frc.robot.subsystems.ColorSensor.ColorSensorIO;
-import frc.robot.subsystems.shooter.ShooterConstants;
-import org.littletonrobotics.junction.Logger;
 
 public class ArmIOSparkMax implements ArmIO {
   private final CANSparkMax leader =
-          new CANSparkMax(ArmConstants.LEFT_MOTOR_ID, CANSparkLowLevel.MotorType.kBrushless);
+      new CANSparkMax(ArmConstants.LEFT_MOTOR_ID, CANSparkLowLevel.MotorType.kBrushless);
   private final CANSparkMax follower =
-          new CANSparkMax(ArmConstants.RIGHT_MOTOR_ID, CANSparkLowLevel.MotorType.kBrushless);
-  private final Encoder encoder = new Encoder(ArmConstants.ENCODER_PORT_1, ArmConstants.ENCODER_PORT_2);
+      new CANSparkMax(ArmConstants.RIGHT_MOTOR_ID, CANSparkLowLevel.MotorType.kBrushless);
+  private final Encoder encoder =
+      new Encoder(ArmConstants.ENCODER_PORT_1, ArmConstants.ENCODER_PORT_2);
+
   public ArmIOSparkMax() {
     follower.follow(leader, false);
-    //todo tune encoder
+    // todo tune encoder
   }
-
 
   @Override
   public void updateInputs(ArmIOInputs inputs) {

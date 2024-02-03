@@ -23,8 +23,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.AutoRun;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.IntakeUntilNoteCommand;
+import frc.robot.commands.ShootPoint;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.ColorSensor.ColorSensor;
 import frc.robot.subsystems.ColorSensor.ColorSensorIO;
@@ -33,6 +35,7 @@ import frc.robot.subsystems.arm.ArmIO;
 import frc.robot.subsystems.arm.ArmIOSparkMax;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveController;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIONavX2;
 import frc.robot.subsystems.drive.ModuleIO;
@@ -58,6 +61,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private AprilTagVision aprilTagVision;
+  private static DriveController driveMode = new DriveController();
   private final ShooterSubsystem shooter;
 
   private final Intake intake;
@@ -142,7 +146,6 @@ public class RobotContainer {
         colorSensor = new ColorSensor(new ColorSensorIO() {});
         arm = new ArmSubsystem(new ArmIO() {});
 
-
         break;
     }
 
@@ -180,6 +183,8 @@ public class RobotContainer {
 
     // Configure the button bindings
     aprilTagVision.setDataInterfaces(drive::addVisionData);
+    driveMode.setPoseSupplier(drive::getPose);
+    driveMode.disableHeadingControl();
     configureButtonBindings();
   }
 
@@ -193,27 +198,33 @@ public class RobotContainer {
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
+            driveMode,
             () -> -controller.getLeftY(),
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
-    controller
-        .x()
-        .whileTrue(
-            Commands.startEnd(DriveCommands::setAmpMode, DriveCommands::disableDriveHeading));
+    controller.leftBumper().whileTrue(Commands.runOnce(() -> driveMode.toggleDriveMode()));
+
+    controller.a().whileTrue(new AutoRun(driveMode.getDriveModeType()));
+
     controller
         .b()
         .whileTrue(
             Commands.startEnd(
-                () -> DriveCommands.setSpeakerMode(drive::getPose),
-                DriveCommands::disableDriveHeading));
-    //    controller.y().whileTrue(drive.runToAmp());
+                () -> driveMode.enableHeadingControl(), () -> driveMode.disableHeadingControl()));
+
     controller
-        .a()
+        .y()
         .whileTrue(
-            Commands.run(
+            Commands.runOnce(
                 () ->
                     drive.setAutoStartPose(
                         new Pose2d(new Translation2d(4, 5), Rotation2d.fromDegrees(0)))));
+    controller
+        .povDown()
+        .whileTrue(
+            new ShootPoint(
+                drive, new Pose2d(new Translation2d(2.954, 3.621), Rotation2d.fromRadians(2.617))));
+
     // controller
     //     .b()
     //     .onTrue(

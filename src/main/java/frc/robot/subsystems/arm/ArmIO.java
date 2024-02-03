@@ -31,5 +31,7 @@ public interface ArmIO {
 
   public default void setVoltage(double volts) {}
 
-  public default void stop() {setVoltage(0);}
+  public default void stop() {
+    setVoltage(0);
+  }
 }

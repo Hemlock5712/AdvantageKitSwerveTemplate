@@ -10,8 +10,9 @@ public class ArmSubsystem extends SubsystemBase {
   private final ArmIO armIO;
   private final ArmIOInputsAutoLogged armIOInputs = new ArmIOInputsAutoLogged();
   private final ArmFeedforward feedforward =
-          new ArmFeedforward(ArmConstants.kS, ArmConstants.kG, ArmConstants.kV, ArmConstants.kA);
-  private final PIDController pidController = new PIDController(ArmConstants.kP, ArmConstants.kI, ArmConstants.kD);
+      new ArmFeedforward(ArmConstants.kS, ArmConstants.kG, ArmConstants.kV, ArmConstants.kA);
+  private final PIDController pidController =
+      new PIDController(ArmConstants.kP, ArmConstants.kI, ArmConstants.kD);
   private double setpoint = 0.0;
   private boolean active = false;
 
@@ -29,7 +30,6 @@ public class ArmSubsystem extends SubsystemBase {
       double pidVolts = pidController.calculate(armIOInputs.positionRad);
 
       double volts = ffVolts + pidVolts;
-
 
       volts = MathUtil.clamp(volts, -12, 12);
 
