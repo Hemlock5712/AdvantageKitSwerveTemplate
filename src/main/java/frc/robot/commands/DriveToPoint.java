@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.AllianceFlipUtil;
 
-public class ShootPoint extends Command {
+public class DriveToPoint extends Command {
   // THIS IS JUST A DOCUMENT FOR TESTING pathfindToPose. I RECOMMEND YOU USE pathfindThenFollowPath
   // INSTEAD
   Drive drive;
@@ -22,7 +22,7 @@ public class ShootPoint extends Command {
   private Command scoreCommand;
 
   /** Creates a new ShootPoint. */
-  public ShootPoint(Drive drive, Pose2d targetPose) {
+  public DriveToPoint(Drive drive, Pose2d targetPose) {
     // Use addRequirements() here to declare subsystem dependencies.
     // For shooting you would also want to pass in your shooter subsystem
     this.drive = drive;
