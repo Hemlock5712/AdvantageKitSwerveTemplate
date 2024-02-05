@@ -28,7 +28,7 @@ public class AprilTagVisionIOPhotonVision implements AprilTagVisionIO {
   private double lastEstTimestamp = 0;
 
   /**
-   * Constructs a new AprilTagVisionIOPhotonVisionSIM instance.
+   * Constructs a new AprilTagVisionIOPhotonVision instance.
    *
    * @param identifier The identifier of the PhotonCamera.
    * @param robotToCamera The transform from the robot's coordinate system to the camera's
