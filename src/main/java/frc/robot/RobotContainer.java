@@ -28,9 +28,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.AutoRun;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.ShootPoint;
+import frc.robot.commands.DriveToPoint;
+import frc.robot.commands.MultiDistanceShot;
+import frc.robot.commands.PathFinderAndFollow;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveController;
 import frc.robot.subsystems.drive.GyroIO;
@@ -174,7 +175,7 @@ public class RobotContainer {
             () -> -controller.getRightX()));
     controller.leftBumper().whileTrue(Commands.runOnce(() -> driveMode.toggleDriveMode()));
 
-    controller.a().whileTrue(new AutoRun(driveMode.getDriveModeType()));
+    controller.a().whileTrue(new PathFinderAndFollow(driveMode.getDriveModeType()));
 
     controller
         .b()
@@ -192,8 +193,14 @@ public class RobotContainer {
     controller
         .povDown()
         .whileTrue(
-            new ShootPoint(
+            new DriveToPoint(
                 drive, new Pose2d(new Translation2d(2.954, 3.621), Rotation2d.fromRadians(2.617))));
+
+    controller
+        .povUp()
+        .whileTrue(
+            new MultiDistanceShot(
+                drive::getPose, FieldConstants.Speaker.centerSpeakerOpening, flywheel));
 
     // controller
     //     .b()
