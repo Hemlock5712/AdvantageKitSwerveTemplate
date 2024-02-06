@@ -31,6 +31,10 @@ import frc.robot.subsystems.arm.ArmIO;
 import frc.robot.subsystems.arm.ArmIOSim;
 import frc.robot.subsystems.arm.ArmIOSparkMax;
 import frc.robot.subsystems.arm.ArmSubsystem;
+import frc.robot.commands.DriveCommands;
+import frc.robot.commands.DriveToPoint;
+import frc.robot.commands.MultiDistanceShot;
+import frc.robot.commands.PathFinderAndFollow;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveController;
 import frc.robot.subsystems.drive.GyroIO;
@@ -230,6 +234,12 @@ public class RobotContainer {
     //            new ShootPoint(
     //                drive, new Pose2d(new Translation2d(2.954, 3.621),
     // Rotation2d.fromRadians(2.617))));
+
+    //controller
+    //    .povUp()
+    //    .whileTrue(
+    //        new MultiDistanceShot(
+    //            drive::getPose, FieldConstants.Speaker.centerSpeakerOpening, flywheel));
 
     // controller
     //     .b()
