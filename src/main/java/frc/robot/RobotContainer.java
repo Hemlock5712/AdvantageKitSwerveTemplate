@@ -28,6 +28,7 @@ import frc.robot.subsystems.ColorSensor.ColorSensor;
 import frc.robot.subsystems.ColorSensor.ColorSensorIO;
 import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
 import frc.robot.subsystems.arm.ArmIO;
+import frc.robot.subsystems.arm.ArmIOSim;
 import frc.robot.subsystems.arm.ArmIOSparkMax;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.drive.Drive;
@@ -96,7 +97,8 @@ public class RobotContainer {
 
         colorSensor = new ColorSensor(new ColorSensorIOReal());
 
-        shooter = new ShooterSubsystem(
+        shooter =
+            new ShooterSubsystem(
                 new ShooterIOSparkMax(ShooterConstants.ShooterWheels.TOP),
                 new ShooterIOSparkMax(ShooterConstants.ShooterWheels.BOTTOM));
 
@@ -122,12 +124,10 @@ public class RobotContainer {
                     new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
                     drive::getDrive));
         // flywheel = new Flywheel(new FlywheelIOSim());
-        shooter = new ShooterSubsystem(
-                new ShooterIO() {},
-                new ShooterIO() {});
+        shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
         colorSensor = new ColorSensor(new ColorSensorIO() {});
-        arm = new ArmSubsystem(new ArmIO() {});
+        arm = new ArmSubsystem(new ArmIOSim());
 
         break;
 
@@ -142,9 +142,7 @@ public class RobotContainer {
                 new ModuleIO() {});
         // flywheel = new Flywheel(new FlywheelIO() {});
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
-        shooter = new ShooterSubsystem(
-                new ShooterIO() {},
-                new ShooterIO() {});
+        shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
         colorSensor = new ColorSensor(new ColorSensorIO() {});
         arm = new ArmSubsystem(new ArmIO() {});
@@ -198,9 +196,9 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    arm.setDefaultCommand(ArmCommands.manuelArmCommand(
-            arm,
-            () -> controller.getLeftTriggerAxis() - controller.getRightTriggerAxis()));
+    arm.setDefaultCommand(
+        ArmCommands.manuelArmCommand(
+            arm, () -> controller.getLeftTriggerAxis() - controller.getRightTriggerAxis()));
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
@@ -208,28 +206,30 @@ public class RobotContainer {
             () -> -controller.getLeftY(),
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
-//    controller.leftBumper().whileTrue(Commands.runOnce(() -> driveMode.toggleDriveMode()));
+    //    controller.leftBumper().whileTrue(Commands.runOnce(() -> driveMode.toggleDriveMode()));
 
-//    controller.a().whileTrue(new AutoRun(driveMode.getDriveModeType()));
+    //    controller.a().whileTrue(new AutoRun(driveMode.getDriveModeType()));
 
-//    controller
-//        .b()
-//        .whileTrue(
-//            Commands.startEnd(
-//                () -> driveMode.enableHeadingControl(), () -> driveMode.disableHeadingControl()));
+    //    controller
+    //        .b()
+    //        .whileTrue(
+    //            Commands.startEnd(
+    //                () -> driveMode.enableHeadingControl(), () ->
+    // driveMode.disableHeadingControl()));
 
-//    controller
-//        .y()
-//        .whileTrue(
-//            Commands.runOnce(
-//                () ->
-//                    drive.setAutoStartPose(
-//                        new Pose2d(new Translation2d(4, 5), Rotation2d.fromDegrees(0)))));
-//    controller
-//        .povDown()
-//        .whileTrue(
-//            new ShootPoint(
-//                drive, new Pose2d(new Translation2d(2.954, 3.621), Rotation2d.fromRadians(2.617))));
+    //    controller
+    //        .y()
+    //        .whileTrue(
+    //            Commands.runOnce(
+    //                () ->
+    //                    drive.setAutoStartPose(
+    //                        new Pose2d(new Translation2d(4, 5), Rotation2d.fromDegrees(0)))));
+    //    controller
+    //        .povDown()
+    //        .whileTrue(
+    //            new ShootPoint(
+    //                drive, new Pose2d(new Translation2d(2.954, 3.621),
+    // Rotation2d.fromRadians(2.617))));
 
     // controller
     //     .b()
@@ -258,7 +258,6 @@ public class RobotContainer {
         .whileTrue(
             Commands.startEnd(
                 () -> intake.setVoltage(-IntakeConstants.INTAKE_VOLTAGE), intake::stop, intake));
-
   }
 
   /**

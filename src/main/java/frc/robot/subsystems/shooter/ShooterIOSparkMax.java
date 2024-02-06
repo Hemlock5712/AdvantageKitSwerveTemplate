@@ -9,12 +9,15 @@ public class ShooterIOSparkMax implements ShooterIO {
   private final SparkPIDController pidController;
 
   public ShooterIOSparkMax(ShooterConstants.ShooterWheels topOrBottom) {
-    switch(topOrBottom) {
+    switch (topOrBottom) {
       case TOP:
-        motor = new CANSparkMax(ShooterConstants.TOP_MOTOR_ID, CANSparkLowLevel.MotorType.kBrushless);
+        motor =
+            new CANSparkMax(ShooterConstants.TOP_MOTOR_ID, CANSparkLowLevel.MotorType.kBrushless);
         break;
       case BOTTOM:
-        motor = new CANSparkMax(ShooterConstants.BOTTOM_MOTOR_ID, CANSparkLowLevel.MotorType.kBrushless);
+        motor =
+            new CANSparkMax(
+                ShooterConstants.BOTTOM_MOTOR_ID, CANSparkLowLevel.MotorType.kBrushless);
         break;
       default:
         System.out.println("Shooter top/bottom not valid");

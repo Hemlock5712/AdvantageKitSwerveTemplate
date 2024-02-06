@@ -35,32 +35,32 @@ public class ShooterSubsystem extends SubsystemBase {
             ShooterConstants.Real.PIDConstants.TopConstants.kD);
 
         bottomFeedForward =
-                new SimpleMotorFeedforward(
-                        ShooterConstants.Real.FeedForwardConstants.TopConstants.kS,
-                        ShooterConstants.Real.FeedForwardConstants.TopConstants.kV);
+            new SimpleMotorFeedforward(
+                ShooterConstants.Real.FeedForwardConstants.TopConstants.kS,
+                ShooterConstants.Real.FeedForwardConstants.TopConstants.kV);
         bottomIO.configurePID(
-                ShooterConstants.Real.PIDConstants.TopConstants.kP,
-                ShooterConstants.Real.PIDConstants.TopConstants.kI,
-                ShooterConstants.Real.PIDConstants.TopConstants.kD);
+            ShooterConstants.Real.PIDConstants.TopConstants.kP,
+            ShooterConstants.Real.PIDConstants.TopConstants.kI,
+            ShooterConstants.Real.PIDConstants.TopConstants.kD);
         break;
       case SIM:
         topFeedForward =
-                new SimpleMotorFeedforward(
-                        ShooterConstants.Sim.FeedForwardConstants.TopConstants.kS,
-                        ShooterConstants.Sim.FeedForwardConstants.TopConstants.kV);
+            new SimpleMotorFeedforward(
+                ShooterConstants.Sim.FeedForwardConstants.TopConstants.kS,
+                ShooterConstants.Sim.FeedForwardConstants.TopConstants.kV);
         topIO.configurePID(
-                ShooterConstants.Sim.PIDConstants.TopConstants.kP,
-                ShooterConstants.Sim.PIDConstants.TopConstants.kI,
-                ShooterConstants.Sim.PIDConstants.TopConstants.kD);
+            ShooterConstants.Sim.PIDConstants.TopConstants.kP,
+            ShooterConstants.Sim.PIDConstants.TopConstants.kI,
+            ShooterConstants.Sim.PIDConstants.TopConstants.kD);
 
         bottomFeedForward =
-                new SimpleMotorFeedforward(
-                        ShooterConstants.Sim.FeedForwardConstants.TopConstants.kS,
-                        ShooterConstants.Sim.FeedForwardConstants.TopConstants.kV);
+            new SimpleMotorFeedforward(
+                ShooterConstants.Sim.FeedForwardConstants.TopConstants.kS,
+                ShooterConstants.Sim.FeedForwardConstants.TopConstants.kV);
         bottomIO.configurePID(
-                ShooterConstants.Sim.PIDConstants.TopConstants.kP,
-                ShooterConstants.Sim.PIDConstants.TopConstants.kI,
-                ShooterConstants.Sim.PIDConstants.TopConstants.kD);
+            ShooterConstants.Sim.PIDConstants.TopConstants.kP,
+            ShooterConstants.Sim.PIDConstants.TopConstants.kI,
+            ShooterConstants.Sim.PIDConstants.TopConstants.kD);
         break;
       default:
         topFeedForward = new SimpleMotorFeedforward(0.0, 0.0);
@@ -71,8 +71,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    //I'm not sure if this updates the inputs correctly, since the two ios are
-    //using the same inputs
+    // I'm not sure if this updates the inputs correctly, since the two ios are
+    // using the same inputs
     topIO.updateInputs(topInputs);
     bottomIO.updateInputs(bottomInputs);
     Logger.processInputs("Shooter/Top", topInputs);
@@ -99,14 +99,13 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @AutoLogOutput
   public double getVelocityRPM() {
-    return
-            (Units.radiansPerSecondToRotationsPerMinute(topInputs.velocityRadPerSec) +
-            Units.radiansPerSecondToRotationsPerMinute(bottomInputs.velocityRadPerSec))
-    / 2.0;
+    return (Units.radiansPerSecondToRotationsPerMinute(topInputs.velocityRadPerSec)
+            + Units.radiansPerSecondToRotationsPerMinute(bottomInputs.velocityRadPerSec))
+        / 2.0;
   }
 
   /** Runs forwards at the commanded voltage. */
-  //Change this to bottomIO when characterizing the bottom wheels
+  // Change this to bottomIO when characterizing the bottom wheels
   public void runCharacterizationVolts(double volts) {
     topIO.setVoltage(volts);
   }
@@ -124,8 +123,8 @@ public class ShooterSubsystem extends SubsystemBase {
         () -> Units.radiansPerSecondToRotationsPerMinute(topInputs.velocityRadPerSec),
         null);
     builder.addDoubleProperty(
-            "Shooter RPM Bottom",
-            () -> Units.radiansPerSecondToRotationsPerMinute(bottomInputs.velocityRadPerSec),
-            null);
+        "Shooter RPM Bottom",
+        () -> Units.radiansPerSecondToRotationsPerMinute(bottomInputs.velocityRadPerSec),
+        null);
   }
 }

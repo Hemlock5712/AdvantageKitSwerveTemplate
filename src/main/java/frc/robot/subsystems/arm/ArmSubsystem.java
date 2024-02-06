@@ -3,7 +3,13 @@ package frc.robot.subsystems.arm;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class ArmSubsystem extends SubsystemBase {
@@ -13,17 +19,26 @@ public class ArmSubsystem extends SubsystemBase {
       new ArmFeedforward(ArmConstants.kS, ArmConstants.kG, ArmConstants.kV, ArmConstants.kA);
   private final PIDController pidController =
       new PIDController(ArmConstants.kP, ArmConstants.kI, ArmConstants.kD);
+  @AutoLogOutput private final Mechanism2d mech = new Mechanism2d(2, 2);
+  private final MechanismRoot2d root = mech.getRoot("arm", .7, .30);
+  private final MechanismLigament2d arm = root.append(new MechanismLigament2d("arm", .8, 0));
+
   private double setpoint = 0.0;
   private boolean active = false;
 
   public ArmSubsystem(ArmIO armIO) {
     this.armIO = armIO;
+    SmartDashboard.putData(this);
+    double shooterAngle = 70;
+    arm.append(new MechanismLigament2d("intake", .3, -shooterAngle));
+    arm.append(new MechanismLigament2d("shooter", .2, 180 - shooterAngle));
   }
 
   @Override
   public void periodic() {
     armIO.updateInputs(armIOInputs);
     Logger.processInputs("arm", armIOInputs);
+    arm.setAngle(Units.radiansToDegrees(armIOInputs.positionRad));
 
     if (active) {
       double ffVolts = feedforward.calculate(setpoint, 0);
@@ -36,7 +51,7 @@ public class ArmSubsystem extends SubsystemBase {
       Logger.recordOutput("Arm/ff volts", ffVolts);
       Logger.recordOutput("Arm/pid volts", pidVolts);
 
-      armIO.setVoltage(volts);
+      setVoltage(volts);
     }
   }
 
@@ -52,9 +67,13 @@ public class ArmSubsystem extends SubsystemBase {
   }
 
   public void setVoltage(double volts) {
+    if ((volts < 0 && armIOInputs.lowerLimit) || (volts > 0 && armIOInputs.upperLimit)) {
+      volts = 0;
+    }
     armIO.setVoltage(volts);
   }
 
+  @AutoLogOutput
   public double getPositionRad() {
     return armIOInputs.positionRad;
   }
