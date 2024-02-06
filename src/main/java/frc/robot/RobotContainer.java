@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.*;
+import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.ColorSensor.ColorSensor;
 import frc.robot.subsystems.ColorSensor.ColorSensorIO;
 import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
@@ -31,10 +32,6 @@ import frc.robot.subsystems.arm.ArmIO;
 import frc.robot.subsystems.arm.ArmIOSim;
 import frc.robot.subsystems.arm.ArmIOSparkMax;
 import frc.robot.subsystems.arm.ArmSubsystem;
-import frc.robot.commands.DriveCommands;
-import frc.robot.commands.DriveToPoint;
-import frc.robot.commands.MultiDistanceShot;
-import frc.robot.commands.PathFinderAndFollow;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveController;
 import frc.robot.subsystems.drive.GyroIO;
@@ -200,9 +197,9 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    arm.setDefaultCommand(ArmCommands.manualArmCommand(
-            arm,
-            () -> controller.getLeftTriggerAxis() - controller.getRightTriggerAxis()));
+    arm.setDefaultCommand(
+        ArmCommands.manualArmCommand(
+            arm, () -> controller.getLeftTriggerAxis() - controller.getRightTriggerAxis()));
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
@@ -235,7 +232,7 @@ public class RobotContainer {
     //                drive, new Pose2d(new Translation2d(2.954, 3.621),
     // Rotation2d.fromRadians(2.617))));
 
-    //controller
+    // controller
     //    .povUp()
     //    .whileTrue(
     //        new MultiDistanceShot(
