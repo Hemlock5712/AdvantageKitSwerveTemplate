@@ -8,14 +8,12 @@ import java.util.function.DoubleSupplier;
 
 public class ArmCommands {
 
-  private ArmCommands() {}
-  ;
+  private ArmCommands() {};
 
-  public static Command manuelArmCommand(ArmSubsystem arm, DoubleSupplier supplier) {
+  public static Command manualArmCommand(ArmSubsystem arm, DoubleSupplier supplier) {
     return Commands.run(
         () -> {
-          arm.setVoltage(supplier.getAsDouble() * ArmConstants.MANUEL_ARM_MAX_VOLTS);
-        },
+          arm.setVoltage(supplier.getAsDouble() * ArmConstants.MANUAL_ARM_MAX_VOLTS); },
         arm);
   }
 }

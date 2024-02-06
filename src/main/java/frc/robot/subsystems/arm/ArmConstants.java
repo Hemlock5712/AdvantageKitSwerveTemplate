@@ -11,5 +11,5 @@ public class ArmConstants {
   public static final double kI = 0.0; // todo tune
   public static final double kD = 0.0; // todo tune
   public static final int DUTY_CYCLE_ENCODER_PORT = 0;
-  public static final double MANUEL_ARM_MAX_VOLTS = 5.0;
+  public static final double MANUAL_ARM_MAX_VOLTS = 1.0;
 }
