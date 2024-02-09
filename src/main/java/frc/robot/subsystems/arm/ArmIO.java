@@ -17,7 +17,7 @@ import org.littletonrobotics.junction.AutoLog;
 
 public interface ArmIO {
   @AutoLog
-  public static class ArmIOInputs {
+  class ArmIOInputs {
     public boolean lowerLimit = false;
     public boolean upperLimit = false;
     public double positionRad = 0.0;
@@ -26,11 +26,11 @@ public interface ArmIO {
   }
 
   /** Updates the set of loggable inputs. */
-  public default void updateInputs(ArmIOInputs inputs) {}
+  default void updateInputs(ArmIOInputs inputs) {}
 
-  public default void setVoltage(double volts) {}
+  default void setVoltage(double volts) {}
 
-  public default void stop() {
+  default void stop() {
     setVoltage(0);
   }
 }
