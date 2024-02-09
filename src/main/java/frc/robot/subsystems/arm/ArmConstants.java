@@ -14,4 +14,7 @@ public class ArmConstants {
   public static final int UPPER_LIMIT_SWITCH_PORT = 3; // todo fix
   public static final int LOWER_LIMIT_SWITCH_PORT = 4; // todo fix
   public static final double MANUAL_ARM_MAX_VOLTS = 1.0;
+
+  public static final int UPPER_LIMIT_SWITCH_PORT = 5;
+  public static final int LOWER_LIMIT_SWITCH_PORT = 6;
 }

@@ -13,52 +13,52 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.DriveController.DriveModeType;
 import java.util.function.Supplier;
 
-public class AutoRun extends Command {
-  private Supplier<DriveModeType> driveModeSupplier;
+/** A command that runs pathfindThenFollowPath based on the current drive mode. */
+public class PathFinderAndFollow extends Command {
+  private final Supplier<DriveModeType> driveModeSupplier;
   private Command scoreCommand;
   private Command pathRun;
   private DriveModeType driveMode;
 
-  /** Creates a new AutoRun. */
-  public AutoRun(Supplier<DriveModeType> driveModeSupplier) {
-    // Use addRequirements() here to declare subsystem dependencies.
+  /**
+   * Creates a new PathFinderAndFollow command.
+   *
+   * @param driveModeSupplier a supplier for the drive mode type
+   */
+  public PathFinderAndFollow(Supplier<DriveModeType> driveModeSupplier) {
     this.driveModeSupplier = driveModeSupplier;
   }
 
-  // Called when the command is initially scheduled.
   @Override
   public void initialize() {
     runNewAutonPath();
   }
 
-  // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (driveMode != driveModeSupplier.get()) {
+    DriveModeType currentDriveMode = driveModeSupplier.get();
+    if (driveMode != currentDriveMode) {
       scoreCommand.cancel();
       runNewAutonPath();
     }
   }
 
-  // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     super.end(interrupted);
     scoreCommand.cancel();
   }
 
-  // Returns true when the command should end.
   @Override
   public boolean isFinished() {
     return pathRun.isFinished();
   }
 
+  /** Runs a new autonomous path based on the current drive mode. */
   public void runNewAutonPath() {
     driveMode = driveModeSupplier.get();
-    String pathName = "Amp Placement Path";
-    if (driveMode == DriveModeType.SPEAKER) {
-      pathName = "Speaker Placement Path";
-    }
+    String pathName =
+        driveMode == DriveModeType.SPEAKER ? "Speaker Placement Path" : "Amp Placement Path";
     PathPlannerPath ampPath = PathPlannerPath.fromPathFile(pathName);
     PathConstraints constraints =
         new PathConstraints(3.0, 4.0, Units.degreesToRadians(540), Units.degreesToRadians(720));

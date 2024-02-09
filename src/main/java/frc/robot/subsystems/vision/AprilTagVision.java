@@ -27,9 +27,17 @@ import java.util.function.Consumer;
 import org.littletonrobotics.junction.Logger;
 
 public class AprilTagVision extends SubsystemBase {
+
+  // Time interval for logging tag poses
   private static final double targetLogTimeSecs = 0.1;
+
+  // Margin around the field border
   private static final double fieldBorderMargin = 0.5;
+
+  // Margin for the z-axis
   private static final double zMargin = 0.75;
+
+  // Path for logging vision data
   private static final String VISION_PATH = "AprilTagVision/Inst";
 
   private boolean enableVisionUpdates = true;
@@ -72,6 +80,11 @@ public class AprilTagVision extends SubsystemBase {
     sendResultsToPoseEstimator(visionUpdates);
   }
 
+  /**
+   * Process the pose estimates and generate vision updates.
+   *
+   * @return List of timestamped vision updates
+   */
   private List<TimestampedVisionUpdate> processPoseEstimates() {
     List<TimestampedVisionUpdate> visionUpdates = new ArrayList<>();
     for (int instanceIndex = 0; instanceIndex < io.length; instanceIndex++) {
@@ -93,12 +106,24 @@ public class AprilTagVision extends SubsystemBase {
     return visionUpdates;
   }
 
+  /**
+   * Check if the pose estimate should be skipped.
+   *
+   * @param poseEstimates The pose estimate
+   * @return True if the pose estimate should be skipped, false otherwise
+   */
   private boolean shouldSkipPoseEstimate(PoseEstimate poseEstimates) {
     return poseEstimates.tagIDs().length < 1
         || poseEstimates.pose() == null
         || isOutsideFieldBorder(poseEstimates.pose());
   }
 
+  /**
+   * Check if the robot pose is outside the field border.
+   *
+   * @param robotPose The robot pose
+   * @return True if the robot pose is outside the field border, false otherwise
+   */
   private boolean isOutsideFieldBorder(Pose3d robotPose) {
     return robotPose.getX() < -fieldBorderMargin
         || robotPose.getX() > FieldConstants.fieldLength + fieldBorderMargin
@@ -108,6 +133,12 @@ public class AprilTagVision extends SubsystemBase {
         || robotPose.getZ() > zMargin;
   }
 
+  /**
+   * Get the poses of the detected tags.
+   *
+   * @param poseEstimates The pose estimate
+   * @return List of tag poses
+   */
   private List<Pose3d> getTagPoses(PoseEstimate poseEstimates) {
     List<Pose3d> tagPoses = new ArrayList<>();
     Arrays.stream(poseEstimates.tagIDs())
@@ -120,16 +151,38 @@ public class AprilTagVision extends SubsystemBase {
     return tagPoses;
   }
 
+  /**
+   * Calculate the standard deviation of the x and y coordinates.
+   *
+   * @param poseEstimates The pose estimate
+   * @param tagPosesSize The number of detected tag poses
+   * @return The standard deviation of the x and y coordinates
+   */
   private double calculateXYStdDev(PoseEstimate poseEstimates, int tagPosesSize) {
     return xyStdDevCoefficient * Math.pow(poseEstimates.averageTagDistance(), 2.0) / tagPosesSize;
   }
 
+  /**
+   * Calculate the standard deviation of the theta coordinate.
+   *
+   * @param poseEstimates The pose estimate
+   * @param tagPosesSize The number of detected tag poses
+   * @return The standard deviation of the theta coordinate
+   */
   private double calculateThetaStdDev(PoseEstimate poseEstimates, int tagPosesSize) {
     return thetaStdDevCoefficient
         * Math.pow(poseEstimates.averageTagDistance(), 2.0)
         / tagPosesSize;
   }
 
+  /**
+   * Log the data for a specific instance.
+   *
+   * @param instanceIndex The index of the instance
+   * @param timestamp The timestamp of the data
+   * @param robotPose The robot pose
+   * @param tagPoses The tag poses
+   */
   private void logData(
       int instanceIndex, double timestamp, Pose3d robotPose, List<Pose3d> tagPoses) {
     Logger.recordOutput(
@@ -144,6 +197,7 @@ public class AprilTagVision extends SubsystemBase {
     logTagPoses();
   }
 
+  /** Log the poses of the detected tags. */
   private void logTagPoses() {
     List<Pose3d> allTagPoses = new ArrayList<>();
     for (Map.Entry<Integer, Double> detectionEntry : lastTagDetectionTimes.entrySet()) {
@@ -158,12 +212,22 @@ public class AprilTagVision extends SubsystemBase {
         "AprilTagVision/TagPoses", allTagPoses.toArray(new Pose3d[allTagPoses.size()]));
   }
 
+  /**
+   * Send the vision updates to the pose estimator.
+   *
+   * @param visionUpdates The list of vision updates
+   */
   private void sendResultsToPoseEstimator(List<TimestampedVisionUpdate> visionUpdates) {
     if (enableVisionUpdates) {
       visionConsumer.accept(visionUpdates);
     }
   }
 
+  /**
+   * Set whether to enable vision updates.
+   *
+   * @param enableVisionUpdates True to enable vision updates, false otherwise
+   */
   public void setEnableVisionUpdates(boolean enableVisionUpdates) {
     this.enableVisionUpdates = enableVisionUpdates;
   }
