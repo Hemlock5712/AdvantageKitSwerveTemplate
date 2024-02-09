@@ -28,13 +28,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.AutoRun;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.ShootDistance;
-import frc.robot.commands.ShootPoint;
+import frc.robot.commands.DriveToPoint;
+import frc.robot.commands.MultiDistanceShot;
+import frc.robot.commands.PathFinderAndFollow;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveController;
-import frc.robot.subsystems.drive.DriveController.DriveModeType;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
@@ -164,7 +163,8 @@ public class RobotContainer {
 
     // Configure the button bindings
     aprilTagVision.setDataInterfaces(drive::addVisionData);
-    driveMode.disableHeadingSupplier();
+    driveMode.setPoseSupplier(drive::getPose);
+    driveMode.disableHeadingControl();
     configureButtonBindings();
   }
 
@@ -182,37 +182,33 @@ public class RobotContainer {
             () -> -controller.getLeftY(),
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
-    controller
-        .leftBumper()
-        .whileTrue(Commands.run(() -> driveMode.setDriveMode(DriveModeType.AMP)));
-    controller
-        .rightBumper()
-        .whileTrue(Commands.run(() -> driveMode.setDriveMode(DriveModeType.SPEAKER)));
+    controller.leftBumper().whileTrue(Commands.runOnce(() -> driveMode.toggleDriveMode()));
 
-    controller.a().whileTrue(new AutoRun(driveMode::getDriveModeType));
+    controller.a().whileTrue(new PathFinderAndFollow(driveMode.getDriveModeType()));
 
     controller
         .b()
         .whileTrue(
-            Commands.startEnd(() -> driveMode.setAmpMode(), () -> driveMode.disableDriveHeading()));
+            Commands.startEnd(
+                () -> driveMode.enableHeadingControl(), () -> driveMode.disableHeadingControl()));
 
     controller
         .y()
         .whileTrue(
-            Commands.run(
+            Commands.runOnce(
                 () ->
                     drive.setAutoStartPose(
                         new Pose2d(new Translation2d(4, 5), Rotation2d.fromDegrees(0)))));
     controller
         .povDown()
         .whileTrue(
-            new ShootPoint(
+            new DriveToPoint(
                 drive, new Pose2d(new Translation2d(2.954, 3.621), Rotation2d.fromRadians(2.617))));
 
     controller
         .povUp()
         .whileTrue(
-            new ShootDistance(
+            new MultiDistanceShot(
                 drive::getPose, FieldConstants.Speaker.centerSpeakerOpening, flywheel));
 
     // controller
