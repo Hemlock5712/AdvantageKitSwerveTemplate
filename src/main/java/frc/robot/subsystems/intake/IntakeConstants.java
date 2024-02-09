@@ -1,7 +1,8 @@
 package frc.robot.subsystems.intake;
 
 public final class IntakeConstants {
-  public static final int MOTOR_ID = 11;
+  public static final int MOTOR_ID = 13;
+  public static final int MOTOR_ID_TALON = 23;
   public static final double MAX_RAD_PER_SEC = 0.0;
   public static final double AUTO_RAD_PER_SEC = 0.0;
   public static final double CLOSED_LOOP_RAMP_RATE = 0.2;

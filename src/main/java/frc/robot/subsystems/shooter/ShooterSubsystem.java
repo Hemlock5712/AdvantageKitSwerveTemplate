@@ -36,12 +36,12 @@ public class ShooterSubsystem extends SubsystemBase {
 
         bottomFeedForward =
             new SimpleMotorFeedforward(
-                ShooterConstants.Real.FeedForwardConstants.TopConstants.kS,
-                ShooterConstants.Real.FeedForwardConstants.TopConstants.kV);
+                ShooterConstants.Real.FeedForwardConstants.BottomConstants.kS,
+                ShooterConstants.Real.FeedForwardConstants.BottomConstants.kV);
         bottomIO.configurePID(
-            ShooterConstants.Real.PIDConstants.TopConstants.kP,
-            ShooterConstants.Real.PIDConstants.TopConstants.kI,
-            ShooterConstants.Real.PIDConstants.TopConstants.kD);
+            ShooterConstants.Real.PIDConstants.BottomConstants.kP,
+            ShooterConstants.Real.PIDConstants.BottomConstants.kI,
+            ShooterConstants.Real.PIDConstants.BottomConstants.kD);
         break;
       case SIM:
         topFeedForward =
@@ -55,12 +55,12 @@ public class ShooterSubsystem extends SubsystemBase {
 
         bottomFeedForward =
             new SimpleMotorFeedforward(
-                ShooterConstants.Sim.FeedForwardConstants.TopConstants.kS,
-                ShooterConstants.Sim.FeedForwardConstants.TopConstants.kV);
+                ShooterConstants.Sim.FeedForwardConstants.BottomConstants.kS,
+                ShooterConstants.Sim.FeedForwardConstants.BottomConstants.kV);
         bottomIO.configurePID(
-            ShooterConstants.Sim.PIDConstants.TopConstants.kP,
-            ShooterConstants.Sim.PIDConstants.TopConstants.kI,
-            ShooterConstants.Sim.PIDConstants.TopConstants.kD);
+            ShooterConstants.Sim.PIDConstants.BottomConstants.kP,
+            ShooterConstants.Sim.PIDConstants.BottomConstants.kI,
+            ShooterConstants.Sim.PIDConstants.BottomConstants.kD);
         break;
       default:
         topFeedForward = new SimpleMotorFeedforward(0.0, 0.0);

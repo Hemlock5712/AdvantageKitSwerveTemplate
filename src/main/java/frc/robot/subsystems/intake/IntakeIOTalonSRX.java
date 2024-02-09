@@ -8,7 +8,7 @@ import edu.wpi.first.math.util.Units;
 
 public class IntakeIOTalonSRX implements IntakeIO {
   private static final double GEAR_RATIO = IntakeConstants.GEAR_RATIO;
-  private final TalonSRX motor = new TalonSRX(IntakeConstants.MOTOR_ID);
+  private final TalonSRX motor = new TalonSRX(IntakeConstants.MOTOR_ID_TALON);
 
   public IntakeIOTalonSRX() {
     TalonSRXConfiguration config = new TalonSRXConfiguration();
