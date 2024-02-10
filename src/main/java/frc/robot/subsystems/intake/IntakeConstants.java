@@ -8,7 +8,7 @@ public final class IntakeConstants {
   public static final double CLOSED_LOOP_RAMP_RATE = 0.2;
   public static final double OPEN_LOOP_RAMP_RATE = 0.2;
   public static final double GEAR_RATIO = 1.0;
-  public static final double INTAKE_VOLTAGE = 5;
+  public static double INTAKE_VOLTAGE = 5;
 
   public static final class Real {
     public static final class FeedForwardConstants {
