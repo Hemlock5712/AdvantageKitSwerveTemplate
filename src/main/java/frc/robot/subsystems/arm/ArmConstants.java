@@ -17,6 +17,9 @@ public class ArmConstants {
 
   public static final double MIN_RAD = 0; // todo tune
   public static final double MAX_RAD = Math.PI / 3.; // todo tune
+  public static final double INTAKE_POS_RAD = 0; // todo tune
+  public static final double SPEAKER_POS_RAD = 0.2; // todo tune
+  public static final double AMP_POS_RAD = 0.5; // todo tune
   public static final double MAX_ARM_PID_VOLTS = 7.0;
   public static final double MANUAL_ARM_MAX_VOLTS = 5.0;
 
