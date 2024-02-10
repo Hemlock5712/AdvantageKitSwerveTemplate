@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.*;
@@ -28,10 +29,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.ColorSensor.ColorSensor;
 import frc.robot.subsystems.ColorSensor.ColorSensorIO;
 import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
-import frc.robot.subsystems.arm.ArmIO;
-import frc.robot.subsystems.arm.ArmIOSim;
-import frc.robot.subsystems.arm.ArmIOSparkMax;
-import frc.robot.subsystems.arm.ArmSubsystem;
+import frc.robot.subsystems.arm.*;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveController;
 import frc.robot.subsystems.drive.GyroIO;
@@ -197,74 +195,62 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    arm.setDefaultCommand(
-        ArmCommands.manualArmCommand(
-            arm, () -> controller.getLeftTriggerAxis() - controller.getRightTriggerAxis()));
+    arm.setPositionRad(0.01);
+    controller
+        .povDown()
+        .onTrue(
+            new InstantCommand(
+                () -> {
+                  arm.setPositionRad(0.01);
+                },
+                arm));
+    controller
+        .povRight()
+        .onTrue(
+            new InstantCommand(
+                () -> {
+                  arm.setPositionRad(0.15);
+                },
+                arm));
+    controller
+        .povUp()
+        .onTrue(
+            new InstantCommand(
+                () -> {
+                  arm.setPositionRad(.8);
+                },
+                arm));
+    controller
+        .povLeft()
+        .toggleOnTrue(
+            Commands.startEnd(
+                () -> {
+                  shooter.runVolts(5);
+                },
+                shooter::stop,
+                shooter));
+
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
             driveMode,
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> -controller.getRightX()));
-    //    controller.leftBumper().whileTrue(Commands.runOnce(() -> driveMode.toggleDriveMode()));
+            () -> -controller.getRightY(),
+            () -> -controller.getRightX(),
+            () -> -controller.getLeftX()));
 
-    //    controller.a().whileTrue(new AutoRun(driveMode.getDriveModeType()));
-
-    //    controller
-    //        .b()
-    //        .whileTrue(
-    //            Commands.startEnd(
-    //                () -> driveMode.enableHeadingControl(), () ->
-    // driveMode.disableHeadingControl()));
-
-    //    controller
-    //        .y()
-    //        .whileTrue(
-    //            Commands.runOnce(
-    //                () ->
-    //                    drive.setAutoStartPose(
-    //                        new Pose2d(new Translation2d(4, 5), Rotation2d.fromDegrees(0)))));
-    //    controller
-    //        .povDown()
-    //        .whileTrue(
-    //            new ShootPoint(
-    //                drive, new Pose2d(new Translation2d(2.954, 3.621),
-    // Rotation2d.fromRadians(2.617))));
-
-    // controller
-    //    .povUp()
-    //    .whileTrue(
-    //        new MultiDistanceShot(
-    //            drive::getPose, FieldConstants.Speaker.centerSpeakerOpening, flywheel));
-
-    // controller
-    //     .b()
-    //     .onTrue(
-    //         Commands.runOnce(
-    //                 () ->
-    //                     drive.setPose(
-    //                         new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
-    //                 drive)
-    //             .ignoringDisable(true));
-    // controller
-    //     .a()
-    //     .whileTrue(
-    //         Commands.startEnd(
-    //             () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
-    controller.a().onTrue(Commands.runOnce(drive::resetGyro));
     controller
-        .rightBumper()
-        .whileTrue(Commands.startEnd(() -> shooter.runVolts(12.0 * .99), shooter::stop, shooter));
-
-    controller.rightBumper().onTrue(ShooterCommands.fullshot(shooter, intake, colorSensor));
-
-    controller.back().whileTrue(new IntakeUntilNoteCommand(colorSensor, intake));
-    controller
-        .y()
+        .leftBumper()
         .whileTrue(
             Commands.startEnd(
                 () -> intake.setVoltage(-IntakeConstants.INTAKE_VOLTAGE), intake::stop, intake));
+    controller
+        .rightBumper()
+        .whileTrue(
+            Commands.startEnd(
+                () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE), intake::stop, intake));
+    //    controller.rightBumper().whileTrue(new IntakeUntilNoteCommand(colorSensor, intake));
+
+    controller.a().onTrue(Commands.runOnce(drive::resetGyro));
   }
 
   /**

@@ -17,7 +17,7 @@ public class ArmSubsystem extends SubsystemBase {
   private final ArmIOInputsAutoLogged armIOInputs = new ArmIOInputsAutoLogged();
   private final ArmFeedforward feedforward =
       new ArmFeedforward(ArmConstants.kS, ArmConstants.kG, ArmConstants.kV, ArmConstants.kA);
-  private final PIDController pidController =
+  public final PIDController pidController =
       new PIDController(ArmConstants.kP, ArmConstants.kI, ArmConstants.kD);
   @AutoLogOutput private final Mechanism2d mech = new Mechanism2d(2, 2);
   private final MechanismRoot2d root = mech.getRoot("arm", .7, .30);
@@ -25,6 +25,11 @@ public class ArmSubsystem extends SubsystemBase {
 
   private double setpoint = 0.0;
   private boolean active = false;
+
+  @AutoLogOutput
+  private double getkP() {
+    return pidController.getP();
+  }
 
   public ArmSubsystem(ArmIO armIO) {
     this.armIO = armIO;
@@ -41,8 +46,8 @@ public class ArmSubsystem extends SubsystemBase {
     arm.setAngle(Units.radiansToDegrees(armIOInputs.positionRad));
 
     if (active) {
-      double ffVolts = feedforward.calculate(setpoint, 0);
       double pidVolts = pidController.calculate(armIOInputs.positionRad);
+      double ffVolts = feedforward.calculate(armIOInputs.positionRad, Math.signum(pidVolts));
 
       double volts = ffVolts + pidVolts;
 
@@ -76,5 +81,10 @@ public class ArmSubsystem extends SubsystemBase {
   @AutoLogOutput
   public double getPositionRad() {
     return armIOInputs.positionRad;
+  }
+
+  @AutoLogOutput
+  public double getOffset() {
+    return pidController.getPositionError();
   }
 }

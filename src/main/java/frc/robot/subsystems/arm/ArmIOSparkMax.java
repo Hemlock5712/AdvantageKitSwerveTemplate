@@ -1,5 +1,6 @@
 package frc.robot.subsystems.arm;
 
+import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.math.MathUtil;
@@ -21,18 +22,22 @@ public class ArmIOSparkMax implements ArmIO {
 
   public ArmIOSparkMax() {
     // The motors are mirrored, so invert
+    leader.setInverted(true);
     follower.follow(leader, true);
     encoder.reset();
     encoder.setDistancePerRotation(2 * Math.PI);
+    follower.setIdleMode(CANSparkBase.IdleMode.kBrake);
+    leader.setIdleMode(CANSparkBase.IdleMode.kBrake);
     // todo tune encoder
   }
 
   @Override
   public void updateInputs(ArmIOInputs inputs) {
     // todo measure max and min angles and add them to the limit switches
-    inputs.upperLimit = upperLimitSwitch.get();
-    inputs.lowerLimit = lowerLimitSwitch.get();
-    inputs.positionRad = encoder.getDistance();
+    inputs.positionRad =
+        encoder.getAbsolutePosition() * Math.PI * 2 - ArmConstants.ARM_ENCODER_OFFSET_RAD;
+    inputs.upperLimit = inputs.positionRad > ArmConstants.MAX_RAD; // todo add real limit switch
+    inputs.lowerLimit = inputs.positionRad < ArmConstants.MIN_RAD; // todo add real limit switch
     inputs.appliedVolts = leader.getAppliedOutput() * leader.getBusVoltage();
     inputs.currentAmps = new double[] {leader.getOutputCurrent(), follower.getOutputCurrent()};
   }

@@ -18,4 +18,13 @@ public class ArmCommands {
         },
         arm);
   }
+
+  public static Command manualArmPos(ArmSubsystem arm, DoubleSupplier radianSupplier) {
+    return Commands.runEnd(
+        () -> {
+          arm.setPositionRad(radianSupplier.getAsDouble());
+        },
+        arm::stop,
+        arm);
+  }
 }
