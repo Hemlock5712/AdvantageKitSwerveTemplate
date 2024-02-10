@@ -32,6 +32,8 @@ public interface ArmIO {
 
   default void setVoltage(double volts) {}
 
+  double getEncoderRadians();
+
   default void stop() {
     setVoltage(0);
   }

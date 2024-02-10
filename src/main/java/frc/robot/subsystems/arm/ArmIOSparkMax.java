@@ -49,4 +49,9 @@ public class ArmIOSparkMax implements ArmIO {
     volts = MathUtil.clamp(volts, -11.9, 11.9);
     leader.setVoltage(volts);
   }
+
+  @Override
+  public double getEncoderRadians() {
+    return (encoder.getAbsolutePosition() * Math.PI * 2.0) - ArmConstants.ARM_ENCODER_OFFSET_RAD;
+  }
 }
