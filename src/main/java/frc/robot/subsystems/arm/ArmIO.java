@@ -23,6 +23,8 @@ public interface ArmIO {
     public double positionRad = 0.0;
     public double appliedVolts = 0.0;
     public double[] currentAmps = new double[] {};
+    public double leftMotorTemperatureCelsius = 0.0;
+    public double rightMotorTemperatureCelsius = 0.0;
   }
 
   /** Updates the set of loggable inputs. */

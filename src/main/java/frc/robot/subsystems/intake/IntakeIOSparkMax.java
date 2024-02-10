@@ -29,7 +29,7 @@ public class IntakeIOSparkMax implements IntakeIO {
         Units.rotationsPerMinuteToRadiansPerSecond(encoder.getVelocity() / GEAR_RATIO);
     inputs.appliedVolts = motor.getAppliedOutput() * motor.getBusVoltage();
     inputs.currentAmps = new double[] {motor.getOutputCurrent()};
-    inputs.temperature = motor.getMotorTemperature();
+    inputs.motorTemperatureCelsius = motor.getMotorTemperature();
   }
 
   @Override

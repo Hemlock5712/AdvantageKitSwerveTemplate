@@ -164,6 +164,9 @@ public class ModuleIOTalonFX implements ModuleIO {
     timestampQueue.clear();
     drivePositionQueue.clear();
     turnPositionQueue.clear();
+
+    inputs.driveMotorTemperatureCelsius = 25.0;
+    inputs.turnMotorTemperatureCelsius = 25.0;
   }
 
   @Override

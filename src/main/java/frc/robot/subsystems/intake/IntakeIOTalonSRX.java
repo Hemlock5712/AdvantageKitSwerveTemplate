@@ -31,6 +31,7 @@ public class IntakeIOTalonSRX implements IntakeIO {
             motor.getSensorCollection().getQuadratureVelocity() / GEAR_RATIO);
     inputs.appliedVolts = motor.getMotorOutputVoltage();
     inputs.currentAmps = new double[] {motor.getStatorCurrent()};
+    inputs.motorTemperatureCelsius = 0.0;
   }
 
   @Override

@@ -142,6 +142,9 @@ public class ModuleIOSparkMax implements ModuleIO {
     timestampQueue.clear();
     drivePositionQueue.clear();
     turnPositionQueue.clear();
+
+    inputs.driveMotorTemperatureCelsius = driveSparkMax.getMotorTemperature();
+    inputs.turnMotorTemperatureCelsius = turnSparkMax.getMotorTemperature();
   }
 
   @Override

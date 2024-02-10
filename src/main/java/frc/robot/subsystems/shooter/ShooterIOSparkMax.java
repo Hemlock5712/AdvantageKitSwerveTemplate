@@ -43,6 +43,7 @@ public class ShooterIOSparkMax implements ShooterIO {
     inputs.velocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(encoder.getVelocity());
     inputs.appliedVolts = motor.getAppliedOutput() * motor.getBusVoltage();
     inputs.currentAmps = new double[] {motor.getOutputCurrent()};
+    inputs.motorTemperatureCelsius = motor.getMotorTemperature();
   }
 
   @Override

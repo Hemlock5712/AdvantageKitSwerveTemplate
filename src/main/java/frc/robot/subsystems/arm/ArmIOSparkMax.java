@@ -40,6 +40,8 @@ public class ArmIOSparkMax implements ArmIO {
     inputs.lowerLimit = inputs.positionRad < ArmConstants.MIN_RAD; // todo add real limit switch
     inputs.appliedVolts = leader.getAppliedOutput() * leader.getBusVoltage();
     inputs.currentAmps = new double[] {leader.getOutputCurrent(), follower.getOutputCurrent()};
+    inputs.leftMotorTemperatureCelsius = leader.getMotorTemperature();
+    inputs.rightMotorTemperatureCelsius = follower.getMotorTemperature();
   }
 
   @Override
