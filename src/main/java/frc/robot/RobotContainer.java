@@ -47,6 +47,7 @@ import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
 import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -201,14 +202,22 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
+  private final LoggedDashboardNumber intakePos =
+      new LoggedDashboardNumber("arm/intake rad", ArmConstants.INTAKE_POS_RAD);
+
+  private final LoggedDashboardNumber speakerPos =
+      new LoggedDashboardNumber("arm/speaker rad", ArmConstants.SPEAKER_POS_RAD);
+  private final LoggedDashboardNumber ampPos =
+      new LoggedDashboardNumber("arm/amp rad", ArmConstants.AMP_POS_RAD);
+
   private void configureButtonBindings() {
-    arm.setPositionRad(0.01);
+    arm.setPositionRad(intakePos.get());
     controller
         .povDown()
         .onTrue(
             new InstantCommand(
                 () -> {
-                  arm.setPositionRad(0.01);
+                  arm.setPositionRad(intakePos.get());
                 },
                 arm));
     controller
@@ -216,7 +225,7 @@ public class RobotContainer {
         .onTrue(
             new InstantCommand(
                 () -> {
-                  arm.setPositionRad(0.15);
+                  arm.setPositionRad(speakerPos.get());
                 },
                 arm));
     controller
@@ -224,7 +233,7 @@ public class RobotContainer {
         .onTrue(
             new InstantCommand(
                 () -> {
-                  arm.setPositionRad(.8);
+                  arm.setPositionRad(ampPos.get());
                 },
                 arm));
     controller
