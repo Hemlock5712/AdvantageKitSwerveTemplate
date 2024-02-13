@@ -27,13 +27,4 @@ public class ArmCommands {
         arm::stop,
         arm);
   }
-
-  public static Command profiledPidCommand(ArmSubsystem arm, double targetRadians) {
-    return Commands.runOnce(
-        () -> {
-          arm.setGoal(targetRadians);
-          arm.enable();
-        },
-        arm);
-  }
 }

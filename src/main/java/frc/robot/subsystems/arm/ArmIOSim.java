@@ -27,6 +27,7 @@ public class ArmIOSim implements ArmIO {
     inputs.currentAmps = new double[] {arm.getCurrentDrawAmps() / 2, arm.getCurrentDrawAmps() / 2};
     inputs.leftMotorTemperatureCelsius = 25.0;
     inputs.rightMotorTemperatureCelsius = 25.0;
+
   }
 
   @Override
@@ -34,10 +35,5 @@ public class ArmIOSim implements ArmIO {
     volts = MathUtil.clamp(volts, -11.9, 11.9);
     this.volts = volts;
     arm.setInputVoltage(volts);
-  }
-
-  @Override
-  public double getEncoderRadians() {
-    return arm.getAngleRads();
   }
 }

@@ -145,14 +145,7 @@ public class RobotContainer {
         shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
         colorSensor = new ColorSensor(new ColorSensorIO() {});
-        arm =
-            new ArmSubsystem(
-                new ArmIO() { // todo fix this
-                  @Override
-                  public double getEncoderRadians() {
-                    return 0;
-                  }
-                });
+        arm = new ArmSubsystem(new ArmIO() {});
 
         break;
     }
@@ -267,7 +260,6 @@ public class RobotContainer {
     //    controller.rightBumper().whileTrue(new IntakeUntilNoteCommand(colorSensor, intake));
 
     controller.a().onTrue(Commands.runOnce(drive::resetGyro));
-    controller.b().onTrue(ArmCommands.profiledPidCommand(arm, 3.0));
   }
 
   /**
