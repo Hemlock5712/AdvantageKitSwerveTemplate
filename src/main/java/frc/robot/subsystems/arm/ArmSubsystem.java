@@ -79,7 +79,8 @@ public class ArmSubsystem extends SubsystemBase {
 
       double volts = ffVolts + pidVolts;
 
-      volts = MathUtil.clamp(volts, -ArmConstants.MAX_ARM_PID_VOLTS, ArmConstants.MAX_ARM_PID_VOLTS);
+      volts =
+          MathUtil.clamp(volts, -ArmConstants.MAX_ARM_PID_VOLTS, ArmConstants.MAX_ARM_PID_VOLTS);
 
       Logger.recordOutput("Arm/ff volts", ffVolts);
       Logger.recordOutput("Arm/pid volts", pidVolts);

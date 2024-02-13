@@ -234,7 +234,7 @@ public class RobotContainer {
         .toggleOnTrue(
             Commands.startEnd(
                 () -> {
-                  shooter.runVolts(5);
+                  shooter.runVolts(7);
                 },
                 shooter::stop,
                 shooter));
@@ -245,7 +245,7 @@ public class RobotContainer {
             driveMode,
             () -> -controller.getRightY(),
             () -> -controller.getRightX(),
-            () -> -controller.getLeftX()));
+            () -> controller.getLeftX()));
 
     controller
         .leftBumper()
