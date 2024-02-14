@@ -104,6 +104,10 @@ public class ShooterSubsystem extends SubsystemBase {
         / 2.0;
   }
 
+  public double getVelocityRadiansPerSec() {
+    return (topInputs.velocityRadPerSec + bottomInputs.velocityRadPerSec) / 2.0;
+  }
+
   /** Runs forwards at the commanded voltage. */
   // Change this to bottomIO when characterizing the bottom wheels
   public void runCharacterizationVolts(double volts) {

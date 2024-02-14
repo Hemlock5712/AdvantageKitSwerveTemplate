@@ -16,16 +16,17 @@ public class ShooterCommands {
   private ShooterCommands() {}
   ;
 
-  public static Command fullshot(ShooterSubsystem shooter, Intake intake, ColorSensor colorSensor) {
+  public static Command fullshot(
+      ShooterSubsystem shooter, Intake intake, ColorSensor colorSensor, double velocityRadPerSec) {
     return new ConditionalCommand(
         scoreAmp(shooter)
             .raceWith(
                 Commands.waitUntil(
                         () ->
                             MathUtil.isNear(
-                                ShooterConstants.AMP_VELOCITY_RAD_PER_SEC,
-                                shooter.getVelocityRPM(),
-                                0.5))
+                                velocityRadPerSec,
+                                shooter.getVelocityRadiansPerSec(),
+                                ShooterConstants.VELOCITY_TOLERANCE))
                     .andThen(
                         Commands.startEnd(
                             () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE),

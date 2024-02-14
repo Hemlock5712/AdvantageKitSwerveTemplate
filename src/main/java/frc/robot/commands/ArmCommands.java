@@ -27,4 +27,11 @@ public class ArmCommands {
         arm::stop,
         arm);
   }
+
+  public static Command autoArmToPosition(ArmSubsystem arm, double setpointInRadians) {
+    return Commands.runOnce(
+        () -> {
+          arm.setPositionRad(setpointInRadians);
+        });
+  }
 }

@@ -7,6 +7,8 @@ public final class ShooterConstants {
   public static final double SPEAKER_VELOCITY_RAD_PER_SEC = 0.0;
   public static final double CLOSED_LOOP_RAMP_RATE = 0.01;
   public static final double OPEN_LOOP_RAMP_RATE = 0.01;
+  public static final double VELOCITY_TOLERANCE = 0.08;
+  public static final double AUTO_SPEAKER_SHOOT_VELOCITY = 1.0;
 
   public enum ShooterWheels {
     TOP,

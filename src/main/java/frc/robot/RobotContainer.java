@@ -16,6 +16,7 @@ package frc.robot;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
@@ -46,6 +47,7 @@ import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
 import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
+import frc.robot.util.ShootingBasedOnPoseCalculator;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
@@ -151,11 +153,33 @@ public class RobotContainer {
     }
 
     // Set up auto routines
-    // NamedCommands.registerCommand(
-    //     "Run Flywheel",
-    //     Commands.startEnd(
-    //             () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel)
-    //         .withTimeout(5.0));
+    // Arm
+    NamedCommands.registerCommand(
+        "Arm to ground intake position",
+        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD));
+    NamedCommands.registerCommand(
+        "Arm to amp position",
+        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD));
+    NamedCommands.registerCommand(
+        "Arm to speaker position",
+        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.SPEAKER_POS_RAD));
+    NamedCommands.registerCommand(
+        "Arm to calculated speaker angle",
+        ArmCommands.autoArmToPosition(
+            arm,
+            ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(
+                arm, drive.getPose())));
+
+    // Intake
+    NamedCommands.registerCommand(
+        "Intake until note", new IntakeUntilNoteCommand(colorSensor, intake));
+
+    // Shooter
+    NamedCommands.registerCommand(
+        "Shoot speaker based on distance",
+        ShooterCommands.fullshot(
+            shooter, intake, colorSensor, ShooterConstants.AUTO_SPEAKER_SHOOT_VELOCITY));
+
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     // Set up SysId routines
@@ -196,12 +220,12 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private final LoggedDashboardNumber intakePos =
-      new LoggedDashboardNumber("arm/intake rad", ArmConstants.INTAKE_POS_RAD);
+      new LoggedDashboardNumber("arm/intake rad", ArmConstants.Positions.INTAKE_POS_RAD);
 
   private final LoggedDashboardNumber speakerPos =
-      new LoggedDashboardNumber("arm/speaker rad", ArmConstants.SPEAKER_POS_RAD);
+      new LoggedDashboardNumber("arm/speaker rad", ArmConstants.Positions.SPEAKER_POS_RAD);
   private final LoggedDashboardNumber ampPos =
-      new LoggedDashboardNumber("arm/amp rad", ArmConstants.AMP_POS_RAD);
+      new LoggedDashboardNumber("arm/amp rad", ArmConstants.Positions.AMP_POS_RAD);
 
   private void configureButtonBindings() {
     arm.setPositionRad(intakePos.get());
