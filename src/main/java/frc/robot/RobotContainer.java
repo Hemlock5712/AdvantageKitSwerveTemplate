@@ -176,11 +176,11 @@ public class RobotContainer {
 
     // Shooter
     NamedCommands.registerCommand(
-        "Shoot speaker based on distance",
+        "Shoot speaker",
         ShooterCommands.fullshot(
             shooter, intake, colorSensor, ShooterConstants.AUTO_SPEAKER_SHOOT_VELOCITY));
 
-    AutoBuilder.buildAuto("MiddleSpeakerToNearMiddleNote")
+    AutoBuilder.buildAuto("ScoreMiddleDriveAndScoreNearMiddle");
 
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
