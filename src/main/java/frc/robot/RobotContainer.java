@@ -180,6 +180,8 @@ public class RobotContainer {
         ShooterCommands.fullshot(
             shooter, intake, colorSensor, ShooterConstants.AUTO_SPEAKER_SHOOT_VELOCITY));
 
+    AutoBuilder.buildAuto("MiddleSpeakerToNearMiddleNote")
+
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     // Set up SysId routines
