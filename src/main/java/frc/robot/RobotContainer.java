@@ -167,8 +167,7 @@ public class RobotContainer {
         "Arm to calculated speaker angle",
         ArmCommands.autoArmToPosition(
             arm,
-            ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(
-                arm, drive.getPose())));
+            ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(drive.getPose())));
 
     // Intake
     NamedCommands.registerCommand(
