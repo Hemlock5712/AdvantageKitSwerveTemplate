@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.46,
-      "y": 5.48
+      "x": 0.8044978976249695,
+      "y": 4.353586673736572
     },
-    "rotation": 0.0
+    "rotation": -59.420783219156
   },
   "command": {
     "type": "sequential",
@@ -24,21 +24,28 @@
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "MiddleSpeakerToNearMiddleNote"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Arm to ground intake position"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Intake until note"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Arm to ground intake position"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "EmptySideTwoNote"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake until note"
+                }
+              }
+            ]
           }
         },
         {
