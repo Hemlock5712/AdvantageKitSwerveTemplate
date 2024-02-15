@@ -60,7 +60,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  private AprilTagVision aprilTagVision;
+  private final AprilTagVision aprilTagVisionBack;
+  private final AprilTagVision aprilTagVisionFront;
   private static DriveController driveMode = new DriveController();
   private final ShooterSubsystem shooter;
 
@@ -95,7 +96,8 @@ public class RobotContainer {
                 new ModuleIOSparkMax(moduleConfigs[2]),
                 new ModuleIOSparkMax(moduleConfigs[3]));
 
-        aprilTagVision = new AprilTagVision(new AprilTagVisionIOLimelight("limelight"));
+        aprilTagVisionBack = new AprilTagVision(new AprilTagVisionIOLimelight("limelight"));
+        aprilTagVisionFront = new AprilTagVision(new AprilTagVisionIOLimelight("limelight-two"));
 
         colorSensor = new ColorSensor(new ColorSensorIOReal());
 
@@ -119,12 +121,19 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim());
         // flywheel = new Flywheel(new FlywheelIOSim());
-        aprilTagVision =
+        aprilTagVisionBack =
             new AprilTagVision(
                 new AprilTagVisionIOPhotonVisionSIM(
                     "photonCamera1",
                     new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
                     drive::getDrive));
+        aprilTagVisionFront =
+                new AprilTagVision(
+                        new AprilTagVisionIOPhotonVisionSIM(
+                                "photonCamera2",
+                                new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
+                                drive::getDrive));
+
         // flywheel = new Flywheel(new FlywheelIOSim());
         shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
@@ -143,7 +152,8 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
         // flywheel = new Flywheel(new FlywheelIO() {});
-        aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
+        aprilTagVisionBack = new AprilTagVision(new AprilTagVisionIO() {});
+        aprilTagVisionFront = new AprilTagVision(new AprilTagVisionIO() {});
         shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
         colorSensor = new ColorSensor(new ColorSensorIO() {});
@@ -208,7 +218,8 @@ public class RobotContainer {
     // flywheel.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
-    aprilTagVision.setDataInterfaces(drive::addVisionData);
+    aprilTagVisionBack.setDataInterfaces(drive::addVisionData);
+    aprilTagVisionFront.setDataInterfaces(drive::addVisionData);
     driveMode.setPoseSupplier(drive::getPose);
     driveMode.disableHeadingControl();
     configureButtonBindings();
