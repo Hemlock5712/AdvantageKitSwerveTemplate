@@ -120,12 +120,14 @@ public class RobotContainer {
 
         arm = new ArmSubsystem(new ArmIOSparkMax());
 
-        leftClimber = new ClimberSubsystem(new ClimberIOSparkMax(
-                ClimberConstants.LEFT_MOTOR_ID,
-                ClimberConstants.LEFT_LIMIT_SWITCH_DIO_PORT));
-        rightClimber = new ClimberSubsystem(new ClimberIOSparkMax(
-                ClimberConstants.RIGHT_MOTOR_ID,
-                ClimberConstants.RIGHT_LIMIT_SWITCH_DIO_PORT));
+        leftClimber =
+            new ClimberSubsystem(
+                new ClimberIOSparkMax(
+                    ClimberConstants.LEFT_MOTOR_ID, ClimberConstants.LEFT_LIMIT_SWITCH_DIO_PORT));
+        rightClimber =
+            new ClimberSubsystem(
+                new ClimberIOSparkMax(
+                    ClimberConstants.RIGHT_MOTOR_ID, ClimberConstants.RIGHT_LIMIT_SWITCH_DIO_PORT));
         break;
 
       case SIM:
@@ -203,7 +205,7 @@ public class RobotContainer {
         ShooterCommands.fullshot(
             shooter, intake, colorSensor, ShooterConstants.AUTO_SPEAKER_SHOOT_VELOCITY));
 
-    AutoBuilder.buildAuto("ScoreMiddleDriveAndScoreNearMiddle");
+    AutoBuilder.buildAuto("MiddleTwoNote");
 
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -218,18 +220,35 @@ public class RobotContainer {
         "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption(
-    //     "Flywheel SysId (Quasistatic Forward)",
-    //     flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Flywheel SysId (Quasistatic Reverse)",
-    //     flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption(
-    //     "Flywheel SysId (Dynamic Forward)",
-    // flywheel.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Flywheel SysId (Dynamic Reverse)",
-    // flywheel.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+    autoChooser.addOption(
+        "Intake sysid quasistatic forward",
+        intake.sysid.quasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Intake sysid quasistatic reverse",
+        intake.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Intake sysid dynamic forward", intake.sysid.dynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Intake sysid dynamic reverse", intake.sysid.dynamic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Shooter sysid quasistatic forward",
+        shooter.sysid.quasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Shooter sysid quasistatic reverse",
+        shooter.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Shooter sysid dynamic forward", shooter.sysid.dynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Shooter sysid dynamic reverse", shooter.sysid.dynamic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Arm sysid quasistatic forward", arm.sysid.quasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Arm sysid quasistatic reverse", arm.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Arm sysid dynamic forward", arm.sysid.dynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Arm sysid dynamic reverse", arm.sysid.dynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
     aprilTagVision.setDataInterfaces(drive::addVisionData);
@@ -310,13 +329,17 @@ public class RobotContainer {
 
     driverController.a().onTrue(Commands.runOnce(drive::resetGyro));
 
-    leftClimber.setDefaultCommand(new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
-    rightClimber.setDefaultCommand(new ManualClimberCommand(rightClimber, () -> -secondController.getRightY()));
+    leftClimber.setDefaultCommand(
+        new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
+    rightClimber.setDefaultCommand(
+        new ManualClimberCommand(rightClimber, () -> -secondController.getRightY()));
 
-
-    driverController.back().toggleOnTrue(new ParallelCommandGroup(
-            new ManualClimberCommand(leftClimber, () -> -driverController.getLeftY()),
-            new ManualClimberCommand(rightClimber, () -> -driverController.getRightY())));
+    driverController
+        .back()
+        .toggleOnTrue(
+            new ParallelCommandGroup(
+                new ManualClimberCommand(leftClimber, () -> -driverController.getLeftY()),
+                new ManualClimberCommand(rightClimber, () -> -driverController.getRightY())));
   }
 
   /**

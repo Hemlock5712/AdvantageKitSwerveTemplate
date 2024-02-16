@@ -1,9 +1,12 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -15,6 +18,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private final ShooterIOInputsAutoLogged bottomInputs = new ShooterIOInputsAutoLogged();
   private final SimpleMotorFeedforward topFeedForward;
   private final SimpleMotorFeedforward bottomFeedForward;
+  public final SysIdRoutine sysid;
 
   public ShooterSubsystem(ShooterIO topIO, ShooterIO bottomIO) {
     this.topIO = topIO;
@@ -67,6 +71,20 @@ public class ShooterSubsystem extends SubsystemBase {
         bottomFeedForward = new SimpleMotorFeedforward(0.0, 0.0);
         break;
     }
+
+    sysid =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                state -> Logger.recordOutput("ShooterSubsystem/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                voltage -> {
+                  runVolts(voltage.in(Volts));
+                },
+                null,
+                this));
   }
 
   @Override
@@ -75,8 +93,8 @@ public class ShooterSubsystem extends SubsystemBase {
     // using the same inputs
     topIO.updateInputs(topInputs);
     bottomIO.updateInputs(bottomInputs);
-    Logger.processInputs("Shooter/Top", topInputs);
-    Logger.processInputs("Shooter/Bottom", bottomInputs);
+    Logger.processInputs("ShooterSubsystem/Top", topInputs);
+    Logger.processInputs("ShooterSubsystem/Bottom", bottomInputs);
   }
 
   public void runVelocity(double velocityRPM) {

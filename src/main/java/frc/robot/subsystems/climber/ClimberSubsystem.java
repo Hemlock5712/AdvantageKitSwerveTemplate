@@ -11,7 +11,6 @@ public class ClimberSubsystem extends SubsystemBase {
     this.clmiberIO = clmiberIO;
 
     clmiberIO.resetEncoder();
-
   }
 
   @Override

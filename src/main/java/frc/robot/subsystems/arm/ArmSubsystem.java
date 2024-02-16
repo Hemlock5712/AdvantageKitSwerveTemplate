@@ -1,5 +1,7 @@
 package frc.robot.subsystems.arm;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
@@ -9,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
@@ -27,13 +30,15 @@ public class ArmSubsystem extends SubsystemBase {
   private double setpoint = 0.0;
   private boolean active = false;
 
-  private LoggedDashboardNumber kP = new LoggedDashboardNumber("arm/kP", ArmConstants.kP);
-  private LoggedDashboardNumber kI = new LoggedDashboardNumber("arm/kI", ArmConstants.kI);
-  private LoggedDashboardNumber kD = new LoggedDashboardNumber("arm/kD", ArmConstants.kD);
-  private LoggedDashboardNumber kS = new LoggedDashboardNumber("arm/kS", ArmConstants.kS);
-  private LoggedDashboardNumber kG = new LoggedDashboardNumber("arm/kG", ArmConstants.kG);
-  private LoggedDashboardNumber kV = new LoggedDashboardNumber("arm/kV", ArmConstants.kV);
-  private LoggedDashboardNumber kA = new LoggedDashboardNumber("arm/kA", ArmConstants.kA);
+  private LoggedDashboardNumber kP = new LoggedDashboardNumber("ArmSubsystem/kP", ArmConstants.kP);
+  private LoggedDashboardNumber kI = new LoggedDashboardNumber("ArmSubsystem/kI", ArmConstants.kI);
+  private LoggedDashboardNumber kD = new LoggedDashboardNumber("ArmSubsystem/kD", ArmConstants.kD);
+  private LoggedDashboardNumber kS = new LoggedDashboardNumber("ArmSubsystem/kS", ArmConstants.kS);
+  private LoggedDashboardNumber kG = new LoggedDashboardNumber("ArmSubsystem/kG", ArmConstants.kG);
+  private LoggedDashboardNumber kV = new LoggedDashboardNumber("ArmSubsystem/kV", ArmConstants.kV);
+  private LoggedDashboardNumber kA = new LoggedDashboardNumber("ArmSubsystem/kA", ArmConstants.kA);
+
+  public final SysIdRoutine sysid;
 
   public ArmSubsystem(ArmIO armIO) {
     this.armIO = armIO;
@@ -41,6 +46,20 @@ public class ArmSubsystem extends SubsystemBase {
     double shooterAngle = 70;
     arm.append(new MechanismLigament2d("intake", .3, -shooterAngle));
     arm.append(new MechanismLigament2d("shooter", .2, 180 - shooterAngle));
+
+    sysid =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                state -> Logger.recordOutput("ArmSubsystem/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                voltage -> {
+                  setVoltage(voltage.in(Volts));
+                },
+                null,
+                this));
   }
 
   private void updateControlConstants() {
