@@ -23,14 +23,20 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.*;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.climber.ManualClimberCommand;
 import frc.robot.subsystems.ColorSensor.ColorSensor;
 import frc.robot.subsystems.ColorSensor.ColorSensorIO;
 import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
 import frc.robot.subsystems.arm.*;
+import frc.robot.subsystems.climber.ClimberConstants;
+import frc.robot.subsystems.climber.ClimberIOSparkMax;
+import frc.robot.subsystems.climber.ClimberSubsystem;
+import frc.robot.subsystems.climber.ClmiberIO;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveController;
 import frc.robot.subsystems.drive.GyroIO;
@@ -67,9 +73,12 @@ public class RobotContainer {
   private final Intake intake;
   private final ColorSensor colorSensor;
   private final ArmSubsystem arm;
+  private final ClimberSubsystem leftClimber;
+  private final ClimberSubsystem rightClimber;
 
   // Controller
-  private final CommandXboxController controller = new CommandXboxController(0);
+  private final CommandXboxController driverController = new CommandXboxController(0);
+  private final CommandXboxController secondController = new CommandXboxController(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -95,10 +104,10 @@ public class RobotContainer {
                 new ModuleIOSparkMax(moduleConfigs[2]),
                 new ModuleIOSparkMax(moduleConfigs[3]));
 
-        aprilTagVision = new AprilTagVision(
+        aprilTagVision =
+            new AprilTagVision(
                 new AprilTagVisionIOLimelight("limelight"),
                 new AprilTagVisionIOLimelight("limelight-two"));
-
 
         colorSensor = new ColorSensor(new ColorSensorIOReal());
 
@@ -110,6 +119,13 @@ public class RobotContainer {
         intake = new Intake(new IntakeIOTalonSRX());
 
         arm = new ArmSubsystem(new ArmIOSparkMax());
+
+        leftClimber = new ClimberSubsystem(new ClimberIOSparkMax(
+                ClimberConstants.LEFT_MOTOR_ID,
+                ClimberConstants.LEFT_LIMIT_SWITCH_DIO_PORT));
+        rightClimber = new ClimberSubsystem(new ClimberIOSparkMax(
+                ClimberConstants.RIGHT_MOTOR_ID,
+                ClimberConstants.RIGHT_LIMIT_SWITCH_DIO_PORT));
         break;
 
       case SIM:
@@ -133,6 +149,8 @@ public class RobotContainer {
         intake = new Intake(new IntakeIO() {});
         colorSensor = new ColorSensor(new ColorSensorIO() {});
         arm = new ArmSubsystem(new ArmIOSim());
+        leftClimber = new ClimberSubsystem(new ClmiberIO() {});
+        rightClimber = new ClimberSubsystem(new ClmiberIO() {});
 
         break;
 
@@ -151,6 +169,8 @@ public class RobotContainer {
         intake = new Intake(new IntakeIO() {});
         colorSensor = new ColorSensor(new ColorSensorIO() {});
         arm = new ArmSubsystem(new ArmIO() {});
+        leftClimber = new ClimberSubsystem(new ClmiberIO() {});
+        rightClimber = new ClimberSubsystem(new ClmiberIO() {});
 
         break;
     }
@@ -170,7 +190,8 @@ public class RobotContainer {
         "Arm to calculated speaker angle",
         ArmCommands.autoArmToPosition(
             arm,
-            ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(drive.getPose())));
+            ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(
+                drive.getPose())));
 
     // Intake
     NamedCommands.registerCommand(
@@ -233,7 +254,7 @@ public class RobotContainer {
 
   private void configureButtonBindings() {
     arm.setPositionRad(intakePos.get());
-    controller
+    driverController
         .povDown()
         .onTrue(
             new InstantCommand(
@@ -241,7 +262,7 @@ public class RobotContainer {
                   arm.setPositionRad(intakePos.get());
                 },
                 arm));
-    controller
+    driverController
         .povRight()
         .onTrue(
             new InstantCommand(
@@ -249,7 +270,7 @@ public class RobotContainer {
                   arm.setPositionRad(speakerPos.get());
                 },
                 arm));
-    controller
+    driverController
         .povUp()
         .onTrue(
             new InstantCommand(
@@ -257,7 +278,7 @@ public class RobotContainer {
                   arm.setPositionRad(ampPos.get());
                 },
                 arm));
-    controller
+    driverController
         .povLeft()
         .toggleOnTrue(
             Commands.startEnd(
@@ -271,23 +292,31 @@ public class RobotContainer {
         DriveCommands.joystickDrive(
             drive,
             driveMode,
-            () -> -controller.getRightY(),
-            () -> -controller.getRightX(),
-            () -> controller.getLeftX()));
+            () -> -driverController.getRightY(),
+            () -> -driverController.getRightX(),
+            () -> driverController.getLeftX()));
 
-    controller
+    driverController
         .leftBumper()
         .whileTrue(
             Commands.startEnd(
                 () -> intake.setVoltage(-IntakeConstants.INTAKE_VOLTAGE), intake::stop, intake));
-    controller
+    driverController
         .rightBumper()
         .whileTrue(
             Commands.startEnd(
                 () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE), intake::stop, intake));
     //    controller.rightBumper().whileTrue(new IntakeUntilNoteCommand(colorSensor, intake));
 
-    controller.a().onTrue(Commands.runOnce(drive::resetGyro));
+    driverController.a().onTrue(Commands.runOnce(drive::resetGyro));
+
+    leftClimber.setDefaultCommand(new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
+    rightClimber.setDefaultCommand(new ManualClimberCommand(rightClimber, () -> -secondController.getRightY()));
+
+
+    driverController.back().toggleOnTrue(new ParallelCommandGroup(
+            new ManualClimberCommand(leftClimber, () -> -driverController.getLeftY()),
+            new ManualClimberCommand(rightClimber, () -> -driverController.getRightY())));
   }
 
   /**
