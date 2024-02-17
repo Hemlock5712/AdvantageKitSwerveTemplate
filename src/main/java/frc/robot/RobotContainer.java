@@ -264,12 +264,12 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private final LoggedDashboardNumber intakePos =
-      new LoggedDashboardNumber("arm/intake rad", ArmConstants.Positions.INTAKE_POS_RAD);
+      new LoggedDashboardNumber("ArmSubsystem/intake rad", ArmConstants.Positions.INTAKE_POS_RAD);
 
   private final LoggedDashboardNumber speakerPos =
-      new LoggedDashboardNumber("arm/speaker rad", ArmConstants.Positions.SPEAKER_POS_RAD);
+      new LoggedDashboardNumber("ArmSubsystem/speaker rad", ArmConstants.Positions.SPEAKER_POS_RAD);
   private final LoggedDashboardNumber ampPos =
-      new LoggedDashboardNumber("arm/amp rad", ArmConstants.Positions.AMP_POS_RAD);
+      new LoggedDashboardNumber("ArmSubsystem/amp rad", ArmConstants.Positions.AMP_POS_RAD);
 
   private void configureButtonBindings() {
     arm.setPositionRad(intakePos.get());
@@ -302,7 +302,7 @@ public class RobotContainer {
         .toggleOnTrue(
             Commands.startEnd(
                 () -> {
-                  shooter.runVolts(7);
+                  shooter.runVolts(ShooterConstants.RUN_VOLTS);
                 },
                 shooter::stop,
                 shooter));
@@ -315,16 +315,27 @@ public class RobotContainer {
             () -> -driverController.getRightX(),
             () -> driverController.getLeftX()));
 
+    intake.setDefaultCommand(
+      Commands.runEnd(
+        () -> {intake.setVoltage(
+          IntakeConstants.INTAKE_VOLTAGE *
+          (driverController.getLeftTriggerAxis() - driverController.getRightTriggerAxis())
+        );},
+        intake::stop,
+        intake
+      )
+    );
+
+
     driverController
-        .leftBumper()
-        .whileTrue(
-            Commands.startEnd(
-                () -> intake.setVoltage(-IntakeConstants.INTAKE_VOLTAGE), intake::stop, intake));
-    driverController
-        .rightBumper()
-        .whileTrue(
-            Commands.startEnd(
-                () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE), intake::stop, intake));
+      .leftBumper()
+        .toggleOnTrue(
+          Commands.startEnd(
+            () -> {
+              shooter.runVolts(ShooterConstants.RUN_VOLTS);
+            },
+            shooter::stop,
+            shooter));
     //    controller.rightBumper().whileTrue(new IntakeUntilNoteCommand(colorSensor, intake));
 
     driverController.a().onTrue(Commands.runOnce(drive::resetGyro));
