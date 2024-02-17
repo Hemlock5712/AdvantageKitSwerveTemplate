@@ -86,25 +86,9 @@ public final class DriveConstants {
   public static final ModuleConstants moduleConstants =
       switch (Constants.getRobot()) {
         case COMPBOT ->
-            new ModuleConstants(
-                0.1,
-                0.13,
-                0.1,
-                0.0,
-                10.0,
-                0.0,
-                Mk4iReductions.L1.reduction,
-                Mk4iReductions.TURN.reduction);
+            new ModuleConstants(Mk4iReductions.L1.reduction, Mk4iReductions.TURN.reduction);
         case SIMBOT ->
-            new ModuleConstants(
-                0.014,
-                0.134,
-                0.1,
-                0.0,
-                10.0,
-                0.0,
-                Mk4iReductions.L1.reduction,
-                Mk4iReductions.TURN.reduction);
+            new ModuleConstants(Mk4iReductions.L1.reduction, Mk4iReductions.TURN.reduction);
       };
 
   public static HeadingControllerConstants headingControllerConstants =
@@ -145,15 +129,7 @@ public final class DriveConstants {
       Rotation2d absoluteEncoderOffset,
       boolean turnMotorInverted) {}
 
-  public record ModuleConstants(
-      double ffKs,
-      double ffKv,
-      double driveKp,
-      double drivekD,
-      double turnKp,
-      double turnkD,
-      double driveReduction,
-      double turnReduction) {}
+  public record ModuleConstants(double driveReduction, double turnReduction) {}
 
   public record HeadingControllerConstants(double Kp, double Kd) {}
 
