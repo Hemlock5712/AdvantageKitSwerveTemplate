@@ -337,7 +337,7 @@ public class RobotContainer {
             intake));
 
     driverController
-        .leftBumper()
+        .rightBumper()
         .whileTrue(
             Commands.startEnd(
                 () -> {
