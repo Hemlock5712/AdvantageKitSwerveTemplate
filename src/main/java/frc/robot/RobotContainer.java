@@ -116,7 +116,7 @@ public class RobotContainer {
                 new ShooterIOSparkMax(ShooterConstants.ShooterWheels.TOP),
                 new ShooterIOSparkMax(ShooterConstants.ShooterWheels.BOTTOM));
 
-        intake = new Intake(new IntakeIOTalonSRX());
+        intake = new Intake(new IntakeIOSparkMax());
 
         arm = new ArmSubsystem(new ArmIOSparkMax());
 
@@ -316,26 +316,25 @@ public class RobotContainer {
             () -> driverController.getLeftX()));
 
     intake.setDefaultCommand(
-      Commands.runEnd(
-        () -> {intake.setVoltage(
-          IntakeConstants.INTAKE_VOLTAGE *
-          (driverController.getLeftTriggerAxis() - driverController.getRightTriggerAxis())
-        );},
-        intake::stop,
-        intake
-      )
-    );
-
+        Commands.runEnd(
+            () -> {
+              intake.setVoltage(
+                  IntakeConstants.INTAKE_VOLTAGE
+                      * (driverController.getLeftTriggerAxis()
+                          - driverController.getRightTriggerAxis()));
+            },
+            intake::stop,
+            intake));
 
     driverController
-      .leftBumper()
+        .leftBumper()
         .toggleOnTrue(
-          Commands.startEnd(
-            () -> {
-              shooter.runVolts(ShooterConstants.RUN_VOLTS);
-            },
-            shooter::stop,
-            shooter));
+            Commands.startEnd(
+                () -> {
+                  shooter.runVolts(ShooterConstants.RUN_VOLTS);
+                },
+                shooter::stop,
+                shooter));
     //    controller.rightBumper().whileTrue(new IntakeUntilNoteCommand(colorSensor, intake));
 
     driverController.a().onTrue(Commands.runOnce(drive::resetGyro));
