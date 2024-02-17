@@ -6,9 +6,11 @@ import org.littletonrobotics.junction.AutoLogOutput;
 public class ClimberSubsystem extends SubsystemBase {
   private final ClmiberIO clmiberIO;
   private final ClimberIOInputsAutoLogged ClimberIOInputs = new ClimberIOInputsAutoLogged();
+  private String descriptor;
 
-  public ClimberSubsystem(ClmiberIO clmiberIO) {
+  public ClimberSubsystem(ClmiberIO clmiberIO, String descriptor) {
     this.clmiberIO = clmiberIO;
+    this.descriptor = descriptor;
 
     clmiberIO.resetEncoder();
   }
@@ -26,6 +28,7 @@ public class ClimberSubsystem extends SubsystemBase {
     clmiberIO.setVoltage(volts);
   }
 
+  @AutoLogOutput(key = "Climber/{descriptor}/atBottom")
   public boolean atBottom() {
     return ClimberIOInputs.atBottom;
   }
@@ -38,12 +41,12 @@ public class ClimberSubsystem extends SubsystemBase {
     clmiberIO.toggleMotorInversion();
   }
 
-  @AutoLogOutput
+  @AutoLogOutput(key = "Climber/{descriptor}/pastFullExtension")
   public boolean pastFullExtension() {
     return ClimberIOInputs.positionRotations > ClimberConstants.FULL_EXTENSION_ROTATIONS;
   }
 
-  @AutoLogOutput
+  @AutoLogOutput(key = "Climber/{descriptor}/getPositionMeters")
   public double getPositionMeters() {
     return ClimberIOInputs.positionRotations;
   }

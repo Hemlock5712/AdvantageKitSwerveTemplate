@@ -22,12 +22,10 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.*;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.climber.ManualClimberCommand;
 import frc.robot.subsystems.ColorSensor.ColorSensor;
 import frc.robot.subsystems.ColorSensor.ColorSensorIO;
 import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
@@ -122,11 +120,13 @@ public class RobotContainer {
         leftClimber =
             new ClimberSubsystem(
                 new ClimberIOSparkMax(
-                    ClimberConstants.LEFT_MOTOR_ID, ClimberConstants.LEFT_LIMIT_SWITCH_DIO_PORT));
+                    ClimberConstants.LEFT_MOTOR_ID, ClimberConstants.LEFT_LIMIT_SWITCH_DIO_PORT),
+                "left");
         rightClimber =
             new ClimberSubsystem(
                 new ClimberIOSparkMax(
-                    ClimberConstants.RIGHT_MOTOR_ID, ClimberConstants.RIGHT_LIMIT_SWITCH_DIO_PORT));
+                    ClimberConstants.RIGHT_MOTOR_ID, ClimberConstants.RIGHT_LIMIT_SWITCH_DIO_PORT),
+                "right");
         break;
 
       case SIM:
@@ -150,8 +150,8 @@ public class RobotContainer {
         intake = new Intake(new IntakeIO() {});
         colorSensor = new ColorSensor(new ColorSensorIO() {});
         arm = new ArmSubsystem(new ArmIOSim());
-        leftClimber = new ClimberSubsystem(new ClmiberIO() {});
-        rightClimber = new ClimberSubsystem(new ClmiberIO() {});
+        leftClimber = new ClimberSubsystem(new ClmiberIO() {}, "left");
+        rightClimber = new ClimberSubsystem(new ClmiberIO() {}, "right");
 
         break;
 
@@ -170,8 +170,8 @@ public class RobotContainer {
         intake = new Intake(new IntakeIO() {});
         colorSensor = new ColorSensor(new ColorSensorIO() {});
         arm = new ArmSubsystem(new ArmIO() {});
-        leftClimber = new ClimberSubsystem(new ClmiberIO() {});
-        rightClimber = new ClimberSubsystem(new ClmiberIO() {});
+        leftClimber = new ClimberSubsystem(new ClmiberIO() {}, "left");
+        rightClimber = new ClimberSubsystem(new ClmiberIO() {}, "right");
 
         break;
     }
@@ -347,17 +347,17 @@ public class RobotContainer {
 
     driverController.a().onTrue(Commands.runOnce(drive::resetGyro));
 
-    leftClimber.setDefaultCommand(
-        new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
-    rightClimber.setDefaultCommand(
-        new ManualClimberCommand(rightClimber, () -> -secondController.getRightY()));
-
-    driverController
-        .back()
-        .toggleOnTrue(
-            new ParallelCommandGroup(
-                new ManualClimberCommand(leftClimber, () -> -driverController.getLeftY()),
-                new ManualClimberCommand(rightClimber, () -> -driverController.getRightY())));
+    //    leftClimber.setDefaultCommand(
+    //        new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
+    //    rightClimber.setDefaultCommand(
+    //        new ManualClimberCommand(rightClimber, () -> -secondController.getRightY()));
+    //
+    //    driverController
+    //        .back()
+    //        .toggleOnTrue(
+    //            new ParallelCommandGroup(
+    //                new ManualClimberCommand(leftClimber, () -> -driverController.getLeftY()),
+    //                new ManualClimberCommand(rightClimber, () -> -driverController.getRightY())));
   }
 
   /**
