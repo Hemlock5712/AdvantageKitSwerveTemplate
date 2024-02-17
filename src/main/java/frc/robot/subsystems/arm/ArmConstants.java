@@ -12,8 +12,8 @@ public class ArmConstants {
   public static final double kD = 0; // todo tune
   public static final double ARM_ENCODER_OFFSET_RAD = 2.1338351287912601;
   public static final int DUTY_CYCLE_ENCODER_PORT = 0;
-  public static final int UPPER_LIMIT_SWITCH_PORT = 3; // todo fix
-  public static final int LOWER_LIMIT_SWITCH_PORT = 4; // todo fix
+  public static final int UPPER_LIMIT_SWITCH_PORT = 3;
+  public static final int LOWER_LIMIT_SWITCH_PORT = 4;
 
   public static final double MIN_RAD = 0; // todo tune
   public static final double MAX_RAD = 1.9; // todo tune
