@@ -15,7 +15,7 @@ package frc.robot.subsystems.climber;
 
 import org.littletonrobotics.junction.AutoLog;
 
-public interface ClmiberIO {
+public interface ClimberIO {
   @AutoLog
   class ClimberIOInputs {
     public boolean atBottom = false;

@@ -2,52 +2,54 @@ package frc.robot.subsystems.climber;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class ClimberSubsystem extends SubsystemBase {
-  private final ClmiberIO clmiberIO;
-  private final ClimberIOInputsAutoLogged ClimberIOInputs = new ClimberIOInputsAutoLogged();
+  private final ClimberIO climberIO;
+  private final ClimberIOInputsAutoLogged climberIOInputs = new ClimberIOInputsAutoLogged();
   private String descriptor;
 
-  public ClimberSubsystem(ClmiberIO clmiberIO, String descriptor) {
-    this.clmiberIO = clmiberIO;
+  public ClimberSubsystem(ClimberIO climberIO, String descriptor) {
+    this.climberIO = climberIO;
     this.descriptor = descriptor;
 
-    clmiberIO.resetEncoder();
+    climberIO.resetEncoder();
   }
 
   @Override
   public void periodic() {
-    clmiberIO.updateInputs(ClimberIOInputs);
+    climberIO.updateInputs(climberIOInputs);
+    Logger.processInputs("climber/" + descriptor, climberIOInputs);
   }
 
   public void stop() {
-    clmiberIO.stop();
+    climberIO.stop();
   }
 
   public void setVoltage(double volts) {
-    clmiberIO.setVoltage(volts);
+    climberIO.setVoltage(volts);
   }
 
   @AutoLogOutput(key = "Climber/{descriptor}/atBottom")
   public boolean atBottom() {
-    return ClimberIOInputs.atBottom;
+    return climberIOInputs.atBottom;
   }
 
   public void resetEncoder() {
-    clmiberIO.resetEncoder();
+    climberIO.resetEncoder();
   }
 
   public void toggleInvert() {
-    clmiberIO.toggleMotorInversion();
+    climberIO.toggleMotorInversion();
   }
 
   @AutoLogOutput(key = "Climber/{descriptor}/pastFullExtension")
   public boolean pastFullExtension() {
-    return ClimberIOInputs.positionRotations > ClimberConstants.FULL_EXTENSION_ROTATIONS;
+    return climberIOInputs.positionRotations > ClimberConstants.FULL_EXTENSION_ROTATIONS;
   }
 
   @AutoLogOutput(key = "Climber/{descriptor}/getPositionMeters")
   public double getPositionMeters() {
-    return ClimberIOInputs.positionRotations;
+    return climberIOInputs.positionRotations;
   }
 }

@@ -7,7 +7,7 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DigitalInput;
 
-public class ClimberIOSparkMax implements ClmiberIO {
+public class ClimberIOSparkMax implements ClimberIO {
   private final CANSparkMax motor;
 
   private final DigitalInput limitSwitch;

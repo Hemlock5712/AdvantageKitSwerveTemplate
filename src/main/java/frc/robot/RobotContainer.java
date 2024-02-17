@@ -31,9 +31,9 @@ import frc.robot.subsystems.ColorSensor.ColorSensorIO;
 import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
 import frc.robot.subsystems.arm.*;
 import frc.robot.subsystems.climber.ClimberConstants;
+import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOSparkMax;
 import frc.robot.subsystems.climber.ClimberSubsystem;
-import frc.robot.subsystems.climber.ClmiberIO;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveController;
 import frc.robot.subsystems.drive.GyroIO;
@@ -150,8 +150,8 @@ public class RobotContainer {
         intake = new Intake(new IntakeIO() {});
         colorSensor = new ColorSensor(new ColorSensorIO() {});
         arm = new ArmSubsystem(new ArmIOSim());
-        leftClimber = new ClimberSubsystem(new ClmiberIO() {}, "left");
-        rightClimber = new ClimberSubsystem(new ClmiberIO() {}, "right");
+        leftClimber = new ClimberSubsystem(new ClimberIO() {}, "left");
+        rightClimber = new ClimberSubsystem(new ClimberIO() {}, "right");
 
         break;
 
@@ -170,8 +170,8 @@ public class RobotContainer {
         intake = new Intake(new IntakeIO() {});
         colorSensor = new ColorSensor(new ColorSensorIO() {});
         arm = new ArmSubsystem(new ArmIO() {});
-        leftClimber = new ClimberSubsystem(new ClmiberIO() {}, "left");
-        rightClimber = new ClimberSubsystem(new ClmiberIO() {}, "right");
+        leftClimber = new ClimberSubsystem(new ClimberIO() {}, "left");
+        rightClimber = new ClimberSubsystem(new ClimberIO() {}, "right");
 
         break;
     }
