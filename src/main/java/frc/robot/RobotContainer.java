@@ -22,7 +22,6 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -272,31 +271,30 @@ public class RobotContainer {
       new LoggedDashboardNumber("ArmSubsystem/amp rad", ArmConstants.Positions.AMP_POS_RAD);
 
   private void configureButtonBindings() {
-    arm.setPositionRad(intakePos.get());
-    driverController
-        .povDown()
-        .onTrue(
-            new InstantCommand(
-                () -> {
-                  arm.setPositionRad(intakePos.get());
-                },
-                arm));
-    driverController
-        .povRight()
-        .onTrue(
-            new InstantCommand(
-                () -> {
-                  arm.setPositionRad(speakerPos.get());
-                },
-                arm));
-    driverController
-        .povUp()
-        .onTrue(
-            new InstantCommand(
-                () -> {
-                  arm.setPositionRad(ampPos.get());
-                },
-                arm));
+    //    driverController
+    //        .povDown()
+    //        .onTrue(
+    //            new InstantCommand(
+    //                () -> {
+    //                  arm.setPositionRad(intakePos.get());
+    //                },
+    //                arm));
+    //    driverController
+    //        .povRight()
+    //        .onTrue(
+    //            new InstantCommand(
+    //                () -> {
+    //                  arm.setPositionRad(speakerPos.get());
+    //                },
+    //                arm));
+    //    driverController
+    //        .povUp()
+    //        .onTrue(
+    //            new InstantCommand(
+    //                () -> {
+    //                  arm.setPositionRad(ampPos.get());
+    //                },
+    //                arm));
     driverController
         .povLeft()
         .toggleOnTrue(
@@ -315,16 +313,26 @@ public class RobotContainer {
             () -> -driverController.getRightX(),
             () -> driverController.getLeftX()));
 
-    intake.setDefaultCommand(
+    arm.setDefaultCommand(
         Commands.runEnd(
             () -> {
-              intake.setVoltage(
-                  IntakeConstants.INTAKE_VOLTAGE
+              arm.setVoltage(
+                  3
                       * (driverController.getLeftTriggerAxis()
                           - driverController.getRightTriggerAxis()));
             },
-            intake::stop,
-            intake));
+            arm::stop,
+            arm));
+    //    intake.setDefaultCommand(
+    //        Commands.runEnd(
+    //            () -> {
+    //              intake.setVoltage(
+    //                  IntakeConstants.INTAKE_VOLTAGE
+    //                      * (driverController.getLeftTriggerAxis()
+    //                          - driverController.getRightTriggerAxis()));
+    //            },
+    //            intake::stop,
+    //            intake));
 
     driverController
         .leftBumper()
