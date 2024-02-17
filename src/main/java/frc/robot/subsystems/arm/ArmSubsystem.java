@@ -5,6 +5,8 @@ import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -42,6 +44,11 @@ public class ArmSubsystem extends SubsystemBase {
   public final SysIdRoutine sysid;
 
   private final InterpolatingDoubleTreeMap angleToHoldVolts = new InterpolatingDoubleTreeMap();
+
+  @AutoLogOutput
+  private Pose3d getArmPose() {
+    return new Pose3d(0, 0, 0, new Rotation3d(0, armIOInputs.positionRad, 0));
+  }
 
   public ArmSubsystem(ArmIO armIO) {
     this.armIO = armIO;
@@ -83,6 +90,7 @@ public class ArmSubsystem extends SubsystemBase {
     angleToHoldVolts.put(0.971653791, 0.118110236);
     angleToHoldVolts.put(1.15881465, 0.);
     angleToHoldVolts.put(1.26878736, 0.);
+    angleToHoldVolts.put(1.3, 0.);
     angleToHoldVolts.put(Math.PI, -1.);
   }
 
@@ -117,6 +125,10 @@ public class ArmSubsystem extends SubsystemBase {
     arm.setAngle(Units.radiansToDegrees(armIOInputs.positionRad));
 
     if (active) {
+      //      if (setpoint < 0.05 && armIOInputs.positionRad < 0.05) {
+      //        active = false;
+      //      }
+
       double pidVolts = pidController.calculate(armIOInputs.positionRad);
       //      double ffVolts = feedforward.calculate(armIOInputs.positionRad,
       // Math.signum(pidVolts));

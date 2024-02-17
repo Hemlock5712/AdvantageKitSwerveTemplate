@@ -35,8 +35,8 @@ public class ArmIOSparkMax implements ArmIO {
   public void updateInputs(ArmIOInputs inputs) {
     inputs.positionRad =
         (encoder.getAbsolutePosition() * Math.PI * 2) - ArmConstants.ARM_ENCODER_OFFSET_RAD;
-    inputs.upperLimit = (inputs.positionRad > ArmConstants.MAX_RAD) || (upperLimitSwitch.get());
-    inputs.lowerLimit = (inputs.positionRad < ArmConstants.MIN_RAD) || (lowerLimitSwitch.get());
+    inputs.upperLimit = (inputs.positionRad > ArmConstants.MAX_RAD);
+    inputs.lowerLimit = (inputs.positionRad < ArmConstants.MIN_RAD);
     inputs.appliedVolts = leader.getAppliedOutput() * leader.getBusVoltage();
     inputs.currentAmps = new double[] {leader.getOutputCurrent(), follower.getOutputCurrent()};
     inputs.leftMotorTemperatureCelsius = leader.getMotorTemperature();
