@@ -7,6 +7,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -45,9 +46,13 @@ public class ArmSubsystem extends SubsystemBase {
 
   private final InterpolatingDoubleTreeMap angleToHoldVolts = new InterpolatingDoubleTreeMap();
 
+  private final Translation3d ROTATION_POINT = new Translation3d(-.26, 0.0, .273);
+
   @AutoLogOutput
   private Pose3d getArmPose() {
-    return new Pose3d(0, 0, 0, new Rotation3d(0, armIOInputs.positionRad, 0));
+    Rotation3d rotation = new Rotation3d(0, -armIOInputs.positionRad, 0);
+    Translation3d transformedPoint = ROTATION_POINT.minus(ROTATION_POINT.rotateBy(rotation));
+    return new Pose3d(transformedPoint, rotation);
   }
 
   public ArmSubsystem(ArmIO armIO) {
