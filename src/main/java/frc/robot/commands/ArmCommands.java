@@ -14,7 +14,7 @@ public class ArmCommands {
   public static Command manualArmCommand(ArmSubsystem arm, DoubleSupplier supplier) {
     return Commands.run(
         () -> {
-          arm.setVoltage(supplier.getAsDouble() * ArmConstants.MANUAL_ARM_MAX_VOLTS);
+          arm.setManualVoltage(supplier.getAsDouble() * ArmConstants.MANUAL_ARM_MAX_VOLTS);
         },
         arm);
   }
@@ -28,10 +28,10 @@ public class ArmCommands {
         arm);
   }
 
-  public static Command autoArmToPosition(ArmSubsystem arm, double setpointInRadians) {
+  public static Command autoArmToPosition(ArmSubsystem arm, DoubleSupplier targetRadianSupplier) {
     return Commands.runOnce(
         () -> {
-          arm.setPositionRad(setpointInRadians);
+          arm.setPositionRad(targetRadianSupplier.getAsDouble());
         });
   }
 }

@@ -71,7 +71,7 @@ public class ArmSubsystem extends SubsystemBase {
                 state -> Logger.recordOutput("ArmSubsystem/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 voltage -> {
-                  setVoltage(voltage.in(Volts));
+                  limitAndSetVolts(voltage.in(Volts));
                 },
                 null,
                 this));
@@ -149,7 +149,7 @@ public class ArmSubsystem extends SubsystemBase {
       Logger.recordOutput("Arm/pid volts", pidVolts);
       Logger.recordOutput("Arm/frictions volts", frictionVolts);
 
-      setVoltage(volts);
+      limitAndSetVolts(volts);
     }
 
     updateControlConstants();
@@ -166,12 +166,17 @@ public class ArmSubsystem extends SubsystemBase {
     armIO.stop();
   }
 
-  public void setVoltage(double volts) {
+  private void limitAndSetVolts(double volts) {
     if ((volts < 0 && armIOInputs.lowerLimit) || (volts > 0 && armIOInputs.upperLimit)) {
       volts = 0;
     }
     Logger.recordOutput("ArmSubsystem/attemptedVolts", volts);
     armIO.setVoltage(volts);
+  }
+
+  public void setManualVoltage(double volts) {
+    active = false;
+    limitAndSetVolts(volts);
   }
 
   @AutoLogOutput

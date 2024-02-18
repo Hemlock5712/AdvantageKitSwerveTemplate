@@ -21,8 +21,7 @@ public class ColorSensor extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {
-  }
+  public void periodic() {}
 
   public Color getColor() {
     return new Color(colorSensorInputs.red, colorSensorInputs.green, colorSensorInputs.blue);

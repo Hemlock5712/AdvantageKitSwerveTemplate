@@ -22,12 +22,12 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.*;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.climber.ManualClimberCommand;
+import frc.robot.commands.climber.ResetClimbers;
 import frc.robot.subsystems.ColorSensor.ColorSensor;
 import frc.robot.subsystems.ColorSensor.ColorSensorIO;
 import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
@@ -182,19 +182,20 @@ public class RobotContainer {
     // Arm
     NamedCommands.registerCommand(
         "Arm to ground intake position",
-        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD));
+        ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.INTAKE_POS_RAD));
     NamedCommands.registerCommand(
         "Arm to amp position",
-        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD));
+        ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.AMP_POS_RAD));
     NamedCommands.registerCommand(
         "Arm to speaker position",
-        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.SPEAKER_POS_RAD));
+        ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.SPEAKER_POS_RAD));
     NamedCommands.registerCommand(
         "Arm to calculated speaker angle",
         ArmCommands.autoArmToPosition(
             arm,
-            ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(
-                drive.getPose())));
+            () ->
+                ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(
+                    drive.getPose())));
 
     // Intake
     NamedCommands.registerCommand(
@@ -272,40 +273,16 @@ public class RobotContainer {
   private final LoggedDashboardNumber ampPos =
       new LoggedDashboardNumber("ArmSubsystem/amp rad", ArmConstants.Positions.AMP_POS_RAD);
 
+  private Command runShooterVolts;
+
   private void configureButtonBindings() {
-    driverController
-        .povDown()
-        .onTrue(
-            new InstantCommand(
-                () -> {
-                  arm.setPositionRad(intakePos.get());
-                },
-                arm));
-    driverController
-        .povRight()
-        .onTrue(
-            new InstantCommand(
-                () -> {
-                  arm.setPositionRad(speakerPos.get());
-                },
-                arm));
-    driverController
-        .povUp()
-        .onTrue(
-            new InstantCommand(
-                () -> {
-                  arm.setPositionRad(ampPos.get());
-                },
-                arm));
-    driverController
-        .povLeft()
-        .toggleOnTrue(
-            Commands.startEnd(
-                () -> {
-                  shooter.runVolts(ShooterConstants.RUN_VOLTS);
-                },
-                shooter::stop,
-                shooter));
+    runShooterVolts =
+        Commands.startEnd(
+            () -> {
+              shooter.runVolts(ShooterConstants.RUN_VOLTS);
+            },
+            shooter::stop,
+            shooter);
 
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
@@ -315,16 +292,6 @@ public class RobotContainer {
             () -> -driverController.getRightX(),
             () -> driverController.getLeftX()));
 
-    //    arm.setDefaultCommand(
-    //        Commands.runEnd(
-    //            () -> {
-    //              arm.setVoltage(
-    //                  2
-    //                      * (driverController.getLeftTriggerAxis()
-    //                          - driverController.getRightTriggerAxis()));
-    //            },
-    //            arm::stop,
-    //            arm));
     intake.setDefaultCommand(
         Commands.runEnd(
             () -> {
@@ -336,16 +303,7 @@ public class RobotContainer {
             intake::stop,
             intake));
 
-    driverController
-        .rightBumper()
-        .whileTrue(
-            Commands.startEnd(
-                () -> {
-                  shooter.runVolts(ShooterConstants.RUN_VOLTS);
-                },
-                shooter::stop,
-                shooter));
-    //    controller.rightBumper().whileTrue(new IntakeUntilNoteCommand(colorSensor, intake));
+    driverController.rightBumper().whileTrue(runShooterVolts);
 
     driverController.a().onTrue(Commands.runOnce(drive::resetGyro));
 
@@ -353,13 +311,34 @@ public class RobotContainer {
         new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
     rightClimber.setDefaultCommand(
         new ManualClimberCommand(rightClimber, () -> -secondController.getRightY()));
-    //
-    //    driverController
-    //        .back()
-    //        .toggleOnTrue(
-    //            new ParallelCommandGroup(
-    //                new ManualClimberCommand(leftClimber, () -> -driverController.getLeftY()),
-    //                new ManualClimberCommand(rightClimber, () -> -driverController.getRightY())));
+
+    secondController.leftBumper().whileTrue(runShooterVolts);
+    secondController.rightBumper().whileTrue(new IntakeUntilNoteCommand(colorSensor, intake));
+
+    secondController
+        .a()
+        .whileTrue(
+            ArmCommands.manualArmCommand(
+                arm,
+                () ->
+                    2
+                        * (secondController.getLeftTriggerAxis()
+                            - secondController.getRightTriggerAxis())));
+
+    secondController.x().whileTrue(new ResetClimbers(leftClimber));
+    secondController.b().whileTrue(new ResetClimbers(rightClimber));
+
+    for (var controller : new CommandXboxController[] {driverController, secondController}) {
+      configureUniversalControls(controller);
+    }
+  }
+
+  private void configureUniversalControls(CommandXboxController controller) {
+    controller.povDown().onTrue(ArmCommands.autoArmToPosition(arm, intakePos::get));
+    controller.povRight().onTrue(ArmCommands.autoArmToPosition(arm, speakerPos::get));
+    controller.povUp().onTrue(ArmCommands.autoArmToPosition(arm, ampPos::get));
+
+    controller.povLeft().toggleOnTrue(runShooterVolts);
   }
 
   /**
