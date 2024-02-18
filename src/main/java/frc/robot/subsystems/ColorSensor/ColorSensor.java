@@ -22,10 +22,6 @@ public class ColorSensor extends SubsystemBase {
 
   @Override
   public void periodic() {
-    colorSensorIO.updateInputs(colorSensorInputs);
-    Logger.processInputs("ColorSensor", colorSensorInputs);
-
-    Logger.recordOutput("DetectingNote", detectNote());
   }
 
   public Color getColor() {
@@ -33,6 +29,11 @@ public class ColorSensor extends SubsystemBase {
   }
 
   public boolean detectNote() {
-    return colorSensorInputs.red > .33;
+    colorSensorIO.updateInputs(colorSensorInputs);
+    Logger.processInputs("ColorSensor", colorSensorInputs);
+
+    final boolean output = colorSensorInputs.red > .33;
+    Logger.recordOutput("DetectingNote", output);
+    return output;
   }
 }
