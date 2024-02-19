@@ -1,8 +1,8 @@
 package frc.robot.subsystems.climber;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.climber.ClimberConstants.RotationPositions;
+import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -10,6 +10,7 @@ public class ClimberSubsystem extends SubsystemBase {
   private final ClimberIO climberIO;
   private final ClimberIOInputsAutoLogged climberIOInputs = new ClimberIOInputsAutoLogged();
   private String descriptor;
+  @Getter private boolean beenReset = false;
   @AutoLogOutput private double volts = 0;
 
   public ClimberSubsystem(ClimberIO climberIO, String descriptor) {
@@ -58,12 +59,10 @@ public class ClimberSubsystem extends SubsystemBase {
     return climberIOInputs.atBottom;
   }
 
-  public void resetEncoder() {
+  public void resetClimbersAssumingPositiveVoltageIsDown() {
     climberIO.resetEncoder();
-  }
-
-  public void toggleInvert() {
     climberIO.toggleMotorInversion();
+    beenReset = true;
   }
 
   @AutoLogOutput(key = "Climber/{descriptor}/pastFullExtension")
@@ -73,8 +72,8 @@ public class ClimberSubsystem extends SubsystemBase {
 
   @AutoLogOutput(key = "Climber/{descriptor}/getPositionMeters")
   public double getPositionMeters() {
-    if (climberIOInputs.positionRotations > RotationPositions.INITIAL_FULL_EXTENSION &&
-        climberIOInputs.positionRotations < RotationPositions.HIGHEST_FULL_EXTENSION) {
+    if (climberIOInputs.positionRotations > RotationPositions.INITIAL_FULL_EXTENSION
+        && climberIOInputs.positionRotations < RotationPositions.HIGHEST_FULL_EXTENSION) {
       return ClimberConstants.CLIMBER_RANGE_METERS;
     }
 

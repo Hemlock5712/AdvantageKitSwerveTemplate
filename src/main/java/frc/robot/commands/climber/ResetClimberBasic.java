@@ -1,14 +1,21 @@
 package frc.robot.commands.climber;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 
-public class ResetClimberBasic extends SequentialCommandGroup {
-  public ResetClimberBasic(ClimberSubsystem climber) {
-    addCommands(
-        new MoveClimberToBottom(climber),
-        new InstantCommand(climber::toggleInvert, climber),
-        new InstantCommand(climber::resetEncoder, climber));
+public class ResetClimberBasic {
+  private ResetClimberBasic() {}
+  ;
+
+  public static Command on(ClimberSubsystem climber) {
+    return new ConditionalCommand(
+        Commands.none(),
+        new MoveClimberToBottom(climber)
+            .andThen(
+                new InstantCommand(climber::resetClimbersAssumingPositiveVoltageIsDown, climber)),
+        climber::isBeenReset);
   }
 }

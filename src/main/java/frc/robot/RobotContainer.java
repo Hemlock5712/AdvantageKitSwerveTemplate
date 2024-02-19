@@ -361,13 +361,12 @@ public class RobotContainer {
     //                        * (secondController.getLeftTriggerAxis()
     //                            - secondController.getRightTriggerAxis())));
 
-    secondController.x().onTrue(new ResetClimberBasic(leftClimber));
-    secondController.b().onTrue(new ResetClimberBasic(rightClimber));
+    secondController.x().onTrue(ResetClimberBasic.on(leftClimber));
+    secondController.b().onTrue(ResetClimberBasic.on(rightClimber));
 
-    // todo enable
-    //    for (var controller : new CommandXboxController[] {driverController, secondController}) {
-    //      configureUniversalControls(controller);
-    //    }
+    for (var controller : new CommandXboxController[] {driverController, secondController}) {
+      configureUniversalControls(controller);
+    }
   }
 
   private void configureUniversalControls(CommandXboxController controller) {
@@ -378,12 +377,21 @@ public class RobotContainer {
     controller.rightBumper().whileTrue(runShooterVolts);
   }
 
+  // todo for competition - reset climbers in auto instead of teleop
+  private Command getClimberResetCommand() {
+    return ResetClimberBasic.on(leftClimber).alongWith(ResetClimberBasic.on(rightClimber));
+  }
+
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return autoChooser.get();
+    return autoChooser.get().alongWith(getClimberResetCommand());
+  }
+
+  public Command getTeleopCommand() {
+    return getClimberResetCommand();
   }
 }
