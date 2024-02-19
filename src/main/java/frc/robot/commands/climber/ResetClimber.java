@@ -7,8 +7,8 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.climber.ClimberConstants;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 
-public class ResetClimbers extends SequentialCommandGroup {
-  public ResetClimbers(ClimberSubsystem climber) {
+public class ResetClimber extends SequentialCommandGroup {
+  public ResetClimber(ClimberSubsystem climber) {
     addCommands(
         new InstantCommand(climber::resetEncoder, climber),
         Commands.waitUntil(

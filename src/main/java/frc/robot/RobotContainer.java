@@ -28,7 +28,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.*;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.climber.ManualClimberCommand;
-import frc.robot.commands.climber.ResetClimbers;
+import frc.robot.commands.climber.ResetClimberBasic;
 import frc.robot.subsystems.ColorSensor.ColorSensor;
 import frc.robot.subsystems.ColorSensor.ColorSensorIO;
 import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
@@ -361,12 +361,13 @@ public class RobotContainer {
     //                        * (secondController.getLeftTriggerAxis()
     //                            - secondController.getRightTriggerAxis())));
 
-    secondController.x().whileTrue(new ResetClimbers(leftClimber));
-    secondController.b().whileTrue(new ResetClimbers(rightClimber));
+    secondController.x().onTrue(new ResetClimberBasic(leftClimber));
+    secondController.b().onTrue(new ResetClimberBasic(rightClimber));
 
-    for (var controller : new CommandXboxController[] {driverController, secondController}) {
-      configureUniversalControls(controller);
-    }
+    // todo enable
+    //    for (var controller : new CommandXboxController[] {driverController, secondController}) {
+    //      configureUniversalControls(controller);
+    //    }
   }
 
   private void configureUniversalControls(CommandXboxController controller) {
