@@ -34,6 +34,9 @@ import frc.robot.subsystems.ColorSensor.ColorSensorIO;
 import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
 import frc.robot.subsystems.arm.*;
 import frc.robot.subsystems.arm.ArmConstants.Positions;
+import frc.robot.subsystems.beamBreak.BeamBreak;
+import frc.robot.subsystems.beamBreak.BeamBreakIO;
+import frc.robot.subsystems.beamBreak.BeamBreakIOReal;
 import frc.robot.subsystems.climber.ClimberConstants;
 import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOSparkMax;
@@ -78,6 +81,7 @@ public class RobotContainer {
   private final ArmSubsystem arm;
   private final ClimberSubsystem leftClimber;
   private final ClimberSubsystem rightClimber;
+  private final BeamBreak beamBreak;
 
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
@@ -133,6 +137,8 @@ public class RobotContainer {
                 new ClimberIOSparkMax(
                     ClimberConstants.RIGHT_MOTOR_ID, ClimberConstants.RIGHT_LIMIT_SWITCH_DIO_PORT),
                 "right");
+
+        beamBreak = new BeamBreak(new BeamBreakIOReal());
         break;
 
       case SIM:
@@ -159,6 +165,7 @@ public class RobotContainer {
         leftClimber = new ClimberSubsystem(new ClimberIO() {}, "left");
         rightClimber = new ClimberSubsystem(new ClimberIO() {}, "right");
 
+        beamBreak = new BeamBreak(new BeamBreakIO() {});
         break;
 
       default:
@@ -178,6 +185,7 @@ public class RobotContainer {
         arm = new ArmSubsystem(new ArmIO() {});
         leftClimber = new ClimberSubsystem(new ClimberIO() {}, "left");
         rightClimber = new ClimberSubsystem(new ClimberIO() {}, "right");
+        beamBreak = new BeamBreak(new BeamBreakIO() {});
 
         break;
     }
