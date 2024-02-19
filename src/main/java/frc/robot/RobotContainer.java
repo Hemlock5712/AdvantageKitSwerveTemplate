@@ -217,7 +217,7 @@ public class RobotContainer {
 
     // Intake
     NamedCommands.registerCommand(
-        "Intake until note", new IntakeUntilNoteCommand(colorSensor, intake));
+        "Intake until note", new IntakeUntilNoteCommand(beamBreak, intake));
 
     // Shooter
     NamedCommands.registerCommand(
@@ -352,12 +352,14 @@ public class RobotContainer {
 
     driverController.a().onTrue(Commands.runOnce(drive::resetGyro));
 
+    driverController.x().whileTrue(new IntakeUntilNoteCommand(beamBreak, intake));
+
     leftClimber.setDefaultCommand(
         new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
     rightClimber.setDefaultCommand(
         new ManualClimberCommand(rightClimber, () -> -secondController.getRightY()));
 
-    secondController.leftBumper().whileTrue(new IntakeUntilNoteCommand(colorSensor, intake));
+    secondController.leftBumper().whileTrue(new IntakeUntilNoteCommand(beamBreak, intake));
 
     //    secondController
     //        .a()
