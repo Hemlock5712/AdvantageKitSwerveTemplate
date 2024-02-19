@@ -1,6 +1,7 @@
 package frc.robot.subsystems.arm;
 
 import static edu.wpi.first.units.Units.Volts;
+import static frc.robot.subsystems.arm.ArmConstants.angleToHoldVolts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -8,7 +9,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -44,8 +44,6 @@ public class ArmSubsystem extends SubsystemBase {
 
   public final SysIdRoutine sysid;
 
-  private final InterpolatingDoubleTreeMap angleToHoldVolts = new InterpolatingDoubleTreeMap();
-
   private final Translation3d ROTATION_POINT = new Translation3d(-.26, 0.0, .273);
 
   @AutoLogOutput
@@ -75,28 +73,6 @@ public class ArmSubsystem extends SubsystemBase {
                 },
                 null,
                 this));
-
-    //    angleToHoldVolts.put(0.067593724, 1.204724371);
-    angleToHoldVolts.put(-1., 1.);
-    angleToHoldVolts.put(0.067897516, 0.897637814);
-    angleToHoldVolts.put(0.2207049, 0.874015778);
-    angleToHoldVolts.put(0.269767311, 0.66141732);
-    angleToHoldVolts.put(0.2816152, 0.566929132);
-    //    angleToHoldVolts.put(0.293918777, 0.425196871);
-    angleToHoldVolts.put(0.3615125, 0.448818907);
-    //    angleToHoldVolts.put(0.379891918, 0.448818907);
-    angleToHoldVolts.put(0.487758347, 0.354330719);
-    //    angleToHoldVolts.put(0.538927039, 0.472440943);
-    angleToHoldVolts.put(0.618824339, 0.377952754);
-    angleToHoldVolts.put(0.7323615, 0.25984253);
-    angleToHoldVolts.put(0.800188802, 0.118110236);
-    angleToHoldVolts.put(0.876895658, 0.188976377);
-    angleToHoldVolts.put(0.944489381, 0.118110236);
-    angleToHoldVolts.put(0.971653791, 0.118110236);
-    angleToHoldVolts.put(1.15881465, 0.);
-    angleToHoldVolts.put(1.26878736, 0.);
-    angleToHoldVolts.put(1.3, 0.);
-    angleToHoldVolts.put(Math.PI, -1.);
   }
 
   private void updateControlConstants() {
@@ -176,7 +152,16 @@ public class ArmSubsystem extends SubsystemBase {
 
   public void setManualVoltage(double volts) {
     active = false;
-    limitAndSetVolts(volts);
+    armIO.setVoltage(volts);
+    //    limitAndSetVolts(volts);
+  }
+
+  public boolean atTop() {
+    return armIOInputs.upperLimit;
+  }
+
+  public boolean atBottom() {
+    return armIOInputs.lowerLimit;
   }
 
   @AutoLogOutput

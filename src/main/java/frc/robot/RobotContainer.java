@@ -17,6 +17,7 @@ import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
@@ -32,12 +33,14 @@ import frc.robot.subsystems.ColorSensor.ColorSensor;
 import frc.robot.subsystems.ColorSensor.ColorSensorIO;
 import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
 import frc.robot.subsystems.arm.*;
+import frc.robot.subsystems.arm.ArmConstants.Positions;
 import frc.robot.subsystems.climber.ClimberConstants;
 import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOSparkMax;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveController;
+import frc.robot.subsystems.drive.DriveController.DriveModeType;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIONavX2;
 import frc.robot.subsystems.drive.ModuleIO;
@@ -53,6 +56,7 @@ import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
 import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
 import frc.robot.util.ShootingBasedOnPoseCalculator;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
@@ -191,11 +195,17 @@ public class RobotContainer {
         ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.SPEAKER_POS_RAD));
     NamedCommands.registerCommand(
         "Arm to calculated speaker angle",
-        ArmCommands.autoArmToPosition(
-            arm,
+        Commands.runOnce(
             () ->
-                ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(
-                    drive.getPose())));
+                Logger.recordOutput(
+                    "arm/targetShootingAngle",
+                    ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(
+                        drive.getPose()))));
+    //        ArmCommands.autoArmToPosition(
+    //            arm,
+    //            () ->
+    //                ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(
+    //                    drive.getPose())));
 
     // Intake
     NamedCommands.registerCommand(
@@ -207,7 +217,7 @@ public class RobotContainer {
         ShooterCommands.fullshot(
             shooter, intake, colorSensor, ShooterConstants.AUTO_SPEAKER_SHOOT_VELOCITY));
 
-    AutoBuilder.buildAuto("MiddleTwoNote");
+    //    AutoBuilder.buildAuto("MiddleTwoNote");
 
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -252,6 +262,18 @@ public class RobotContainer {
     autoChooser.addOption(
         "Arm sysid dynamic reverse", arm.sysid.dynamic(SysIdRoutine.Direction.kReverse));
 
+    autoChooser.addOption(
+        "shoot auto",
+        ArmCommands.autoArmToPosition(arm, () -> Positions.SPEAKER_POS_RAD)
+            .andThen(Commands.runOnce(() -> shooter.runVolts(ShooterConstants.RUN_VOLTS), shooter))
+            .andThen(Commands.waitSeconds(2))
+            .andThen(
+                Commands.runOnce(() -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE), intake))
+            .andThen(Commands.waitSeconds(1))
+            .andThen(Commands.runOnce(() -> shooter.runVolts(0), shooter))
+            .andThen(Commands.runOnce(() -> intake.setVoltage(0), intake))
+            .andThen(ArmCommands.autoArmToPosition(arm, () -> Positions.INTAKE_POS_RAD)));
+
     // Configure the button bindings
     aprilTagVision.setDataInterfaces(drive::addVisionData);
     driveMode.setPoseSupplier(drive::getPose);
@@ -292,18 +314,33 @@ public class RobotContainer {
             () -> -driverController.getRightX(),
             () -> driverController.getLeftX()));
 
+    driveMode.setDriveMode(DriveModeType.SPEAKER);
+    driverController
+        .y()
+        .toggleOnTrue(
+            Commands.startEnd(
+                () -> {
+                  driveMode.enableHeadingControl();
+                },
+                () -> {
+                  driveMode.disableHeadingControl();
+                }));
+
     intake.setDefaultCommand(
         Commands.runEnd(
             () -> {
               intake.setVoltage(
                   IntakeConstants.INTAKE_VOLTAGE
-                      * (driverController.getLeftTriggerAxis()
-                          - driverController.getRightTriggerAxis()));
+                      * MathUtil.clamp(
+                          driverController.getLeftTriggerAxis()
+                              - driverController.getRightTriggerAxis()
+                              + secondController.getLeftTriggerAxis()
+                              - secondController.getRightTriggerAxis(),
+                          -1,
+                          1));
             },
             intake::stop,
             intake));
-
-    driverController.rightBumper().whileTrue(runShooterVolts);
 
     driverController.a().onTrue(Commands.runOnce(drive::resetGyro));
 
@@ -312,18 +349,17 @@ public class RobotContainer {
     rightClimber.setDefaultCommand(
         new ManualClimberCommand(rightClimber, () -> -secondController.getRightY()));
 
-    secondController.leftBumper().whileTrue(runShooterVolts);
-    secondController.rightBumper().whileTrue(new IntakeUntilNoteCommand(colorSensor, intake));
+    secondController.leftBumper().whileTrue(new IntakeUntilNoteCommand(colorSensor, intake));
 
-    secondController
-        .a()
-        .whileTrue(
-            ArmCommands.manualArmCommand(
-                arm,
-                () ->
-                    2
-                        * (secondController.getLeftTriggerAxis()
-                            - secondController.getRightTriggerAxis())));
+    //    secondController
+    //        .a()
+    //        .whileTrue(
+    //            ArmCommands.manualArmCommand(
+    //                arm,
+    //                () ->
+    //                    2
+    //                        * (secondController.getLeftTriggerAxis()
+    //                            - secondController.getRightTriggerAxis())));
 
     secondController.x().whileTrue(new ResetClimbers(leftClimber));
     secondController.b().whileTrue(new ResetClimbers(rightClimber));
@@ -335,10 +371,10 @@ public class RobotContainer {
 
   private void configureUniversalControls(CommandXboxController controller) {
     controller.povDown().onTrue(ArmCommands.autoArmToPosition(arm, intakePos::get));
-    controller.povRight().onTrue(ArmCommands.autoArmToPosition(arm, speakerPos::get));
+    controller.povLeft().onTrue(ArmCommands.autoArmToPosition(arm, speakerPos::get));
     controller.povUp().onTrue(ArmCommands.autoArmToPosition(arm, ampPos::get));
 
-    controller.povLeft().toggleOnTrue(runShooterVolts);
+    controller.rightBumper().whileTrue(runShooterVolts);
   }
 
   /**

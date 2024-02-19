@@ -8,6 +8,7 @@ public class ClimberSubsystem extends SubsystemBase {
   private final ClimberIO climberIO;
   private final ClimberIOInputsAutoLogged climberIOInputs = new ClimberIOInputsAutoLogged();
   private String descriptor;
+  @AutoLogOutput private double volts = 0;
 
   public ClimberSubsystem(ClimberIO climberIO, String descriptor) {
     this.climberIO = climberIO;
@@ -20,14 +21,33 @@ public class ClimberSubsystem extends SubsystemBase {
   public void periodic() {
     climberIO.updateInputs(climberIOInputs);
     Logger.processInputs("climber/" + descriptor, climberIOInputs);
+    checkAndStopIfAtBottom();
   }
 
   public void stop() {
     climberIO.stop();
   }
 
+  private void checkAndStopIfAtBottom() {
+    if (cannotUseVolts(volts)) {
+      climberIO.setVoltage(0);
+    }
+  }
+
+  @AutoLogOutput
+  private boolean cannotUseVolts(double volts) {
+    return (climberIOInputs.atBottom);
+    //        && ((climberIOInputs.positionRotations > ClimberConstants.FULL_EXTENSION_ROTATIONS
+    //                && volts > 0)
+    //            || (climberIOInputs.positionRotations < ClimberConstants.FULL_EXTENSION_ROTATIONS
+    //                && volts < 0)));
+  }
+
   public void setVoltage(double volts) {
-    climberIO.setVoltage(volts);
+    if (!cannotUseVolts(volts)) {
+      climberIO.setVoltage(volts);
+      this.volts = volts;
+    }
   }
 
   @AutoLogOutput(key = "Climber/{descriptor}/atBottom")
