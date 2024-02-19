@@ -69,8 +69,8 @@ public class RobotContainer {
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
 
-  //   private final LoggedDashboardNumber flywheelSpeedInput =
-  //       new LoggedDashboardNumber("Flywheel Speed", 1500.0);
+  //   private final LoggedTunableNumber flywheelSpeedInput =
+  //       new LoggedTunableNumber("Flywheel Speed", 1500.0);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
