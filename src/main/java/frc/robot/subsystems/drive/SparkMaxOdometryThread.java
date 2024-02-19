@@ -20,6 +20,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -56,7 +57,7 @@ public class SparkMaxOdometryThread {
   }
 
   public Queue<Double> registerSignal(DoubleSupplier signal) {
-    Queue<Double> queue = new ArrayDeque<>(100);
+    ArrayBlockingQueue<Double> queue = new ArrayBlockingQueue<>(10);
     Drive.odometryLock.lock();
     try {
       signals.add(signal);
@@ -68,7 +69,7 @@ public class SparkMaxOdometryThread {
   }
 
   public Queue<Double> makeTimestampQueue() {
-    Queue<Double> queue = new ArrayDeque<>(100);
+    ArrayBlockingQueue<Double> queue = new ArrayBlockingQueue<>(10);
     Drive.odometryLock.lock();
     try {
       timestampQueues.add(queue);

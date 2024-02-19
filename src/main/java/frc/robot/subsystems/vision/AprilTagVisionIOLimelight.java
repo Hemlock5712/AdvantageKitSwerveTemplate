@@ -54,7 +54,8 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
         new ArrayList<>(); // Creates an empty ArrayList to store pose estimates
 
     // Iterates over each timestamped string in the queue
-    for (TimestampedString timestampedString : queue) {
+    for (int i = 0; i < Math.min(queue.length, 3); i++) {
+      TimestampedString timestampedString = queue[i];
       double timestamp = timestampedString.timestamp / 1e6; // Converts the timestamp to seconds
       LimelightHelpers.Results results =
           LimelightHelpers.parseJsonDump(timestampedString.value)
@@ -79,12 +80,13 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
           new int[results.targets_Fiducials.length]; // Creates an array to store the tag IDs
 
       // Iterates over each target in the targeting results
-      for (int i = 0; i < results.targets_Fiducials.length; i++) {
-        tagIDs[i] =
-            (int) results.targets_Fiducials[i].fiducialID; // Retrieves and stores the tag ID
+      for (int aprilTags = 0; aprilTags < results.targets_Fiducials.length; aprilTags++) {
+        tagIDs[aprilTags] =
+            (int)
+                results.targets_Fiducials[aprilTags].fiducialID; // Retrieves and stores the tag ID
         averageTagDistance +=
             results
-                .targets_Fiducials[i]
+                .targets_Fiducials[aprilTags]
                 .getTargetPose_CameraSpace()
                 .getTranslation()
                 .getNorm(); // Calculates the sum of the tag distances
