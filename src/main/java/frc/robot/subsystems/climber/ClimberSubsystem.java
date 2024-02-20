@@ -1,6 +1,8 @@
 package frc.robot.subsystems.climber;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.climber.ClimberConstants.RotationPositions;
+import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -8,6 +10,7 @@ public class ClimberSubsystem extends SubsystemBase {
   private final ClimberIO climberIO;
   private final ClimberIOInputsAutoLogged climberIOInputs = new ClimberIOInputsAutoLogged();
   private String descriptor;
+  @Getter private boolean beenReset = false;
   @AutoLogOutput private double volts = 0;
 
   public ClimberSubsystem(ClimberIO climberIO, String descriptor) {
@@ -36,11 +39,12 @@ public class ClimberSubsystem extends SubsystemBase {
 
   @AutoLogOutput
   private boolean cannotUseVolts(double volts) {
-    return (climberIOInputs.atBottom);
-    //        && ((climberIOInputs.positionRotations > ClimberConstants.FULL_EXTENSION_ROTATIONS
-    //                && volts > 0)
-    //            || (climberIOInputs.positionRotations < ClimberConstants.FULL_EXTENSION_ROTATIONS
-    //                && volts < 0)));
+    boolean pastFullExtension = pastFullExtension();
+    boolean positiveVoltageDirection = volts > 0;
+
+    return (climberIOInputs.atBottom
+        && ((pastFullExtension && positiveVoltageDirection)
+            || (!pastFullExtension && !positiveVoltageDirection)));
   }
 
   public void setVoltage(double volts) {
@@ -55,21 +59,32 @@ public class ClimberSubsystem extends SubsystemBase {
     return climberIOInputs.atBottom;
   }
 
-  public void resetEncoder() {
+  public void resetClimbersAssumingPositiveVoltageIsDown() {
     climberIO.resetEncoder();
-  }
-
-  public void toggleInvert() {
     climberIO.toggleMotorInversion();
+    beenReset = true;
   }
 
   @AutoLogOutput(key = "Climber/{descriptor}/pastFullExtension")
   public boolean pastFullExtension() {
-    return climberIOInputs.positionRotations > ClimberConstants.FULL_EXTENSION_ROTATIONS;
+    return climberIOInputs.positionRotations > RotationPositions.FULL_EXTENSION_MIDDLE;
   }
 
   @AutoLogOutput(key = "Climber/{descriptor}/getPositionMeters")
   public double getPositionMeters() {
-    return climberIOInputs.positionRotations;
+    if (climberIOInputs.positionRotations > RotationPositions.INITIAL_FULL_EXTENSION
+        && climberIOInputs.positionRotations < RotationPositions.HIGHEST_FULL_EXTENSION) {
+      return ClimberConstants.CLIMBER_RANGE_METERS;
+    }
+
+    if (!pastFullExtension()) {
+      return climberIOInputs.positionRotations
+          / RotationPositions.INITIAL_FULL_EXTENSION
+          * ClimberConstants.CLIMBER_RANGE_METERS;
+    } else {
+      return (RotationPositions.HIGH_END_FOR_BOTTOM - climberIOInputs.positionRotations)
+          / RotationPositions.INITIAL_FULL_EXTENSION
+          * ClimberConstants.CLIMBER_RANGE_METERS;
+    }
   }
 }
