@@ -26,10 +26,10 @@ public class ShooterCommands {
                             MathUtil.isNear(
                                 velocityRadPerSec,
                                 shooter.getVelocityRadiansPerSec(),
-                                ShooterConstants.VELOCITY_TOLERANCE))
+                                ShooterConstants.VELOCITY_TOLERANCE.get()))
                     .andThen(
                         Commands.startEnd(
-                            () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE),
+                            () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()),
                             intake::stop,
                             intake))
                     .withTimeout(1)),
@@ -54,7 +54,7 @@ public class ShooterCommands {
         () ->
             shooter.runVelocity(
                 Units.radiansPerSecondToRotationsPerMinute(
-                    ShooterConstants.AMP_VELOCITY_RAD_PER_SEC)));
+                    ShooterConstants.AMP_VELOCITY_RAD_PER_SEC.get())));
   }
 
   public static Command scoreSpeakerConstantSpeed(ShooterSubsystem shooter) {
@@ -62,7 +62,7 @@ public class ShooterCommands {
         () ->
             shooter.runVelocity(
                 Units.radiansPerSecondToRotationsPerMinute(
-                    ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC)));
+                    ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get())));
   }
 
   public static Command scoreSpeakerVariableSpeed(
