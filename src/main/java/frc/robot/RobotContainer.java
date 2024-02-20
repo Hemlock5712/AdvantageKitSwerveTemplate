@@ -29,9 +29,6 @@ import frc.robot.commands.*;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.climber.ManualClimberCommand;
 import frc.robot.commands.climber.ResetClimbers;
-import frc.robot.subsystems.ColorSensor.ColorSensor;
-import frc.robot.subsystems.ColorSensor.ColorSensorIO;
-import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
 import frc.robot.subsystems.arm.*;
 import frc.robot.subsystems.arm.ArmConstants.Positions;
 import frc.robot.subsystems.beamBreak.BeamBreak;
@@ -77,7 +74,6 @@ public class RobotContainer {
   private final ShooterSubsystem shooter;
 
   private final Intake intake;
-  private final ColorSensor colorSensor;
   private final ArmSubsystem arm;
   private final ClimberSubsystem leftClimber;
   private final ClimberSubsystem rightClimber;
@@ -116,7 +112,7 @@ public class RobotContainer {
                 new AprilTagVisionIOLimelight("limelight"),
                 new AprilTagVisionIOLimelight("limelight-two"));
 
-        colorSensor = new ColorSensor(new ColorSensorIOReal());
+        beamBreak = new BeamBreak(new BeamBreakIOReal());
 
         shooter =
             new ShooterSubsystem(
@@ -138,7 +134,6 @@ public class RobotContainer {
                     ClimberConstants.RIGHT_MOTOR_ID, ClimberConstants.RIGHT_LIMIT_SWITCH_DIO_PORT),
                 "right");
 
-        beamBreak = new BeamBreak(new BeamBreakIOReal());
         break;
 
       case SIM:
@@ -160,7 +155,6 @@ public class RobotContainer {
         // flywheel = new Flywheel(new FlywheelIOSim());
         shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
-        colorSensor = new ColorSensor(new ColorSensorIO() {});
         arm = new ArmSubsystem(new ArmIOSim());
         leftClimber = new ClimberSubsystem(new ClimberIO() {}, "left");
         rightClimber = new ClimberSubsystem(new ClimberIO() {}, "right");
@@ -181,7 +175,6 @@ public class RobotContainer {
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
         shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
-        colorSensor = new ColorSensor(new ColorSensorIO() {});
         arm = new ArmSubsystem(new ArmIO() {});
         leftClimber = new ClimberSubsystem(new ClimberIO() {}, "left");
         rightClimber = new ClimberSubsystem(new ClimberIO() {}, "right");
@@ -223,7 +216,7 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "Shoot speaker",
         ShooterCommands.fullshot(
-            shooter, intake, colorSensor, ShooterConstants.AUTO_SPEAKER_SHOOT_VELOCITY));
+            shooter, intake, beamBreak, ShooterConstants.AUTO_SPEAKER_SHOOT_VELOCITY));
 
     //    AutoBuilder.buildAuto("MiddleTwoNote");
 
