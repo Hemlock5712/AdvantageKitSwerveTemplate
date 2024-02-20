@@ -263,9 +263,9 @@ public class RobotContainer {
         DriveCommands.joystickDrive(
             drive,
             driveMode,
-            () -> -driverController.getRightY(),
-            () -> -driverController.getRightX(),
-            () -> driverController.getLeftX()));
+            () -> driverController.getRightY(),
+            () -> driverController.getRightX(),
+            () -> -driverController.getLeftX()));
 
     driveMode.setDriveMode(DriveModeType.SPEAKER);
     driverController
