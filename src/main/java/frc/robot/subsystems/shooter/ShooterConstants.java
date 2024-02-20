@@ -24,8 +24,8 @@ public final class ShooterConstants {
       }
 
       public static final class BottomConstants {
-        public static final double kS = 0.055714;
-        public static final double kV = 0.021749;
+        public static final double kS = 0.18271;
+        public static final double kV = 0.021523;
       }
     }
 
@@ -37,7 +37,7 @@ public final class ShooterConstants {
       }
 
       public static final class BottomConstants {
-        public static final double kP = 0.0059535;
+        public static final double kP = 0.0005;
         public static final double kI = 0.0;
         public static final double kD = 0.0;
       }
