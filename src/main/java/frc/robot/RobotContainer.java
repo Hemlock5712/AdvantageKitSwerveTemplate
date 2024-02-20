@@ -199,22 +199,22 @@ public class RobotContainer {
     // Set up auto routines
     // Arm
     NamedCommands.registerCommand(
-            "Arm to ground intake position",
-            ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.INTAKE_POS_RAD));
+        "Arm to ground intake position",
+        ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.INTAKE_POS_RAD));
     NamedCommands.registerCommand(
-            "Arm to amp position",
-            ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.AMP_POS_RAD));
+        "Arm to amp position",
+        ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.AMP_POS_RAD));
     NamedCommands.registerCommand(
-            "Arm to speaker position",
-            ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.SPEAKER_POS_RAD));
+        "Arm to speaker position",
+        ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.SPEAKER_POS_RAD));
     NamedCommands.registerCommand(
-            "Arm to calculated speaker angle",
-            Commands.runOnce(
-                    () ->
-                            Logger.recordOutput(
-                                    "arm/targetShootingAngle",
-                                    ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(
-                                            drive.getPose()))));
+        "Arm to calculated speaker angle",
+        Commands.runOnce(
+            () ->
+                Logger.recordOutput(
+                    "arm/targetShootingAngle",
+                    ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(
+                        drive.getPose()))));
     //        ArmCommands.autoArmToPosition(
     //            arm,
     //            () ->
@@ -223,13 +223,13 @@ public class RobotContainer {
 
     // Intake
     NamedCommands.registerCommand(
-            "Intake until note", new IntakeUntilNoteCommand(colorSensor, intake));
+        "Intake until note", new IntakeUntilNoteCommand(colorSensor, intake));
 
     // Shooter
     NamedCommands.registerCommand(
-            "Shoot speaker",
-            ShooterCommands.fullshot(
-                    shooter, intake, colorSensor, ShooterConstants.AUTO_SPEAKER_SHOOT_VELOCITY));
+        "Shoot speaker",
+        ShooterCommands.fullshot(
+            shooter, intake, colorSensor, ShooterConstants.AUTO_SPEAKER_SHOOT_VELOCITY));
 
     //    AutoBuilder.buildAuto("MiddleTwoNote");
   }
@@ -331,58 +331,58 @@ public class RobotContainer {
   }
 
   private void configureAutoChooser() {
-// Set up SysId routines
+    // Set up SysId routines
     autoChooser.addOption(
-            "Drive SysId (Quasistatic Forward)",
-            drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        "Drive SysId (Quasistatic Forward)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
-            "Drive SysId (Quasistatic Reverse)",
-            drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        "Drive SysId (Quasistatic Reverse)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption(
-            "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
-            "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     autoChooser.addOption(
-            "Intake sysid quasistatic forward",
-            intake.sysid.quasistatic(SysIdRoutine.Direction.kForward));
+        "Intake sysid quasistatic forward",
+        intake.sysid.quasistatic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
-            "Intake sysid quasistatic reverse",
-            intake.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
+        "Intake sysid quasistatic reverse",
+        intake.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption(
-            "Intake sysid dynamic forward", intake.sysid.dynamic(SysIdRoutine.Direction.kForward));
+        "Intake sysid dynamic forward", intake.sysid.dynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
-            "Intake sysid dynamic reverse", intake.sysid.dynamic(SysIdRoutine.Direction.kReverse));
+        "Intake sysid dynamic reverse", intake.sysid.dynamic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption(
-            "Shooter sysid quasistatic forward",
-            shooter.sysid.quasistatic(SysIdRoutine.Direction.kForward));
+        "Shooter sysid quasistatic forward",
+        shooter.sysid.quasistatic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
-            "Shooter sysid quasistatic reverse",
-            shooter.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
+        "Shooter sysid quasistatic reverse",
+        shooter.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption(
-            "Shooter sysid dynamic forward", shooter.sysid.dynamic(SysIdRoutine.Direction.kForward));
+        "Shooter sysid dynamic forward", shooter.sysid.dynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
-            "Shooter sysid dynamic reverse", shooter.sysid.dynamic(SysIdRoutine.Direction.kReverse));
+        "Shooter sysid dynamic reverse", shooter.sysid.dynamic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption(
-            "Arm sysid quasistatic forward", arm.sysid.quasistatic(SysIdRoutine.Direction.kForward));
+        "Arm sysid quasistatic forward", arm.sysid.quasistatic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
-            "Arm sysid quasistatic reverse", arm.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
+        "Arm sysid quasistatic reverse", arm.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption(
-            "Arm sysid dynamic forward", arm.sysid.dynamic(SysIdRoutine.Direction.kForward));
+        "Arm sysid dynamic forward", arm.sysid.dynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
-            "Arm sysid dynamic reverse", arm.sysid.dynamic(SysIdRoutine.Direction.kReverse));
+        "Arm sysid dynamic reverse", arm.sysid.dynamic(SysIdRoutine.Direction.kReverse));
 
     autoChooser.addOption(
-            "shoot auto",
-            ArmCommands.autoArmToPosition(arm, () -> Positions.SPEAKER_POS_RAD)
-                    .andThen(Commands.runOnce(() -> shooter.runVolts(ShooterConstants.RUN_VOLTS), shooter))
-                    .andThen(Commands.waitSeconds(2))
-                    .andThen(
-                            Commands.runOnce(() -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE), intake))
-                    .andThen(Commands.waitSeconds(1))
-                    .andThen(Commands.runOnce(() -> shooter.runVolts(0), shooter))
-                    .andThen(Commands.runOnce(() -> intake.setVoltage(0), intake))
-                    .andThen(ArmCommands.autoArmToPosition(arm, () -> Positions.INTAKE_POS_RAD)));
+        "shoot auto",
+        ArmCommands.autoArmToPosition(arm, () -> Positions.SPEAKER_POS_RAD)
+            .andThen(Commands.runOnce(() -> shooter.runVolts(ShooterConstants.RUN_VOLTS), shooter))
+            .andThen(Commands.waitSeconds(2))
+            .andThen(
+                Commands.runOnce(() -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE), intake))
+            .andThen(Commands.waitSeconds(1))
+            .andThen(Commands.runOnce(() -> shooter.runVolts(0), shooter))
+            .andThen(Commands.runOnce(() -> intake.setVoltage(0), intake))
+            .andThen(ArmCommands.autoArmToPosition(arm, () -> Positions.INTAKE_POS_RAD)));
   }
 
   // todo for competition - reset climbers in auto instead of teleop
