@@ -3,15 +3,16 @@ package frc.robot.subsystems.climber;
 import edu.wpi.first.math.util.Units;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.TunableNumberWrapper;
+import java.lang.invoke.MethodHandles;
 
 public class ClimberConstants {
-  private static final TunableNumberWrapper tunable =
-      new TunableNumberWrapper(ClimberConstants.class);
+  private static final TunableNumberWrapper tunableTable =
+      new TunableNumberWrapper(MethodHandles.lookup().lookupClass());
 
   public static final int LEFT_MOTOR_ID = 11;
   public static final int RIGHT_MOTOR_ID = 12;
-  public static final LoggedTunableNumber CLIMBER_VOLTS = tunable.makeField("volts", 10);
-  public static final LoggedTunableNumber CLIMBER_RESET_VOLTS = tunable.makeField("reset volts", 7);
+  public static final LoggedTunableNumber CLIMBER_VOLTS = tunableTable.makeField("volts", 10);
+  public static final LoggedTunableNumber CLIMBER_RESET_VOLTS = tunableTable.makeField("reset volts", 7);
 
   public static final class RotationPositions {
     public static final double INITIAL_FULL_EXTENSION = 65;
