@@ -32,7 +32,8 @@ public class ArmConstants {
   // public static final int LOWER_LIMIT_SWITCH_PORT = 6;
 
   public static class Positions {
-    public static final LoggedTunableNumber INTAKE_POS_RAD = tunableTable.makeField("Intake pos", 0);
+    public static final LoggedTunableNumber INTAKE_POS_RAD =
+        tunableTable.makeField("Intake pos", 0);
     public static final LoggedTunableNumber SPEAKER_POS_RAD =
         tunableTable.makeField("speaker pos", 0.2); // todo tune
     public static final LoggedTunableNumber AMP_POS_RAD =
