@@ -45,6 +45,8 @@ import frc.robot.util.VisionHelpers.TimestampedVisionUpdate;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -55,6 +57,7 @@ public class Drive extends SubsystemBase {
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private final SysIdRoutine sysId;
 
+  @Getter
   private static ProfiledPIDController thetaController =
       new ProfiledPIDController(
           headingControllerConstants.Kp(),
@@ -63,16 +66,16 @@ public class Drive extends SubsystemBase {
           new TrapezoidProfile.Constraints(
               drivetrainConfig.maxAngularVelocity(), drivetrainConfig.maxAngularAcceleration()));
 
-  private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
+  private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
   private Rotation2d rawGyroRotation = new Rotation2d();
-  private SwerveModulePosition[] lastModulePositions = // For delta tracking
+  private final SwerveModulePosition[] lastModulePositions = // For delta tracking
       new SwerveModulePosition[] {
         new SwerveModulePosition(),
         new SwerveModulePosition(),
         new SwerveModulePosition(),
         new SwerveModulePosition()
       };
-  private SwerveDrivePoseEstimator poseEstimator =
+  private final SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(
           kinematics,
           rawGyroRotation,
@@ -82,7 +85,7 @@ public class Drive extends SubsystemBase {
           new Matrix<>(
               VecBuilder.fill(xyStdDevCoefficient, xyStdDevCoefficient, thetaStdDevCoefficient)));
 
-  private SwerveDrivePoseEstimator odometryDrive =
+  private final SwerveDrivePoseEstimator odometryDrive =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
   public Drive(
@@ -341,10 +344,6 @@ public class Drive extends SubsystemBase {
         visionUpdate ->
             addVisionMeasurement(
                 visionUpdate.pose(), visionUpdate.timestamp(), visionUpdate.stdDevs()));
-  }
-
-  public static ProfiledPIDController getThetaController() {
-    return thetaController;
   }
 
   public void resetGyro() {

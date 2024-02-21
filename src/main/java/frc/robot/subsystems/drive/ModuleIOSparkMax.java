@@ -26,6 +26,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.drive.DriveConstants.ModuleConfig;
+
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Queue;
 
@@ -95,28 +97,20 @@ public class ModuleIOSparkMax implements ModuleIO {
         PeriodicFrame.kStatus2, (int) (1000.0 / odometryFrequency));
     turnSparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus2, (int) (1000.0 / odometryFrequency));
     timestampQueue = SparkMaxOdometryThread.getInstance().makeTimestampQueue();
+
+    /***
+     * Register queus using the odometry thread. only register the real signla if the
+     * sparkMaxX isnt in error when the system starts up.
+     * May want to have some logic here that shrows a warning about the Odometry not starting/regtistering
+     */
     drivePositionQueue =
         SparkMaxOdometryThread.getInstance()
             .registerSignal(
-                () -> {
-                  double value = driveEncoder.getPosition();
-                  if (driveSparkMax.getLastError() == REVLibError.kOk) {
-                    return OptionalDouble.of(value);
-                  } else {
-                    return OptionalDouble.empty();
-                  }
-                });
+                () -> driveSparkMax.getLastError() == REVLibError.kOk ? OptionalDouble.of(driveEncoder.getPosition()) : OptionalDouble.empty());
+
     turnPositionQueue =
         SparkMaxOdometryThread.getInstance()
-            .registerSignal(
-                () -> {
-                  double value = turnRelativeEncoder.getPosition();
-                  if (driveSparkMax.getLastError() == REVLibError.kOk) {
-                    return OptionalDouble.of(value);
-                  } else {
-                    return OptionalDouble.empty();
-                  }
-                });
+            .registerSignal(() -> driveSparkMax.getLastError() == REVLibError.kOk ?  OptionalDouble.of(turnRelativeEncoder.getPosition()) : OptionalDouble.empty());
 
     driveSparkMax.burnFlash();
     turnSparkMax.burnFlash();

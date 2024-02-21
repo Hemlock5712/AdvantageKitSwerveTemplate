@@ -18,15 +18,7 @@ public class GyroIONavX2 implements GyroIO {
 
     yawPositionQueue =
         SparkMaxOdometryThread.getInstance()
-            .registerSignal(
-                () -> {
-                  boolean valid = navx.isConnected();
-                  if (valid) {
-                    return OptionalDouble.of(navx.getYaw());
-                  } else {
-                    return OptionalDouble.empty();
-                  }
-                });
+            .registerSignal(() -> navx.isConnected() ? OptionalDouble.of(navx.getYaw()) : OptionalDouble.empty());
   }
 
   @Override
