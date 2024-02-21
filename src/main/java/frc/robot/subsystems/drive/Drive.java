@@ -247,18 +247,20 @@ public class Drive extends SubsystemBase {
     stop();
   }
 
-  /** Returns a command to run a quasistatic test in the specified direction. 
-   * 
+  /**
+   * Returns a command to run a quasistatic test in the specified direction.
+   *
    * @param direction The direction to run the quasistatic test.
-  */
+   */
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return sysId.quasistatic(direction);
   }
 
-  /** Returns a command to run a dynamic test in the specified direction. 
-   * 
+  /**
+   * Returns a command to run a dynamic test in the specified direction.
+   *
    * @param direction The direction to run the dynamic test.
-  */
+   */
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return sysId.dynamic(direction);
   }
@@ -299,18 +301,20 @@ public class Drive extends SubsystemBase {
     return getPose().getRotation();
   }
 
-  /** Resets the current poseEstimator pose. 
-   * 
+  /**
+   * Resets the current poseEstimator pose.
+   *
    * @param pose The pose to reset to.
-  */
+   */
   public void setPose(Pose2d pose) {
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
   }
 
-  /** Resets the current odometry and poseEstimator pose. 
-   * 
+  /**
+   * Resets the current odometry and poseEstimator pose.
+   *
    * @param pose The pose to reset to.
-  */
+   */
   public void setAutoStartPose(Pose2d pose) {
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
     odometryDrive.resetPosition(rawGyroRotation, getModulePositions(), pose);
@@ -327,9 +331,9 @@ public class Drive extends SubsystemBase {
     poseEstimator.addVisionMeasurement(visionPose, timestamp, visionMeasurementStdDevs);
   }
 
-  /** 
-   * Adds vision data to the pose esimation. 
-   * 
+  /**
+   * Adds vision data to the pose esimation.
+   *
    * @param visionData The vision data to add.
    */
   public void addVisionData(List<TimestampedVisionUpdate> visionData) {
