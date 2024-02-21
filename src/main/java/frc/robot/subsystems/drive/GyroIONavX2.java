@@ -4,6 +4,7 @@ import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.SPI;
+import java.util.OptionalDouble;
 import java.util.Queue;
 
 public class GyroIONavX2 implements GyroIO {
@@ -14,7 +15,18 @@ public class GyroIONavX2 implements GyroIO {
     navx.reset();
     navx.resetDisplacement();
     navx.zeroYaw();
-    yawPositionQueue = SparkMaxOdometryThread.getInstance().registerSignal(navx::getYaw);
+
+    yawPositionQueue =
+        SparkMaxOdometryThread.getInstance()
+            .registerSignal(
+                () -> {
+                  boolean valid = navx.isConnected();
+                  if (valid) {
+                    return OptionalDouble.of(navx.getYaw());
+                  } else {
+                    return OptionalDouble.empty();
+                  }
+                });
   }
 
   @Override
