@@ -86,6 +86,8 @@ public class RobotContainer {
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
 
+  private final Command resetClimbersCommand;
+
   //   private final LoggedTunableNumber flywheelSpeedInput =
   //       new LoggedTunableNumber("Flywheel Speed", 1500.0);
 
@@ -187,6 +189,9 @@ public class RobotContainer {
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     configureAutoChooser();
+
+    resetClimbersCommand =
+        ResetClimberBasic.on(leftClimber).alongWith(ResetClimberBasic.on(rightClimber));
 
     // Configure the button bindings
     aprilTagVision.setDataInterfaces(drive::addVisionData);
@@ -385,21 +390,16 @@ public class RobotContainer {
             .andThen(ArmCommands.autoArmToPosition(arm, () -> Positions.INTAKE_POS_RAD)));
   }
 
-  // todo for competition - reset climbers in auto instead of teleop
-  private Command getClimberResetCommand() {
-    return ResetClimberBasic.on(leftClimber).alongWith(ResetClimberBasic.on(rightClimber));
-  }
-
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return autoChooser.get().alongWith(getClimberResetCommand());
+    return resetClimbersCommand.asProxy().alongWith(autoChooser.get().asProxy());
   }
 
   public Command getTeleopCommand() {
-    return getClimberResetCommand();
+    return resetClimbersCommand;
   }
 }
