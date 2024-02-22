@@ -28,7 +28,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.*;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.climber.ManualClimberCommand;
-import frc.robot.commands.climber.ResetClimbers;
+import frc.robot.commands.climber.ResetClimberBasic;
 import frc.robot.subsystems.arm.*;
 import frc.robot.subsystems.arm.ArmConstants.Positions;
 import frc.robot.subsystems.beamBreak.BeamBreak;
