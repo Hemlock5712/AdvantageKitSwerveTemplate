@@ -11,20 +11,16 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-package frc.robot.subsystems.ColorSensor;
+package frc.robot.subsystems.beamBreak;
 
 import org.littletonrobotics.junction.AutoLog;
 
-public interface ColorSensorIO {
+public interface BeamBreakIO {
   @AutoLog
-  public static class ColorSensorIOInputs {
-    public double red = 0;
-    public double blue = 0;
-    public double green = 0;
-    public int IR = 0;
-    public int proximity = 0;
+  class BeamBreakIOInputs {
+    public boolean triggered = false;
   }
 
   /** Updates the set of loggable inputs. */
-  public default void updateInputs(ColorSensorIOInputs inputs) {}
+  default void updateInputs(BeamBreakIOInputs inputs) {}
 }
