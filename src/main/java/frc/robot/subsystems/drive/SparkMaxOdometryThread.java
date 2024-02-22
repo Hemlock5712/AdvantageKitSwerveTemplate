@@ -13,15 +13,14 @@
 
 package frc.robot.subsystems.drive;
 
-import static frc.robot.subsystems.drive.DriveConstants.odometryFrequency;
+import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import edu.wpi.first.wpilibj.Notifier;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.OptionalDouble;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.function.Supplier;
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -31,9 +30,9 @@ import org.littletonrobotics.junction.Logger;
  * blocking thread. A Notifier thread is used to gather samples with consistent timing.
  */
 public class SparkMaxOdometryThread {
-  private List<Supplier<OptionalDouble>> signals = new ArrayList<>();
-  private List<Queue<Double>> queues = new ArrayList<>();
-  private List<Queue<Double>> timestampQueues = new ArrayList<>();
+  private final List<DoubleSupplier> signals = new ArrayList<>();
+  private final List<Queue<Double>> queues = new ArrayList<>();
+  private final List<Queue<Double>> timestampQueues = new ArrayList<>();
 
   private final Notifier notifier;
   private static SparkMaxOdometryThread instance = null;
@@ -56,8 +55,8 @@ public class SparkMaxOdometryThread {
     }
   }
 
-  public Queue<Double> registerSignal(Supplier<OptionalDouble> signal) {
-    Queue<Double> queue = new ArrayBlockingQueue<>(20);
+  public Queue<Double> registerSignal(DoubleSupplier signal) {
+    ArrayBlockingQueue<Double> queue = new ArrayBlockingQueue<>(10);
     Drive.odometryLock.lock();
     try {
       signals.add(signal);
@@ -69,7 +68,7 @@ public class SparkMaxOdometryThread {
   }
 
   public Queue<Double> makeTimestampQueue() {
-    Queue<Double> queue = new ArrayBlockingQueue<>(20);
+    ArrayBlockingQueue<Double> queue = new ArrayBlockingQueue<>(10);
     Drive.odometryLock.lock();
     try {
       timestampQueues.add(queue);
@@ -83,22 +82,11 @@ public class SparkMaxOdometryThread {
     Drive.odometryLock.lock();
     double timestamp = Logger.getRealTimestamp() / 1e6;
     try {
-      double[] values = new double[signals.size()];
-      boolean isValid = true;
       for (int i = 0; i < signals.size(); i++) {
-        OptionalDouble value = signals.get(i).get();
-        if (value.isPresent()) {
-          values[i] = value.getAsDouble();
-        } else {
-          isValid = false;
-          break;
-        }
+        queues.get(i).offer(signals.get(i).getAsDouble());
       }
-      if (isValid) {
-        for (int i = 0; i < signals.size(); i++) {
-          queues.get(i).offer(values[i]);
-          timestampQueues.get(i).offer(timestamp);
-        }
+      for (int i = 0; i < timestampQueues.size(); i++) {
+        timestampQueues.get(i).offer(timestamp);
       }
     } finally {
       Drive.odometryLock.unlock();
