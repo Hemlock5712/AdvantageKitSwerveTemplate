@@ -26,6 +26,8 @@ public class ClimberIOSparkMax implements ClimberIO {
     inputs.appliedVolts = motor.getAppliedOutput() * motor.getBusVoltage();
     inputs.currentAmps = motor.getOutputCurrent();
     inputs.atBottom = !limitSwitch.get();
+    inputs.positionRotations = encoder.getPosition();
+    inputs.motorTemperatureCelsius = motor.getMotorTemperature();
   }
 
   @Override
