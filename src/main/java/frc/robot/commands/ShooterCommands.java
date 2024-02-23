@@ -25,7 +25,7 @@ public class ShooterCommands {
                         () ->
                             MathUtil.isNear(
                                 velocityRadPerSec,
-                                shooter.getVelocityRadiansPerSec(),
+                                shooter.getAverageVelocityRadiansPerSec(),
                                 ShooterConstants.VELOCITY_TOLERANCE))
                     .andThen(
                         Commands.startEnd(
