@@ -31,9 +31,9 @@ import org.littletonrobotics.junction.Logger;
  * blocking thread. A Notifier thread is used to gather samples with consistent timing.
  */
 public class SparkMaxOdometryThread {
-  private List<Supplier<OptionalDouble>> signals = new ArrayList<>();
-  private List<Queue<Double>> queues = new ArrayList<>();
-  private List<Queue<Double>> timestampQueues = new ArrayList<>();
+  private final List<Supplier<OptionalDouble>> signals = new ArrayList<>();
+  private final List<Queue<Double>> queues = new ArrayList<>();
+  private final List<Queue<Double>> timestampQueues = new ArrayList<>();
 
   private final Notifier notifier;
   private static SparkMaxOdometryThread instance = null;
@@ -51,7 +51,7 @@ public class SparkMaxOdometryThread {
   }
 
   public void start() {
-    if (timestampQueues.size() > 0) {
+    if (!timestampQueues.isEmpty()) {
       notifier.startPeriodic(1.0 / odometryFrequency);
     }
   }
@@ -83,22 +83,13 @@ public class SparkMaxOdometryThread {
     Drive.odometryLock.lock();
     double timestamp = Logger.getRealTimestamp() / 1e6;
     try {
-      double[] values = new double[signals.size()];
-      boolean isValid = true;
       for (int i = 0; i < signals.size(); i++) {
-        OptionalDouble value = signals.get(i).get();
-        if (value.isPresent()) {
-          values[i] = value.getAsDouble();
-        } else {
-          isValid = false;
-          break;
-        }
-      }
-      if (isValid) {
-        for (int i = 0; i < signals.size(); i++) {
-          queues.get(i).offer(values[i]);
-          timestampQueues.get(i).offer(timestamp);
-        }
+        int finalI = i;
+        signals.get(i).get().ifPresent(signal -> {
+          queues.get(finalI).offer(signal);
+          if (finalI < timestampQueues.size())
+            timestampQueues.get(finalI).offer(timestamp);
+        });
       }
     } finally {
       Drive.odometryLock.unlock();

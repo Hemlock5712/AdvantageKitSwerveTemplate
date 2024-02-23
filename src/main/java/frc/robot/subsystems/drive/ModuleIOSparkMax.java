@@ -23,12 +23,10 @@ import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.RobotController;
-import frc.robot.subsystems.drive.DriveConstants.ModuleConfig;
-import java.util.OptionalDouble;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.subsystems.drive.DriveConstants.ModuleConfig;
+import java.util.OptionalDouble;
 import java.util.Queue;
 
 /**
