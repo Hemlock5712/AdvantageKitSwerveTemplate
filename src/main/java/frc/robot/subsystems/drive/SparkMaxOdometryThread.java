@@ -16,14 +16,12 @@ package frc.robot.subsystems.drive;
 import static frc.robot.subsystems.drive.DriveConstants.odometryFrequency;
 
 import edu.wpi.first.wpilibj.Notifier;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalDouble;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.Supplier;
-
 import org.littletonrobotics.junction.Logger;
 
 /**
