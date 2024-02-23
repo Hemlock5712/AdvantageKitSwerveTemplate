@@ -1,7 +1,7 @@
 package frc.robot.subsystems.arm;
 
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.subsystems.arm.ArmConstants.angleToHoldVolts;
+import static frc.robot.util.interpolation.InterpolationMaps.angleToHoldVolts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
