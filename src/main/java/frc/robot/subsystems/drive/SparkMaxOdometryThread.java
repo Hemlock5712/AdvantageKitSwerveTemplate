@@ -68,6 +68,11 @@ public class SparkMaxOdometryThread {
     return queue;
   }
 
+  /**
+   * this is called from externally to register a timestamp queue.
+   * the created queue here is returned to the caller
+   * @return
+   */
   public Queue<Double> makeTimestampQueue() {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
     Drive.odometryLock.lock();
