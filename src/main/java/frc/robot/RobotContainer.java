@@ -264,10 +264,10 @@ public class RobotContainer {
             () -> -driverController.getLeftX()));
 
     driverController
-        .x()
+        .leftBumper()
         .whileTrue(
             Commands.startEnd(
-                () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC),
+                () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()),
                 shooter::stop,
                 shooter));
 
@@ -386,15 +386,19 @@ public class RobotContainer {
 
     autoChooser.addOption(
         "shoot auto",
-        ArmCommands.autoArmToPosition(arm, () -> Positions.SPEAKER_POS_RAD)
-            .andThen(Commands.runOnce(() -> shooter.runVolts(ShooterConstants.RUN_VOLTS), shooter))
+        ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.SPEAKER_POS_RAD.get())
+            .andThen(
+                Commands.runOnce(() -> shooter.runVolts(ShooterConstants.RUN_VOLTS.get()), shooter))
             .andThen(Commands.waitSeconds(2))
             .andThen(
-                Commands.runOnce(() -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE), intake))
+                Commands.runOnce(
+                    () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()), intake))
             .andThen(Commands.waitSeconds(1))
             .andThen(Commands.runOnce(() -> shooter.runVolts(0), shooter))
             .andThen(Commands.runOnce(() -> intake.setVoltage(0), intake))
-            .andThen(ArmCommands.autoArmToPosition(arm, () -> Positions.INTAKE_POS_RAD)));
+            .andThen(
+                ArmCommands.autoArmToPosition(
+                    arm, () -> ArmConstants.Positions.INTAKE_POS_RAD.get())));
   }
 
   /**
