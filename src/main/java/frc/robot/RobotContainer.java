@@ -30,7 +30,6 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.climber.ManualClimberCommand;
 import frc.robot.commands.climber.ResetClimberBasic;
 import frc.robot.subsystems.arm.*;
-import frc.robot.subsystems.arm.ArmConstants.Positions;
 import frc.robot.subsystems.beamBreak.BeamBreak;
 import frc.robot.subsystems.beamBreak.BeamBreakIO;
 import frc.robot.subsystems.beamBreak.BeamBreakIOReal;
@@ -58,7 +57,6 @@ import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
 import frc.robot.util.ShootingBasedOnPoseCalculator;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -206,13 +204,13 @@ public class RobotContainer {
     // Arm
     NamedCommands.registerCommand(
         "Arm to ground intake position",
-        ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.INTAKE_POS_RAD));
+        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
     NamedCommands.registerCommand(
         "Arm to amp position",
-        ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.AMP_POS_RAD));
+        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD::get));
     NamedCommands.registerCommand(
         "Arm to speaker position",
-        ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.SPEAKER_POS_RAD));
+        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.SPEAKER_POS_RAD::get));
     NamedCommands.registerCommand(
         "Arm to calculated speaker angle",
         Commands.runOnce(
@@ -235,7 +233,7 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "Shoot speaker",
         ShooterCommands.fullshot(
-            shooter, intake, beamBreak, ShooterConstants.AUTO_SPEAKER_SHOOT_VELOCITY));
+            shooter, intake, beamBreak, ShooterConstants.AUTO_SPEAKER_SHOOT_VELOCITY.get()));
 
     //    AutoBuilder.buildAuto("MiddleTwoNote");
   }
@@ -246,21 +244,13 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
-  private final LoggedDashboardNumber intakePos =
-      new LoggedDashboardNumber("ArmSubsystem/intake rad", ArmConstants.Positions.INTAKE_POS_RAD);
-
-  private final LoggedDashboardNumber speakerPos =
-      new LoggedDashboardNumber("ArmSubsystem/speaker rad", ArmConstants.Positions.SPEAKER_POS_RAD);
-  private final LoggedDashboardNumber ampPos =
-      new LoggedDashboardNumber("ArmSubsystem/amp rad", ArmConstants.Positions.AMP_POS_RAD);
-
   private Command runShooterVolts;
 
   private void configureButtonBindings() {
     runShooterVolts =
         Commands.startEnd(
             () -> {
-              shooter.runVolts(ShooterConstants.RUN_VOLTS);
+              shooter.runVolts(ShooterConstants.RUN_VOLTS.get());
             },
             shooter::stop,
             shooter);
@@ -274,10 +264,10 @@ public class RobotContainer {
             () -> -driverController.getLeftX()));
 
     driverController
-        .x()
+        .leftBumper()
         .whileTrue(
             Commands.startEnd(
-                () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC),
+                () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()),
                 shooter::stop,
                 shooter));
 
@@ -297,7 +287,7 @@ public class RobotContainer {
         Commands.runEnd(
             () -> {
               intake.setVoltage(
-                  IntakeConstants.INTAKE_VOLTAGE
+                  IntakeConstants.INTAKE_VOLTAGE.get()
                       * MathUtil.clamp(
                           driverController.getLeftTriggerAxis()
                               - driverController.getRightTriggerAxis()
@@ -339,9 +329,15 @@ public class RobotContainer {
   }
 
   private void configureUniversalControls(CommandXboxController controller) {
-    controller.povDown().onTrue(ArmCommands.autoArmToPosition(arm, intakePos::get));
-    controller.povLeft().onTrue(ArmCommands.autoArmToPosition(arm, speakerPos::get));
-    controller.povUp().onTrue(ArmCommands.autoArmToPosition(arm, ampPos::get));
+    controller
+        .povDown()
+        .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
+    controller
+        .povLeft()
+        .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.SPEAKER_POS_RAD::get));
+    controller
+        .povUp()
+        .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD::get));
 
     controller.rightBumper().whileTrue(runShooterVolts);
   }
@@ -390,15 +386,19 @@ public class RobotContainer {
 
     autoChooser.addOption(
         "shoot auto",
-        ArmCommands.autoArmToPosition(arm, () -> Positions.SPEAKER_POS_RAD)
-            .andThen(Commands.runOnce(() -> shooter.runVolts(ShooterConstants.RUN_VOLTS), shooter))
+        ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.SPEAKER_POS_RAD.get())
+            .andThen(
+                Commands.runOnce(() -> shooter.runVolts(ShooterConstants.RUN_VOLTS.get()), shooter))
             .andThen(Commands.waitSeconds(2))
             .andThen(
-                Commands.runOnce(() -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE), intake))
+                Commands.runOnce(
+                    () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()), intake))
             .andThen(Commands.waitSeconds(1))
             .andThen(Commands.runOnce(() -> shooter.runVolts(0), shooter))
             .andThen(Commands.runOnce(() -> intake.setVoltage(0), intake))
-            .andThen(ArmCommands.autoArmToPosition(arm, () -> Positions.INTAKE_POS_RAD)));
+            .andThen(
+                ArmCommands.autoArmToPosition(
+                    arm, () -> ArmConstants.Positions.INTAKE_POS_RAD.get())));
   }
 
   /**

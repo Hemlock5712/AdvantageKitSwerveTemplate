@@ -16,7 +16,7 @@ public class MoveClimberToBottom extends Command {
 
   @Override
   public void initialize() {
-    climber.setVoltage(ClimberConstants.CLIMBER_RESET_VOLTS);
+    climber.setVoltage(ClimberConstants.CLIMBER_RESET_VOLTS.get());
   }
 
   @Override
