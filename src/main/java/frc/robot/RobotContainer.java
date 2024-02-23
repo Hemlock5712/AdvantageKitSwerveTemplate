@@ -29,10 +29,10 @@ import frc.robot.commands.*;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.climber.ManualClimberCommand;
 import frc.robot.commands.climber.ResetClimberBasic;
-import frc.robot.subsystems.ColorSensor.ColorSensor;
-import frc.robot.subsystems.ColorSensor.ColorSensorIO;
-import frc.robot.subsystems.ColorSensor.ColorSensorIOReal;
 import frc.robot.subsystems.arm.*;
+import frc.robot.subsystems.beamBreak.BeamBreak;
+import frc.robot.subsystems.beamBreak.BeamBreakIO;
+import frc.robot.subsystems.beamBreak.BeamBreakIOReal;
 import frc.robot.subsystems.climber.ClimberConstants;
 import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOSparkMax;
@@ -72,10 +72,10 @@ public class RobotContainer {
   private final ShooterSubsystem shooter;
 
   private final Intake intake;
-  private final ColorSensor colorSensor;
   private final ArmSubsystem arm;
   private final ClimberSubsystem leftClimber;
   private final ClimberSubsystem rightClimber;
+  private final BeamBreak beamBreak;
 
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
@@ -110,7 +110,7 @@ public class RobotContainer {
                 new AprilTagVisionIOLimelight("limelight"),
                 new AprilTagVisionIOLimelight("limelight-two"));
 
-        colorSensor = new ColorSensor(new ColorSensorIOReal());
+        beamBreak = new BeamBreak(new BeamBreakIOReal());
 
         shooter =
             new ShooterSubsystem(
@@ -131,6 +131,7 @@ public class RobotContainer {
                 new ClimberIOSparkMax(
                     ClimberConstants.RIGHT_MOTOR_ID, ClimberConstants.RIGHT_LIMIT_SWITCH_DIO_PORT),
                 "right");
+
         break;
 
       case SIM:
@@ -152,11 +153,11 @@ public class RobotContainer {
         // flywheel = new Flywheel(new FlywheelIOSim());
         shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
-        colorSensor = new ColorSensor(new ColorSensorIO() {});
         arm = new ArmSubsystem(new ArmIOSim());
         leftClimber = new ClimberSubsystem(new ClimberIO() {}, "left");
         rightClimber = new ClimberSubsystem(new ClimberIO() {}, "right");
 
+        beamBreak = new BeamBreak(new BeamBreakIO() {});
         break;
 
       default:
@@ -172,10 +173,10 @@ public class RobotContainer {
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
         shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
-        colorSensor = new ColorSensor(new ColorSensorIO() {});
         arm = new ArmSubsystem(new ArmIO() {});
         leftClimber = new ClimberSubsystem(new ClimberIO() {}, "left");
         rightClimber = new ClimberSubsystem(new ClimberIO() {}, "right");
+        beamBreak = new BeamBreak(new BeamBreakIO() {});
 
         break;
     }
@@ -207,13 +208,13 @@ public class RobotContainer {
 
     // Intake
     NamedCommands.registerCommand(
-        "Intake until note", new IntakeUntilNoteCommand(colorSensor, intake));
+        "Intake until note", new IntakeUntilNoteCommand(beamBreak, intake));
 
     // Shooter
     NamedCommands.registerCommand(
         "Shoot speaker",
         ShooterCommands.fullshot(
-            shooter, intake, colorSensor, ShooterConstants.AUTO_SPEAKER_SHOOT_VELOCITY.get()));
+            shooter, intake, beamBreak, ShooterConstants.AUTO_SPEAKER_SHOOT_VELOCITY.get()));
 
     //    AutoBuilder.buildAuto("MiddleTwoNote");
 
@@ -337,12 +338,14 @@ public class RobotContainer {
 
     driverController.a().onTrue(Commands.runOnce(drive::resetGyro));
 
+    driverController.x().whileTrue(new IntakeUntilNoteCommand(beamBreak, intake));
+
     leftClimber.setDefaultCommand(
         new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
     rightClimber.setDefaultCommand(
         new ManualClimberCommand(rightClimber, () -> -secondController.getRightY()));
 
-    secondController.leftBumper().whileTrue(new IntakeUntilNoteCommand(colorSensor, intake));
+    secondController.leftBumper().whileTrue(new IntakeUntilNoteCommand(beamBreak, intake));
 
     //    secondController
     //        .a()

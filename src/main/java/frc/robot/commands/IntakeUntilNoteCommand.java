@@ -1,20 +1,20 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ColorSensor.ColorSensor;
+import frc.robot.subsystems.beamBreak.BeamBreak;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeConstants;
 
 public class IntakeUntilNoteCommand extends Command {
-  private final ColorSensor colorSensor;
+  private final BeamBreak beamBreak;
   private final Intake intake;
 
-  public IntakeUntilNoteCommand(ColorSensor colorSensor, Intake intake) {
-    this.colorSensor = colorSensor;
+  public IntakeUntilNoteCommand(BeamBreak beamBreak, Intake intake) {
+    this.beamBreak = beamBreak;
     this.intake = intake;
     // each subsystem used by the command must be passed into the
     // addRequirements() method (which takes a vararg of Subsystem)
-    addRequirements(this.colorSensor, this.intake);
+    addRequirements(this.beamBreak, this.intake);
   }
 
   /** The initial subroutine of a command. Called once when the command is initially scheduled. */
@@ -44,7 +44,7 @@ public class IntakeUntilNoteCommand extends Command {
    */
   @Override
   public boolean isFinished() {
-    return colorSensor.detectNote();
+    return beamBreak.detectNote();
   }
 
   /**
