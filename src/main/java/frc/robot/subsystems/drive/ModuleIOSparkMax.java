@@ -19,9 +19,14 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.RobotController;
+import frc.robot.subsystems.drive.DriveConstants.ModuleConfig;
+import java.util.OptionalDouble;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Queue;
@@ -93,9 +98,27 @@ public class ModuleIOSparkMax implements ModuleIO {
     turnSparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus2, (int) (1000.0 / odometryFrequency));
     timestampQueue = SparkMaxOdometryThread.getInstance().makeTimestampQueue();
     drivePositionQueue =
-        SparkMaxOdometryThread.getInstance().registerSignal(driveEncoder::getPosition);
+        SparkMaxOdometryThread.getInstance()
+            .registerSignal(
+                () -> {
+                  double value = driveEncoder.getPosition();
+                  if (driveSparkMax.getLastError() == REVLibError.kOk) {
+                    return OptionalDouble.of(value);
+                  } else {
+                    return OptionalDouble.empty();
+                  }
+                });
     turnPositionQueue =
-        SparkMaxOdometryThread.getInstance().registerSignal(turnRelativeEncoder::getPosition);
+        SparkMaxOdometryThread.getInstance()
+            .registerSignal(
+                () -> {
+                  double value = turnRelativeEncoder.getPosition();
+                  if (driveSparkMax.getLastError() == REVLibError.kOk) {
+                    return OptionalDouble.of(value);
+                  } else {
+                    return OptionalDouble.empty();
+                  }
+                });
 
     driveSparkMax.burnFlash();
     turnSparkMax.burnFlash();
