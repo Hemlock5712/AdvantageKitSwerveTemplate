@@ -16,12 +16,14 @@ package frc.robot.subsystems.drive;
 import static frc.robot.subsystems.drive.DriveConstants.odometryFrequency;
 
 import edu.wpi.first.wpilibj.Notifier;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalDouble;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -89,18 +91,24 @@ public class SparkMaxOdometryThread {
     Drive.odometryLock.lock();
     double timestamp = Logger.getRealTimestamp() / 1e6;
     try {
+      double[] values = new double[signals.size()];
+      boolean isValid = true;
       for (int i = 0; i < signals.size(); i++) {
-        int finalI = i;
-        signals
-            .get(i)
-            .get()
-            .ifPresent(
-                signal -> {
-                  queues.get(finalI).offer(signal);
-                  if (finalI < timestampQueues.size()) {
-                    timestampQueues.get(finalI).offer(timestamp);
-                  }
-                });
+        OptionalDouble value = signals.get(i).get();
+        if (value.isPresent()) {
+          values[i] = value.getAsDouble();
+        } else {
+          isValid = false;
+          break;
+        }
+      }
+      if (isValid) {
+        for (int i = 0; i < queues.size(); i++) {
+          queues.get(i).offer(values[i]);
+        }
+        for (Queue<Double> timestampQueue : timestampQueues) {
+          timestampQueue.offer(timestamp);
+        }
       }
     } finally {
       Drive.odometryLock.unlock();
