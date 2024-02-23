@@ -153,7 +153,11 @@ public class ModuleIOSparkMax implements ModuleIO {
     inputs.turnMotorTemperatureCelsius = turnSparkMax.getMotorTemperature();
   }
 
-  private void updateQueues(ModuleIOInputs inputs, Queue<Double> timestampQueue, Queue<Double> drivePositionQueue, Queue<Double> turnPositionQueue) {
+  static void updateQueues(
+      ModuleIOInputs inputs,
+      Queue<Double> timestampQueue,
+      Queue<Double> drivePositionQueue,
+      Queue<Double> turnPositionQueue) {
     inputs.odometryTimestamps =
         timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
     inputs.odometryDrivePositionsRad =

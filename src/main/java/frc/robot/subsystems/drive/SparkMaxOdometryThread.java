@@ -69,8 +69,9 @@ public class SparkMaxOdometryThread {
   }
 
   /**
-   * this is called from externally to register a timestamp queue.
-   * the created queue here is returned to the caller
+   * this is called from externally to register a timestamp queue. the created queue here is
+   * returned to the caller
+   *
    * @return
    */
   public Queue<Double> makeTimestampQueue() {
@@ -90,12 +91,16 @@ public class SparkMaxOdometryThread {
     try {
       for (int i = 0; i < signals.size(); i++) {
         int finalI = i;
-        signals.get(i).get().ifPresent(signal -> {
-          queues.get(finalI).offer(signal);
-          if (finalI < timestampQueues.size()) {
-            timestampQueues.get(finalI).offer(timestamp);
-          }
-        });
+        signals
+            .get(i)
+            .get()
+            .ifPresent(
+                signal -> {
+                  queues.get(finalI).offer(signal);
+                  if (finalI < timestampQueues.size()) {
+                    timestampQueues.get(finalI).offer(timestamp);
+                  }
+                });
       }
     } finally {
       Drive.odometryLock.unlock();
