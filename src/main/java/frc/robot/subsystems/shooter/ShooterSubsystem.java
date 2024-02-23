@@ -3,8 +3,6 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
@@ -115,12 +113,11 @@ public class ShooterSubsystem extends SubsystemBase {
     }
   }
 
-  public void runVelocity(double velocityRPM) {
-    double velocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(velocityRPM);
+  public void runVelocity(double velocityRadPerSec) {
     topIO.setVelocity(velocityRadPerSec, topFeedForward.calculate(velocityRadPerSec));
     bottomIO.setVelocity(velocityRadPerSec, bottomFeedForward.calculate(velocityRadPerSec));
 
-    Logger.recordOutput("Shooter Setpoint RPM", velocityRPM);
+    Logger.recordOutput("Shooter Setpoint Rad/s", velocityRadPerSec);
   }
 
   public void runVolts(double volts) {
@@ -134,37 +131,7 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   @AutoLogOutput
-  public double getVelocityRPM() {
-    return (Units.radiansPerSecondToRotationsPerMinute(topInputs.velocityRadPerSec)
-            + Units.radiansPerSecondToRotationsPerMinute(bottomInputs.velocityRadPerSec))
-        / 2.0;
-  }
-
-  public double getVelocityRadiansPerSec() {
+  public double getAverageVelocityRadiansPerSec() {
     return (topInputs.velocityRadPerSec + bottomInputs.velocityRadPerSec) / 2.0;
-  }
-
-  /** Runs forwards at the commanded voltage. */
-  // Change this to bottomIO when characterizing the bottom wheels
-  public void runCharacterizationVolts(double volts) {
-    topIO.setVoltage(volts);
-  }
-
-  /** Returns the average drive velocity in radians/sec. */
-  public double getCharacterizationVelocity() {
-    return topInputs.velocityRadPerSec;
-  }
-
-  @Override
-  public void initSendable(SendableBuilder builder) {
-    super.initSendable(builder);
-    builder.addDoubleProperty(
-        "Shooter RPM Top",
-        () -> Units.radiansPerSecondToRotationsPerMinute(topInputs.velocityRadPerSec),
-        null);
-    builder.addDoubleProperty(
-        "Shooter RPM Bottom",
-        () -> Units.radiansPerSecondToRotationsPerMinute(bottomInputs.velocityRadPerSec),
-        null);
   }
 }

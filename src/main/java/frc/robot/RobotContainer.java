@@ -308,6 +308,14 @@ public class RobotContainer {
             () -> -driverController.getRightX(),
             () -> driverController.getLeftX()));
 
+    driverController
+        .x()
+        .whileTrue(
+            Commands.startEnd(
+                () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC),
+                shooter::stop,
+                shooter));
+
     driveMode.setDriveMode(DriveModeType.SPEAKER);
     driverController
         .y()
