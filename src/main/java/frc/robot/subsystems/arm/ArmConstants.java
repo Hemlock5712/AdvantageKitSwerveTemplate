@@ -1,6 +1,5 @@
 package frc.robot.subsystems.arm;
 
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.TunableNumberWrapper;
@@ -39,5 +38,4 @@ public class ArmConstants {
     public static final LoggedTunableNumber AMP_POS_RAD =
         tunableTable.makeField("amp pos", Units.degreesToRadians(90)); // todo tune
   }
-
 }

@@ -86,11 +86,13 @@ public class ArmSubsystem extends SubsystemBase {
       double holdVolts = angleToHoldVolts.get(armIOInputs.positionRad);
       double frictionVolts = ArmConstants.kS.get() * Math.signum(pidVolts);
 
-      double volts = holdVolts + pidVolts + frictionVolts;
+      double volts = pidVolts + frictionVolts;
 
       volts =
           MathUtil.clamp(
               volts, -ArmConstants.MAX_ARM_PID_VOLTS.get(), ArmConstants.MAX_ARM_PID_VOLTS.get());
+
+      volts += holdVolts;
 
       Logger.recordOutput("Arm/hold volts", holdVolts);
       Logger.recordOutput("Arm/pid volts", pidVolts);

@@ -8,13 +8,12 @@ public class InterpolationMapBuilder {
    * @return a {@link InterpolatingDoubleTreeMap} that is populated with the data
    */
   public static InterpolatingDoubleTreeMap makeMap(double[][] data) {
-    return makeMap(data);
+    return makeMap(data, 0, 1);
   }
 
   /**
-   * @param data      a 2d array where the rows are different measurements with input and output
-   *                  columns
-   * @param inputCol  the index of the column that has the input values/keys
+   * @param data a 2d array where the rows are different measurements with input and output columns
+   * @param inputCol the index of the column that has the input values/keys
    * @param outputCol the index of the column that has the output values
    * @return a {@link InterpolatingDoubleTreeMap} that is populated with the data given
    */
