@@ -87,8 +87,9 @@ public class SparkMaxOdometryThread {
         int finalI = i;
         signals.get(i).get().ifPresent(signal -> {
           queues.get(finalI).offer(signal);
-          if (finalI < timestampQueues.size())
+          if (finalI < timestampQueues.size()) {
             timestampQueues.get(finalI).offer(timestamp);
+          }
         });
       }
     } finally {
