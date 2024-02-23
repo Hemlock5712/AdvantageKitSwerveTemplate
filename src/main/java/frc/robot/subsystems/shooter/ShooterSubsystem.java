@@ -110,7 +110,7 @@ public class ShooterSubsystem extends SubsystemBase {
     if (BottomConstants.kP.hasChanged(0)
         || BottomConstants.kI.hasChanged(0)
         || BottomConstants.kD.hasChanged(0)) {
-      topIO.configurePID(
+      bottomIO.configurePID(
           BottomConstants.kP.get(), BottomConstants.kI.get(), BottomConstants.kD.get());
     }
   }
