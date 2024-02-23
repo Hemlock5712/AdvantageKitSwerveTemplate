@@ -86,6 +86,8 @@ public class RobotContainer {
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
 
+  private final Command resetClimbersCommand;
+
   //   private final LoggedTunableNumber flywheelSpeedInput =
   //       new LoggedTunableNumber("Flywheel Speed", 1500.0);
 
@@ -183,6 +185,23 @@ public class RobotContainer {
         break;
     }
 
+    configureNamedCommands();
+
+    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+
+    configureAutoChooser();
+
+    resetClimbersCommand =
+        ResetClimberBasic.on(leftClimber).alongWith(ResetClimberBasic.on(rightClimber));
+
+    // Configure the button bindings
+    aprilTagVision.setDataInterfaces(drive::addVisionData);
+    driveMode.setPoseSupplier(drive::getPose);
+    driveMode.disableHeadingControl();
+    configureButtonBindings();
+  }
+
+  private void configureNamedCommands() {
     // Set up auto routines
     // Arm
     NamedCommands.registerCommand(
@@ -219,67 +238,6 @@ public class RobotContainer {
             shooter, intake, beamBreak, ShooterConstants.AUTO_SPEAKER_SHOOT_VELOCITY));
 
     //    AutoBuilder.buildAuto("MiddleTwoNote");
-
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-
-    // Set up SysId routines
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-
-    autoChooser.addOption(
-        "Intake sysid quasistatic forward",
-        intake.sysid.quasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Intake sysid quasistatic reverse",
-        intake.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Intake sysid dynamic forward", intake.sysid.dynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Intake sysid dynamic reverse", intake.sysid.dynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Shooter sysid quasistatic forward",
-        shooter.sysid.quasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Shooter sysid quasistatic reverse",
-        shooter.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Shooter sysid dynamic forward", shooter.sysid.dynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Shooter sysid dynamic reverse", shooter.sysid.dynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Arm sysid quasistatic forward", arm.sysid.quasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Arm sysid quasistatic reverse", arm.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Arm sysid dynamic forward", arm.sysid.dynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Arm sysid dynamic reverse", arm.sysid.dynamic(SysIdRoutine.Direction.kReverse));
-
-    autoChooser.addOption(
-        "shoot auto",
-        ArmCommands.autoArmToPosition(arm, () -> Positions.SPEAKER_POS_RAD)
-            .andThen(Commands.runOnce(() -> shooter.runVolts(ShooterConstants.RUN_VOLTS), shooter))
-            .andThen(Commands.waitSeconds(2))
-            .andThen(
-                Commands.runOnce(() -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE), intake))
-            .andThen(Commands.waitSeconds(1))
-            .andThen(Commands.runOnce(() -> shooter.runVolts(0), shooter))
-            .andThen(Commands.runOnce(() -> intake.setVoltage(0), intake))
-            .andThen(ArmCommands.autoArmToPosition(arm, () -> Positions.INTAKE_POS_RAD)));
-
-    // Configure the button bindings
-    aprilTagVision.setDataInterfaces(drive::addVisionData);
-    driveMode.setPoseSupplier(drive::getPose);
-    driveMode.disableHeadingControl();
-    configureButtonBindings();
   }
 
   /**
@@ -313,7 +271,7 @@ public class RobotContainer {
             driveMode,
             () -> -driverController.getRightY(),
             () -> -driverController.getRightX(),
-            () -> driverController.getLeftX()));
+            () -> -driverController.getLeftX()));
 
     driverController
         .x()
@@ -388,9 +346,59 @@ public class RobotContainer {
     controller.rightBumper().whileTrue(runShooterVolts);
   }
 
-  // todo for competition - reset climbers in auto instead of teleop
-  private Command getClimberResetCommand() {
-    return ResetClimberBasic.on(leftClimber).alongWith(ResetClimberBasic.on(rightClimber));
+  private void configureAutoChooser() {
+    // Set up SysId routines
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Forward)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Reverse)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+    autoChooser.addOption(
+        "Intake sysid quasistatic forward",
+        intake.sysid.quasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Intake sysid quasistatic reverse",
+        intake.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Intake sysid dynamic forward", intake.sysid.dynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Intake sysid dynamic reverse", intake.sysid.dynamic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Shooter sysid quasistatic forward",
+        shooter.sysid.quasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Shooter sysid quasistatic reverse",
+        shooter.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Shooter sysid dynamic forward", shooter.sysid.dynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Shooter sysid dynamic reverse", shooter.sysid.dynamic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Arm sysid quasistatic forward", arm.sysid.quasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Arm sysid quasistatic reverse", arm.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Arm sysid dynamic forward", arm.sysid.dynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Arm sysid dynamic reverse", arm.sysid.dynamic(SysIdRoutine.Direction.kReverse));
+
+    autoChooser.addOption(
+        "shoot auto",
+        ArmCommands.autoArmToPosition(arm, () -> Positions.SPEAKER_POS_RAD)
+            .andThen(Commands.runOnce(() -> shooter.runVolts(ShooterConstants.RUN_VOLTS), shooter))
+            .andThen(Commands.waitSeconds(2))
+            .andThen(
+                Commands.runOnce(() -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE), intake))
+            .andThen(Commands.waitSeconds(1))
+            .andThen(Commands.runOnce(() -> shooter.runVolts(0), shooter))
+            .andThen(Commands.runOnce(() -> intake.setVoltage(0), intake))
+            .andThen(ArmCommands.autoArmToPosition(arm, () -> Positions.INTAKE_POS_RAD)));
   }
 
   /**
@@ -399,10 +407,10 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return autoChooser.get().alongWith(getClimberResetCommand());
+    return resetClimbersCommand.asProxy().alongWith(autoChooser.get().asProxy());
   }
 
   public Command getTeleopCommand() {
-    return getClimberResetCommand();
+    return resetClimbersCommand;
   }
 }
