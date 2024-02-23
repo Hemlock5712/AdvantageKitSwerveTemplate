@@ -6,6 +6,8 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.subsystems.shooter.ShooterConstants.Real.PIDConstants.BottomConstants;
+import frc.robot.subsystems.shooter.ShooterConstants.Real.PIDConstants.TopConstants;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -29,21 +31,21 @@ public class ShooterSubsystem extends SubsystemBase {
       case REPLAY:
         topFeedForward =
             new SimpleMotorFeedforward(
-                ShooterConstants.Real.FeedForwardConstants.TopConstants.kS,
-                ShooterConstants.Real.FeedForwardConstants.TopConstants.kV);
+                ShooterConstants.Real.FeedForwardConstants.TopConstants.kS.get(),
+                ShooterConstants.Real.FeedForwardConstants.TopConstants.kV.get());
         topIO.configurePID(
-            ShooterConstants.Real.PIDConstants.TopConstants.kP,
-            ShooterConstants.Real.PIDConstants.TopConstants.kI,
-            ShooterConstants.Real.PIDConstants.TopConstants.kD);
+            ShooterConstants.Real.PIDConstants.TopConstants.kP.get(),
+            ShooterConstants.Real.PIDConstants.TopConstants.kI.get(),
+            ShooterConstants.Real.PIDConstants.TopConstants.kD.get());
 
         bottomFeedForward =
             new SimpleMotorFeedforward(
-                ShooterConstants.Real.FeedForwardConstants.BottomConstants.kS,
-                ShooterConstants.Real.FeedForwardConstants.BottomConstants.kV);
+                ShooterConstants.Real.FeedForwardConstants.BottomConstants.kS.get(),
+                ShooterConstants.Real.FeedForwardConstants.BottomConstants.kV.get());
         bottomIO.configurePID(
-            ShooterConstants.Real.PIDConstants.BottomConstants.kP,
-            ShooterConstants.Real.PIDConstants.BottomConstants.kI,
-            ShooterConstants.Real.PIDConstants.BottomConstants.kD);
+            ShooterConstants.Real.PIDConstants.BottomConstants.kP.get(),
+            ShooterConstants.Real.PIDConstants.BottomConstants.kI.get(),
+            ShooterConstants.Real.PIDConstants.BottomConstants.kD.get());
         break;
       case SIM:
         topFeedForward =
@@ -93,6 +95,22 @@ public class ShooterSubsystem extends SubsystemBase {
     bottomIO.updateInputs(bottomInputs);
     Logger.processInputs("ShooterSubsystem/Top", topInputs);
     Logger.processInputs("ShooterSubsystem/Bottom", bottomInputs);
+
+    updateControlConstants();
+  }
+
+  private void updateControlConstants() {
+    if (TopConstants.kP.hasChanged(0)
+        || TopConstants.kI.hasChanged(0)
+        || TopConstants.kD.hasChanged(0)) {
+      topIO.configurePID(TopConstants.kP.get(), TopConstants.kI.get(), TopConstants.kD.get());
+    }
+    if (BottomConstants.kP.hasChanged(0)
+        || BottomConstants.kI.hasChanged(0)
+        || BottomConstants.kD.hasChanged(0)) {
+      bottomIO.configurePID(
+          BottomConstants.kP.get(), BottomConstants.kI.get(), BottomConstants.kD.get());
+    }
   }
 
   public void runVelocity(double velocityRadPerSec) {

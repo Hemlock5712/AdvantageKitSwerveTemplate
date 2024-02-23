@@ -20,7 +20,7 @@ public class IntakeUntilNoteCommand extends Command {
   /** The initial subroutine of a command. Called once when the command is initially scheduled. */
   @Override
   public void initialize() {
-    intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE);
+    intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get());
   }
 
   /**

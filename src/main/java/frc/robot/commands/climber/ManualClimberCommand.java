@@ -26,7 +26,7 @@ public class ManualClimberCommand extends Command {
     // double direction = 1;
 
     climber.setVoltage(
-        direction * ClimberConstants.CLIMBER_VOLTS * speedPercentSupplier.getAsDouble());
+        direction * ClimberConstants.CLIMBER_VOLTS.get() * speedPercentSupplier.getAsDouble());
   }
 
   @Override
