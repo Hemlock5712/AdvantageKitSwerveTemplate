@@ -22,7 +22,7 @@ public class GyroIONavX2 implements GyroIO {
                 () -> {
                   boolean valid = navx.isConnected();
                   if (valid) {
-                    return OptionalDouble.of(navx.getYaw());
+                    return OptionalDouble.of(-navx.getYaw());
                   } else {
                     return OptionalDouble.empty();
                   }

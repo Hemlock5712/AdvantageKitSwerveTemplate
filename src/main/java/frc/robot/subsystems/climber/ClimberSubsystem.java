@@ -1,5 +1,7 @@
 package frc.robot.subsystems.climber;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.climber.ClimberConstants.RotationPositions;
 import lombok.Getter;
@@ -70,7 +72,7 @@ public class ClimberSubsystem extends SubsystemBase {
     return climberIOInputs.positionRotations > RotationPositions.FULL_EXTENSION_MIDDLE;
   }
 
-  @AutoLogOutput(key = "Climber/{descriptor}/getPositionMeters")
+  @AutoLogOutput(key = "Climber/{descriptor}/positionMeters")
   public double getPositionMeters() {
     if (climberIOInputs.positionRotations > RotationPositions.INITIAL_FULL_EXTENSION
         && climberIOInputs.positionRotations < RotationPositions.HIGHEST_FULL_EXTENSION) {
@@ -86,5 +88,13 @@ public class ClimberSubsystem extends SubsystemBase {
           / RotationPositions.INITIAL_FULL_EXTENSION
           * ClimberConstants.CLIMBER_RANGE_METERS;
     }
+  }
+
+  @AutoLogOutput(key = "Climber/{descriptor}/climberStagePoses")
+  public Pose3d[] getClimberStagePositionPoses() {
+    double pos = getPositionMeters();
+    return new Pose3d[] {
+      new Pose3d(0, 0, pos / 2, new Rotation3d()), new Pose3d(0, 0, pos, new Rotation3d())
+    };
   }
 }

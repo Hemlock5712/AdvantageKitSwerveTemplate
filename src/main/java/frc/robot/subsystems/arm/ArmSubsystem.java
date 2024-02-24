@@ -1,7 +1,7 @@
 package frc.robot.subsystems.arm;
 
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.subsystems.arm.ArmConstants.angleToHoldVolts;
+import static frc.robot.util.interpolation.InterpolationMaps.angleToHoldVolts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -76,9 +76,9 @@ public class ArmSubsystem extends SubsystemBase {
     arm.setAngle(Units.radiansToDegrees(armIOInputs.positionRad));
 
     if (active) {
-      //      if (setpoint < 0.05 && armIOInputs.positionRad < 0.05) {
-      //        active = false;
-      //      }
+      if (setpoint < 0.05 && armIOInputs.positionRad < 0.35) {
+        active = false;
+      }
 
       double pidVolts = pidController.calculate(armIOInputs.positionRad);
       //      double ffVolts = feedforward.calculate(armIOInputs.positionRad,
@@ -86,11 +86,13 @@ public class ArmSubsystem extends SubsystemBase {
       double holdVolts = angleToHoldVolts.get(armIOInputs.positionRad);
       double frictionVolts = ArmConstants.kS.get() * Math.signum(pidVolts);
 
-      double volts = holdVolts + pidVolts + frictionVolts;
+      double volts = pidVolts + frictionVolts;
 
       volts =
           MathUtil.clamp(
               volts, -ArmConstants.MAX_ARM_PID_VOLTS.get(), ArmConstants.MAX_ARM_PID_VOLTS.get());
+
+      volts += holdVolts;
 
       Logger.recordOutput("Arm/hold volts", holdVolts);
       Logger.recordOutput("Arm/pid volts", pidVolts);
