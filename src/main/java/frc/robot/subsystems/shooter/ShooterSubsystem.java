@@ -19,6 +19,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private final SimpleMotorFeedforward topFeedForward;
   private final SimpleMotorFeedforward bottomFeedForward;
   public final SysIdRoutine sysid;
+  private double targetVelocityRadPerSec;
 
   public ShooterSubsystem(ShooterIO topIO, ShooterIO bottomIO) {
     this.topIO = topIO;
@@ -85,6 +86,8 @@ public class ShooterSubsystem extends SubsystemBase {
                 },
                 null,
                 this));
+
+    targetVelocityRadPerSec = 0.0;
   }
 
   @Override
@@ -114,6 +117,7 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void runVelocity(double velocityRadPerSec) {
+    targetVelocityRadPerSec = velocityRadPerSec;
     topIO.setVelocity(velocityRadPerSec, topFeedForward.calculate(velocityRadPerSec));
     bottomIO.setVelocity(velocityRadPerSec, bottomFeedForward.calculate(velocityRadPerSec));
 
@@ -133,5 +137,17 @@ public class ShooterSubsystem extends SubsystemBase {
   @AutoLogOutput
   public double getAverageVelocityRadiansPerSec() {
     return (topInputs.velocityRadPerSec + bottomInputs.velocityRadPerSec) / 2.0;
+  }
+
+  @AutoLogOutput
+  public boolean topShooterNearTargetVelocity() {
+    return Math.abs(topInputs.velocityRadPerSec - targetVelocityRadPerSec)
+        < ShooterConstants.VELOCITY_TOLERANCE.get();
+  }
+
+  @AutoLogOutput
+  public boolean bottomShooterNearTargetVelocity() {
+    return Math.abs(topInputs.velocityRadPerSec - targetVelocityRadPerSec)
+        < ShooterConstants.VELOCITY_TOLERANCE.get();
   }
 }
