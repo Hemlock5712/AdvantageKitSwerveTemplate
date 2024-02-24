@@ -5,16 +5,12 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.arm.ArmSubsystem;
-import frc.robot.subsystems.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.util.AllianceFlipUtil;
-import java.util.function.Supplier;
-
 import frc.robot.util.interpolation.InterpolationMaps;
-import org.littletonrobotics.junction.AutoLogOutput;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 /** A command that shoots game piece from multi-distance position from the target. */
@@ -23,6 +19,7 @@ public class MultiDistanceShot extends Command {
   private final Pose2d targetPose;
   private final ShooterSubsystem shooter;
   private final ArmSubsystem arm;
+
   /**
    * Creates a new MultiDistanceShot command.
    *
@@ -30,7 +27,11 @@ public class MultiDistanceShot extends Command {
    * @param targetPose The target pose to shoot at.
    * @param shooter shooter subsystem
    */
-  public MultiDistanceShot(Supplier<Pose2d> poseSupplier, Pose2d targetPose, ShooterSubsystem shooter, ArmSubsystem arm) {
+  public MultiDistanceShot(
+      Supplier<Pose2d> poseSupplier,
+      Pose2d targetPose,
+      ShooterSubsystem shooter,
+      ArmSubsystem arm) {
     this.poseSupplier = poseSupplier;
     this.targetPose = AllianceFlipUtil.apply(targetPose);
     this.shooter = shooter;
