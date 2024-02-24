@@ -76,9 +76,9 @@ public class ArmSubsystem extends SubsystemBase {
     arm.setAngle(Units.radiansToDegrees(armIOInputs.positionRad));
 
     if (active) {
-      //      if (setpoint < 0.05 && armIOInputs.positionRad < 0.05) {
-      //        active = false;
-      //      }
+      if (setpoint < 0.05 && armIOInputs.positionRad < 0.05) {
+        active = false;
+      }
 
       double pidVolts = pidController.calculate(armIOInputs.positionRad);
       //      double ffVolts = feedforward.calculate(armIOInputs.positionRad,

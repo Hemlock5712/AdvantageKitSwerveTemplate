@@ -7,89 +7,66 @@ package frc.robot.commands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.flywheel.Flywheel;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.util.AllianceFlipUtil;
 import java.util.function.Supplier;
+
+import frc.robot.util.interpolation.InterpolationMaps;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 /** A command that shoots game piece from multi-distance position from the target. */
 public class MultiDistanceShot extends Command {
-  Supplier<Pose2d> poseSupplier;
-  Pose2d targetPose;
-  Flywheel flywheel;
-  InterpolatingDoubleTreeMap distanceMap = new InterpolatingDoubleTreeMap();
-
-  double distance;
-  double speed;
-
+  private final Supplier<Pose2d> poseSupplier;
+  private final Pose2d targetPose;
+  private final ShooterSubsystem shooter;
+  private final ArmSubsystem arm;
   /**
    * Creates a new MultiDistanceShot command.
    *
    * @param poseSupplier The supplier for the robot's current pose.
    * @param targetPose The target pose to shoot at.
-   * @param flywheel The flywheel subsystem.
+   * @param shooter shooter subsystem
    */
-  public MultiDistanceShot(Supplier<Pose2d> poseSupplier, Pose2d targetPose, Flywheel flywheel) {
+  public MultiDistanceShot(Supplier<Pose2d> poseSupplier, Pose2d targetPose, ShooterSubsystem shooter, ArmSubsystem arm) {
     this.poseSupplier = poseSupplier;
-    this.targetPose = targetPose;
-    this.flywheel = flywheel;
-
-    // Populate the distance map with distance-speed pairs
-    distanceMap.put(1.0, 10.0);
-    distanceMap.put(2.3, 15.7);
-    distanceMap.put(3.6, 21.9);
-    distanceMap.put(4.9, 27.8);
-    distanceMap.put(6.2, 33.6);
-    distanceMap.put(7.5, 39.4);
+    this.targetPose = AllianceFlipUtil.apply(targetPose);
+    this.shooter = shooter;
+    this.arm = arm;
   }
 
   @Override
-  public void initialize() {
-    // Apply any necessary transformations to the target pose
-    targetPose = AllianceFlipUtil.apply(targetPose);
-  }
+  public void initialize() {}
 
   @Override
   public void execute() {
     // Calculate the distance from the current pose to the target pose
-    distance = poseSupplier.get().getTranslation().getDistance(targetPose.getTranslation());
+    double distance = poseSupplier.get().getTranslation().getDistance(targetPose.getTranslation());
 
     // Get the corresponding speed from the distance-speed map
-    speed = distanceMap.get(distance);
+    double speed = InterpolationMaps.shooterDistanceToVelocity.get(distance);
+    double armAngle = InterpolationMaps.getShooterDistanceToArmAngle.get(distance);
+
+    Logger.recordOutput("MultiDistanceShot/speed", speed);
+    Logger.recordOutput("MultiDistanceShot/arm angle", armAngle);
 
     // Run the flywheel at the calculated speed
-    flywheel.runVelocity(speed);
+    shooter.runVelocity(speed);
+    arm.setPositionRad(armAngle);
   }
 
   @Override
   public void end(boolean interrupted) {
     // Stop the flywheel when the command ends
-    flywheel.stop();
+    arm.stop();
+    shooter.stop();
   }
 
   @Override
   public boolean isFinished() {
     // The command never finishes on its own
     return false;
-  }
-
-  /**
-   * Gets the distance from the current pose to the target pose.
-   *
-   * @return The distance in units.
-   */
-  @AutoLogOutput(key = "Shooter/DistanceToTarget")
-  public double getDistance() {
-    return distance;
-  }
-
-  /**
-   * Gets the speed of the flywheel.
-   *
-   * @return The speed in units per second.
-   */
-  @AutoLogOutput(key = "Shooter/Speed")
-  public double getSpeed() {
-    return speed;
   }
 }

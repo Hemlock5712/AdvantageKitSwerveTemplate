@@ -26,10 +26,13 @@ public class InterpolationData {
 
   protected static final double[][] shooterDistanceData = {
     /* distance m, angle rad, velocity rad/s */
+          {0,0.2,280},
           {1.143,0.2,280},
           {2.3622,0.426759297,280},
           {2.9718,0.502168204,300},
           {3.5814,0.466016954,250},
-          {4.191,0.625507763,350}
+          {4.191,0.625507763,350},
+          {4.192,0,0},
+          {100,0,0}
   };
 }
