@@ -17,6 +17,7 @@ import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -302,6 +303,10 @@ public class RobotContainer {
     driverController.a().onTrue(Commands.runOnce(drive::resetGyro));
 
     driverController.x().whileTrue(new IntakeUntilNoteCommand(beamBreak, intake));
+
+    //Hold down b on driver controller to path find to amp
+    driverController.b().whileTrue(new PathFinderAndFollow(PathPlannerPath.fromPathFile("LineUpAmp")));
+//    driverController.b().whileTrue(new PathFinderAndFollow(PathPlannerPath.fromPathFile("LineUpSpeaker")));
 
     leftClimber.setDefaultCommand(
         new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
