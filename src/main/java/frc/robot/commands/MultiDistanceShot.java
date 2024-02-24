@@ -12,7 +12,6 @@ import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.interpolation.InterpolationMaps;
 import java.util.function.Supplier;
 
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /** A command that shoots game piece from multi-distance position from the target. */
