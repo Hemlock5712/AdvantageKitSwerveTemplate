@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.util.ErrorChecker;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -73,6 +74,7 @@ public class ArmSubsystem extends SubsystemBase {
   public void periodic() {
     armIO.updateInputs(armIOInputs);
     Logger.processInputs("arm", armIOInputs);
+    ErrorChecker.checkError(armIOInputs);
     arm.setAngle(Units.radiansToDegrees(armIOInputs.positionRad));
 
     if (active) {

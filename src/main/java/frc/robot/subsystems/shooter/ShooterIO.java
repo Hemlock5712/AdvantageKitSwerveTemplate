@@ -10,6 +10,9 @@ public interface ShooterIO {
     public double appliedVolts = 0.0;
     public double[] currentAmps = new double[] {};
     public double motorTemperatureCelsius = 0.0;
+    public boolean motorSensorFault = false;
+    public boolean motorBrownOut = false;
+    public int motorCANID = -1;
   }
 
   public default void updateInputs(ShooterIOInputs inputs) {}

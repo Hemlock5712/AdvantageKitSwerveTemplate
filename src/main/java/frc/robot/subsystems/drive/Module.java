@@ -21,6 +21,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.Constants;
+import frc.robot.util.ErrorChecker;
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
@@ -115,6 +116,8 @@ public class Module {
               turnRelativeOffset != null ? turnRelativeOffset : new Rotation2d());
       odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
     }
+
+    ErrorChecker.checkError(inputs);
   }
 
   /** Runs the module with the specified setpoint state. Returns the optimized state. */
