@@ -106,6 +106,7 @@ public class ArmSubsystem extends SubsystemBase {
 
   public void setPositionRad(double target) {
     active = true;
+    target = MathUtil.clamp(target, ArmConstants.MIN_RAD, ArmConstants.MAX_RAD);
     setpoint = target;
     pidController.setSetpoint(target);
   }
