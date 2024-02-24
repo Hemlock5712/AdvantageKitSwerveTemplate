@@ -119,7 +119,7 @@ public class ArmSubsystem extends SubsystemBase {
     if (volts < 0 && armIOInputs.lowerLimit) {
       volts = 0;
     }
-    if (volts > 0 && armIOInputs.upperLimit) {
+    if (volts > -.1 && armIOInputs.upperLimit) {
       volts = -0.5;
     }
     Logger.recordOutput("ArmSubsystem/attemptedVolts", volts);
