@@ -11,6 +11,8 @@ import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.interpolation.InterpolationMaps;
 import java.util.function.Supplier;
+
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /** A command that shoots game piece from multi-distance position from the target. */
@@ -52,6 +54,7 @@ public class MultiDistanceShot extends Command {
 
     Logger.recordOutput("MultiDistanceShot/speed", speed);
     Logger.recordOutput("MultiDistanceShot/arm angle", armAngle);
+    Logger.recordOutput("MultiDistanceShot/distance", distance);
 
     // Run the flywheel at the calculated speed
     shooter.runVelocity(speed);
