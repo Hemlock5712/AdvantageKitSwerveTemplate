@@ -141,10 +141,13 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @AutoLogOutput
   public boolean topShooterNearTargetVelocity() {
-    return Math.abs(topInputs.velocityRadPerSec - targetVelocityRadPerSec) < ShooterConstants.VELOCITY_TOLERANCE.get();
+    return Math.abs(topInputs.velocityRadPerSec - targetVelocityRadPerSec)
+        < ShooterConstants.VELOCITY_TOLERANCE.get();
   }
+
   @AutoLogOutput
   public boolean bottomShooterNearTargetVelocity() {
-    return Math.abs(topInputs.velocityRadPerSec - targetVelocityRadPerSec) < ShooterConstants.VELOCITY_TOLERANCE.get();
+    return Math.abs(topInputs.velocityRadPerSec - targetVelocityRadPerSec)
+        < ShooterConstants.VELOCITY_TOLERANCE.get();
   }
 }

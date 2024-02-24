@@ -313,8 +313,11 @@ public class RobotContainer {
 
     driverController.x().whileTrue(new IntakeUntilNoteCommand(beamBreak, intake));
 
-    driverController.povRight().whileTrue(new MultiDistanceShot(drive::getPose,
-            FieldConstants.Speaker.centerSpeakerOpening, shooter, arm));
+    driverController
+        .povRight()
+        .whileTrue(
+            new MultiDistanceShot(
+                drive::getPose, FieldConstants.Speaker.centerSpeakerOpening, shooter, arm));
 
     leftClimber.setDefaultCommand(
         new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));

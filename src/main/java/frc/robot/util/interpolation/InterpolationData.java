@@ -5,7 +5,7 @@ public class InterpolationData {
   protected static double[][] armHoldData = {
     /* rad position, hold volts */
     {-1., 1.},
-    {0.067897516, 0.897637814},
+    {0.067897516, 0.7},
     {0.2207049, 0.874015778},
     {0.269767311, 0.66141732},
     {0.2816152, 0.566929132},

@@ -76,7 +76,7 @@ public class ArmSubsystem extends SubsystemBase {
     arm.setAngle(Units.radiansToDegrees(armIOInputs.positionRad));
 
     if (active) {
-      if (setpoint < 0.05 && armIOInputs.positionRad < 0.05) {
+      if (setpoint < 0.05 && armIOInputs.positionRad < 0.35) {
         active = false;
       }
 
