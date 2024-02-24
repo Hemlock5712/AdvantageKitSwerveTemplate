@@ -1,0 +1,68 @@
+{
+  "version": 1.0,
+  "startingPose": null,
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot speaker"
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "AmpSideSpeakerToNote"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake until note"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "return to speaker amp side"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot speaker"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "amp most far note"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "return to speaker amp side"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot speaker"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

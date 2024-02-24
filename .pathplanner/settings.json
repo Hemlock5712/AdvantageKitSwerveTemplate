@@ -1,14 +1,17 @@
 {
-  "robotWidth": 0.81,
-  "robotLength": 0.81,
+  "robotWidth": 0.7366,
+  "robotLength": 0.74,
   "holonomicMode": true,
   "pathFolders": [
-    "Choreo Paths"
+    "Choreo Paths",
+    "return to speaker"
   ],
-  "autoFolders": [],
-  "defaultMaxVel": 6.0,
-  "defaultMaxAccel": 3.0,
+  "autoFolders": [
+    "2 notes"
+  ],
+  "defaultMaxVel": 4.0,
+  "defaultMaxAccel": 5.0,
   "defaultMaxAngVel": 200.0,
-  "defaultMaxAngAccel": 100.0,
-  "maxModuleSpeed": 4.5
+  "defaultMaxAngAccel": 200.0,
+  "maxModuleSpeed": 3.81
 }

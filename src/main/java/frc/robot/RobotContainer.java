@@ -231,11 +231,20 @@ public class RobotContainer {
 
     // Shooter
     NamedCommands.registerCommand(
-        "Shoot speaker",
-        ShooterCommands.fullshot(
-            shooter, intake, beamBreak, ShooterConstants.AUTO_SPEAKER_SHOOT_VELOCITY.get()));
-
-    //    AutoBuilder.buildAuto("MiddleTwoNote");
+        "shoot speaker",
+        ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.SPEAKER_POS_RAD.get())
+            .andThen(
+                Commands.runOnce(() -> shooter.runVolts(ShooterConstants.RUN_VOLTS.get()), shooter))
+            .andThen(Commands.waitSeconds(1.5))
+            .andThen(
+                Commands.runOnce(
+                    () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()), intake))
+            .andThen(Commands.waitSeconds(0.5))
+            .andThen(Commands.runOnce(() -> shooter.runVolts(0), shooter))
+            .andThen(Commands.runOnce(() -> intake.setVoltage(0), intake))
+            .andThen(
+                ArmCommands.autoArmToPosition(
+                    arm, () -> ArmConstants.Positions.INTAKE_POS_RAD.get())));
   }
 
   /**
@@ -383,22 +392,6 @@ public class RobotContainer {
         "Arm sysid dynamic forward", arm.sysid.dynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Arm sysid dynamic reverse", arm.sysid.dynamic(SysIdRoutine.Direction.kReverse));
-
-    autoChooser.addOption(
-        "shoot auto",
-        ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.SPEAKER_POS_RAD.get())
-            .andThen(
-                Commands.runOnce(() -> shooter.runVolts(ShooterConstants.RUN_VOLTS.get()), shooter))
-            .andThen(Commands.waitSeconds(2))
-            .andThen(
-                Commands.runOnce(
-                    () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()), intake))
-            .andThen(Commands.waitSeconds(1))
-            .andThen(Commands.runOnce(() -> shooter.runVolts(0), shooter))
-            .andThen(Commands.runOnce(() -> intake.setVoltage(0), intake))
-            .andThen(
-                ArmCommands.autoArmToPosition(
-                    arm, () -> ArmConstants.Positions.INTAKE_POS_RAD.get())));
   }
 
   /**

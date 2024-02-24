@@ -6,7 +6,13 @@
     "data": {
       "commands": [
         {
-          "type": "parallel",
+          "type": "named",
+          "data": {
+            "name": "shoot speaker"
+          }
+        },
+        {
+          "type": "deadline",
           "data": {
             "commands": [
               {
@@ -22,6 +28,18 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "return to speaker amp side"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot speaker"
           }
         }
       ]

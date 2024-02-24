@@ -6,13 +6,19 @@
     "data": {
       "commands": [
         {
-          "type": "parallel",
+          "type": "named",
+          "data": {
+            "name": "shoot speaker"
+          }
+        },
+        {
+          "type": "deadline",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "AmpSideSpeakerToNote"
+                  "pathName": "StraightFrontSpeaker"
                 }
               },
               {
@@ -22,6 +28,18 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "return to speaker middle"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot speaker"
           }
         }
       ]
