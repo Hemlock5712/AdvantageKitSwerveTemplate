@@ -54,6 +54,7 @@ import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
 import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
+import frc.robot.util.FieldConstants;
 import frc.robot.util.ShootingBasedOnPoseCalculator;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -311,6 +312,9 @@ public class RobotContainer {
     driverController.a().onTrue(Commands.runOnce(drive::resetGyro));
 
     driverController.x().whileTrue(new IntakeUntilNoteCommand(beamBreak, intake));
+
+    driverController.povRight().whileTrue(new MultiDistanceShot(drive::getPose,
+            FieldConstants.Speaker.centerSpeakerOpening, shooter, arm));
 
     leftClimber.setDefaultCommand(
         new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
