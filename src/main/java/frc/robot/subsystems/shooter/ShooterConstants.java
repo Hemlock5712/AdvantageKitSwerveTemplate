@@ -17,9 +17,10 @@ public final class ShooterConstants {
   public static final double CLOSED_LOOP_RAMP_RATE = 0.01;
   public static final double OPEN_LOOP_RAMP_RATE = 0.01;
   public static final LoggedTunableNumber VELOCITY_TOLERANCE =
-      tunableTable.makeField("velocity tolerance", 0.08);
-  public static final LoggedTunableNumber AUTO_SPEAKER_SHOOT_VELOCITY =
-      tunableTable.makeField("velocity tolerance", 1.0);
+      tunableTable.makeField("velocity tolerance rad per s", 5);
+
+  public static final LoggedTunableNumber AUTO_SHOOTER_TIMEOUT =
+          tunableTable.makeField("auto shooter timeout", 3);
 
   public enum ShooterWheels {
     TOP,

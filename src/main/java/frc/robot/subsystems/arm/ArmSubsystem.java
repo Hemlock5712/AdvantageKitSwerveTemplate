@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -27,8 +28,8 @@ public class ArmSubsystem extends SubsystemBase {
   private final MechanismRoot2d root = mech.getRoot("arm", .7, .30);
   private final MechanismLigament2d arm = root.append(new MechanismLigament2d("arm", .8, 0));
 
-  private double setpoint = 0.0;
-  private boolean active = false;
+  @Getter
+  private boolean positionControlActive = false;
 
   public final SysIdRoutine sysid;
 
@@ -67,6 +68,7 @@ public class ArmSubsystem extends SubsystemBase {
     pidController.setP(ArmConstants.kP.get());
     pidController.setI(ArmConstants.kI.get());
     pidController.setD(ArmConstants.kD.get());
+    pidController.setTolerance(ArmConstants.setpointToleranceRad.get());
   }
 
   @Override
@@ -75,9 +77,9 @@ public class ArmSubsystem extends SubsystemBase {
     Logger.processInputs("arm", armIOInputs);
     arm.setAngle(Units.radiansToDegrees(armIOInputs.positionRad));
 
-    if (active) {
-      if (setpoint < 0.05 && armIOInputs.positionRad < 0.35) {
-        active = false;
+    if (positionControlActive) {
+      if (pidController.getSetpoint() < 0.05 && armIOInputs.positionRad < 0.35) {
+        positionControlActive = false;
       }
 
       double pidVolts = pidController.calculate(armIOInputs.positionRad);
@@ -105,13 +107,17 @@ public class ArmSubsystem extends SubsystemBase {
   }
 
   public void setPositionRad(double target) {
-    active = true;
-    setpoint = target;
+    positionControlActive = true;
     pidController.setSetpoint(target);
   }
 
+  @AutoLogOutput
+  public double getSetpointRad() {
+    return pidController.getSetpoint();
+  }
+
   public void stop() {
-    active = false;
+    positionControlActive = false;
     armIO.stop();
   }
 
@@ -123,8 +129,13 @@ public class ArmSubsystem extends SubsystemBase {
     armIO.setVoltage(volts);
   }
 
+  @AutoLogOutput
+  public boolean atSetpoint() {
+    return pidController.atSetpoint();
+  }
+
   public void setManualVoltage(double volts) {
-    active = false;
+    positionControlActive = false;
     armIO.setVoltage(volts);
     //    limitAndSetVolts(volts);
   }
