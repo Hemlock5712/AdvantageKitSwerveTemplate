@@ -116,8 +116,11 @@ public class ArmSubsystem extends SubsystemBase {
   }
 
   private void limitAndSetVolts(double volts) {
-    if ((volts < 0 && armIOInputs.lowerLimit) || (volts > 0 && armIOInputs.upperLimit)) {
+    if (volts < 0 && armIOInputs.lowerLimit) {
       volts = 0;
+    }
+    if (volts > 0 && armIOInputs.upperLimit) {
+      volts = -0.5;
     }
     Logger.recordOutput("ArmSubsystem/attemptedVolts", volts);
     armIO.setVoltage(volts);
@@ -125,8 +128,7 @@ public class ArmSubsystem extends SubsystemBase {
 
   public void setManualVoltage(double volts) {
     active = false;
-    armIO.setVoltage(volts);
-    //    limitAndSetVolts(volts);
+    limitAndSetVolts(volts);
   }
 
   public boolean atTop() {
