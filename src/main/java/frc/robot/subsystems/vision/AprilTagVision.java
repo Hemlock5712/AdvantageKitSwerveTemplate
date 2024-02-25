@@ -26,7 +26,7 @@ import org.littletonrobotics.junction.Logger;
 public class AprilTagVision extends SubsystemBase {
 
   // Time interval for logging tag poses
-  private static final double targetLogTimeSecs = 0.1;
+  private static final double targetProcessSecs = 0.1;
 
   // Margin around the field border
   private static final double fieldBorderMargin = 0.5;
@@ -69,12 +69,9 @@ public class AprilTagVision extends SubsystemBase {
 
   @Override
   public void periodic() {
-    for (int i = 0; i < io.length; i++) {
-      long startUpdateTime = Logger.getRealTimestamp();
+    long startTime = Logger.getRealTimestamp();
+    for (int i = 0; (i < io.length) && ((Logger.getRealTimestamp()-startTime)<(targetProcessSecs*1.0e6)); i++) {
       io[i].updateInputs(inputs[i]);
-      Logger.recordOutput(
-          VISION_PATH + Integer.toString(i) + "/updateInputs",
-          Logger.getRealTimestamp() - startUpdateTime);
       Logger.processInputs(VISION_PATH + Integer.toString(i), inputs[i]);
     }
     List<TimestampedVisionUpdate> visionUpdates = processPoseEstimates();
@@ -89,7 +86,6 @@ public class AprilTagVision extends SubsystemBase {
   private List<TimestampedVisionUpdate> processPoseEstimates() {
     List<TimestampedVisionUpdate> visionUpdates = new ArrayList<>();
     for (int instanceIndex = 0; instanceIndex < io.length; instanceIndex++) {
-      long startInstanceTime = Logger.getRealTimestamp();
       for (PoseEstimate poseEstimates : inputs[instanceIndex].poseEstimates) {
         if (shouldSkipPoseEstimate(poseEstimates)) {
           continue;
@@ -102,9 +98,6 @@ public class AprilTagVision extends SubsystemBase {
             new TimestampedVisionUpdate(
                 timestamp, robotPose.toPose2d(), VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
       }
-      Logger.recordOutput(
-          VISION_PATH + Integer.toString(instanceIndex) + "/processPoseEstimates",
-          Logger.getRealTimestamp() - startInstanceTime);
     }
     return visionUpdates;
   }
