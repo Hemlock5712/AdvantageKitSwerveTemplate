@@ -27,6 +27,8 @@ public class ArmConstants {
   public static final LoggedTunableNumber MANUAL_ARM_MAX_VOLTS =
       tunableTable.makeField("max arm manual volts", 2.0);
 
+  public static final double MAX_ARM_VOLTS = 4;
+
   // public static final int UPPER_LIMIT_SWITCH_PORT = 5;
   // public static final int LOWER_LIMIT_SWITCH_PORT = 6;
 
