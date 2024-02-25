@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.subsystems.shooter.ShooterConstants.Real.PIDConstants.BottomConstants;
 import frc.robot.subsystems.shooter.ShooterConstants.Real.PIDConstants.TopConstants;
+import frc.robot.util.ErrorChecker;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -91,7 +92,8 @@ public class ShooterSubsystem extends SubsystemBase {
     bottomIO.updateInputs(bottomInputs);
     Logger.processInputs("ShooterSubsystem/Top", topInputs);
     Logger.processInputs("ShooterSubsystem/Bottom", bottomInputs);
-
+    ErrorChecker.checkError(topInputs);
+    ErrorChecker.checkError(bottomInputs);
     updateControlConstants();
   }
 

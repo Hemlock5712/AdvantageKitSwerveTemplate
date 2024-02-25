@@ -25,6 +25,12 @@ public interface ArmIO {
     public double[] currentAmps = new double[] {};
     public double leftMotorTemperatureCelsius = 0.0;
     public double rightMotorTemperatureCelsius = 0.0;
+    public boolean leftMotorSensorFault = false;
+    public boolean leftMotorBrownOut = false;
+    public int leftMotorCANID = -1;
+    public boolean rightMotorSensorFault = false;
+    public boolean rightMotorBrownOut = false;
+    public int rightMotorCANID = -1;
   }
 
   /** Updates the set of loggable inputs. */

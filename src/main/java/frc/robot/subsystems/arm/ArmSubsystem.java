@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.util.ErrorChecker;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -65,6 +66,7 @@ public class ArmSubsystem extends SubsystemBase {
   public void periodic() {
     armIO.updateInputs(armIOInputs);
     Logger.processInputs("arm", armIOInputs);
+    ErrorChecker.checkError(armIOInputs);
 
     if (positionControlActive) {
       if (pidController.getSetpoint() < 0.05 && armIOInputs.positionRad < 0.35) {

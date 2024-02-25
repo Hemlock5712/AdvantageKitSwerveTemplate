@@ -15,6 +15,7 @@ package frc.robot.subsystems.drive;
 
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
+import com.revrobotics.CANSparkBase.FaultID;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
@@ -151,6 +152,15 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     inputs.driveMotorTemperatureCelsius = driveSparkMax.getMotorTemperature();
     inputs.turnMotorTemperatureCelsius = turnSparkMax.getMotorTemperature();
+
+    inputs.driveMotorSensorFault = driveSparkMax.getFault(FaultID.kSensorFault);
+    inputs.turnMotorSensorFault = turnSparkMax.getFault(FaultID.kSensorFault);
+
+    inputs.driveMotorBrownOut = driveSparkMax.getFault(FaultID.kBrownout);
+    inputs.turnMotorBrownOut = turnSparkMax.getFault(FaultID.kBrownout);
+
+    inputs.driveMotorCANID = driveSparkMax.getDeviceId();
+    inputs.turnMotorCANID = turnSparkMax.getDeviceId();
   }
 
   static void updateQueues(

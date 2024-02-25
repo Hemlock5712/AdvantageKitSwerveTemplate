@@ -41,6 +41,12 @@ public class ArmIOSparkMax implements ArmIO {
     inputs.currentAmps = new double[] {leader.getOutputCurrent(), follower.getOutputCurrent()};
     inputs.leftMotorTemperatureCelsius = leader.getMotorTemperature();
     inputs.rightMotorTemperatureCelsius = follower.getMotorTemperature();
+    inputs.leftMotorSensorFault = leader.getFault(CANSparkBase.FaultID.kSensorFault);
+    inputs.leftMotorBrownOut = leader.getFault(CANSparkBase.FaultID.kBrownout);
+    inputs.leftMotorCANID = leader.getDeviceId();
+    inputs.rightMotorSensorFault = follower.getFault(CANSparkBase.FaultID.kSensorFault);
+    inputs.rightMotorBrownOut = follower.getFault(CANSparkBase.FaultID.kBrownout);
+    inputs.rightMotorCANID = follower.getDeviceId();
   }
 
   @Override

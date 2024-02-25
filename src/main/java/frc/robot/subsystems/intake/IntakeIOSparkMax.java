@@ -30,6 +30,9 @@ public class IntakeIOSparkMax implements IntakeIO {
     inputs.appliedVolts = motor.getAppliedOutput() * motor.getBusVoltage();
     inputs.currentAmps = new double[] {motor.getOutputCurrent()};
     inputs.motorTemperatureCelsius = motor.getMotorTemperature();
+    inputs.motorSensorFault = motor.getFault(CANSparkBase.FaultID.kSensorFault);
+    inputs.motorBrownOut = motor.getFault(CANSparkBase.FaultID.kBrownout);
+    inputs.motorCANID = motor.getDeviceId();
   }
 
   @Override
