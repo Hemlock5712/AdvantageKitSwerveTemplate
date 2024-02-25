@@ -13,9 +13,10 @@
 
 package frc.robot.subsystems.drive;
 
+import edu.wpi.first.wpilibj.Notifier;
+
 import static frc.robot.subsystems.drive.DriveConstants.odometryFrequency;
 
-import edu.wpi.first.wpilibj.Notifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalDouble;
@@ -95,8 +96,10 @@ public class SparkMaxOdometryThread {
         }
       }
       if (isValid) {
-        for (int i = 0; i < signals.size(); i++) {
+        for (int i = 0; i < queues.size(); i++) {
           queues.get(i).offer(values[i]);
+        }
+        for (int i = 0; i < timestampQueues.size(); i++) {
           timestampQueues.get(i).offer(timestamp);
         }
       }
