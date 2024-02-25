@@ -59,20 +59,19 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
         new TimestampedDoubleArray[] {observationSubscriber.getAtomic()};
 
     for (int i = 0; i < queue.length; i++) {
+
+      Optional<Alliance> allianceOptional =
+          DriverStation.getAlliance(); // Retrieves the alliance information from the DriverStation
       TimestampedDoubleArray timestampedDouble = queue[i];
       double timestamp = timestampedDouble.timestamp / 1e6; // Converts the timestamp to seconds
       double[] poseReading = timestampedDouble.value;
-      Optional<Alliance> allianceOptional =
-          DriverStation.getAlliance(); // Retrieves the alliance information from the DriverStation
+      if (queue[i].value.length != 11 || !allianceOptional.isPresent() || poseReading[7] == 0.0) {
+        continue;
+      }
 
       // [tx,ty,tz,r,p,y,latency,tagcount, max tag span in meters, average tag distance in meters,
       // average tag area]
-      // Checks if there are no targets or if the alliance information is not present
-      if (!allianceOptional.isPresent()) {
-        continue; // Skips to the next iteration of the loop
-      }
 
-      double latencyMS = poseReading[6];
       Pose3d poseEstimation =
           new Pose3d(
               new Translation3d(poseReading[0], poseReading[1], poseReading[2]),
@@ -81,8 +80,9 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
                   Rotation2d.fromDegrees(poseReading[4]).getRadians(),
                   Rotation2d.fromDegrees(poseReading[5])
                       .getRadians())); // Retrieves the pose estimation for the robot
-      double averageTagDistance = poseReading[9]; // Initializes the average tag distance to 0.0
+      double latencyMS = poseReading[6];
       double tagCount = poseReading[7];
+      double averageTagDistance = poseReading[9]; // Initializes the average tag distance to 0.0
       timestamp -= (latencyMS / 1e3); // Adjusts the timestamp by subtracting the latency in seconds
 
       poseEstimates.add(

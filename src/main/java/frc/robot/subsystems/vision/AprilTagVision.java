@@ -70,7 +70,9 @@ public class AprilTagVision extends SubsystemBase {
   @Override
   public void periodic() {
     long startTime = Logger.getRealTimestamp();
-    for (int i = 0; (i < io.length) && ((Logger.getRealTimestamp()-startTime)<(targetProcessSecs*1.0e6)); i++) {
+    for (int i = 0;
+        (i < io.length) && ((Logger.getRealTimestamp() - startTime) < (targetProcessSecs * 1.0e6));
+        i++) {
       io[i].updateInputs(inputs[i]);
       Logger.processInputs(VISION_PATH + Integer.toString(i), inputs[i]);
     }
