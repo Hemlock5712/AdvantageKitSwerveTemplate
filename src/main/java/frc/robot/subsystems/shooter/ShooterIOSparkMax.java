@@ -13,15 +13,22 @@ public class ShooterIOSparkMax implements ShooterIO {
       case TOP:
         motor =
             new CANSparkMax(ShooterConstants.TOP_MOTOR_ID, CANSparkLowLevel.MotorType.kBrushless);
+        encoder = motor.getEncoder();
+        encoder.setPositionConversionFactor(ShooterConstants.TOP_GEAR_RATIO);
+        encoder.setVelocityConversionFactor(ShooterConstants.TOP_GEAR_RATIO);
         break;
       case BOTTOM:
         motor =
             new CANSparkMax(
                 ShooterConstants.BOTTOM_MOTOR_ID, CANSparkLowLevel.MotorType.kBrushless);
+        encoder = motor.getEncoder();
+        encoder.setPositionConversionFactor(ShooterConstants.BOTTOM_GEAR_RATIO);
+        encoder.setVelocityConversionFactor(ShooterConstants.BOTTOM_GEAR_RATIO);
         break;
       default:
         System.out.println("Shooter top/bottom not valid");
         motor = null;
+        encoder = null;
         break;
     }
     motor.restoreFactoryDefaults();
@@ -33,7 +40,6 @@ public class ShooterIOSparkMax implements ShooterIO {
     motor.setOpenLoopRampRate(ShooterConstants.OPEN_LOOP_RAMP_RATE);
     motor.burnFlash();
 
-    encoder = motor.getEncoder();
     pidController = motor.getPIDController();
   }
 

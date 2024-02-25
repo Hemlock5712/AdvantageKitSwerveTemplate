@@ -21,6 +21,9 @@ public final class ShooterConstants {
   public static final LoggedTunableNumber AUTO_SPEAKER_SHOOT_VELOCITY =
       tunableTable.makeField("velocity tolerance", 1.0);
 
+  public static final double TOP_GEAR_RATIO = 1;
+  public static final double BOTTOM_GEAR_RATIO = 24.0 / 22.0;
+
   public enum ShooterWheels {
     TOP,
     BOTTOM
