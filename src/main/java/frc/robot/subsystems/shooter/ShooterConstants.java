@@ -37,8 +37,8 @@ public final class ShooterConstants {
       }
 
       public static final class BottomConstants {
-        public static final LoggedTunableNumber kS = tunableTable.makeField("bottom/kS", 0.18271);
-        public static final LoggedTunableNumber kV = tunableTable.makeField("bottom/kV", 0.021523);
+        public static final LoggedTunableNumber kS = tunableTable.makeField("bottom/kS", 0.04217);
+        public static final LoggedTunableNumber kV = tunableTable.makeField("bottom/kV", 0.020624);
       }
     }
 
