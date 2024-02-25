@@ -148,6 +148,22 @@ public class ModuleIOTalonFX implements ModuleIO {
     inputs.turnAppliedVolts = turnAppliedVolts.getValueAsDouble();
     inputs.turnCurrentAmps = new double[] {turnCurrent.getValueAsDouble()};
 
+    inputs.odometryTimestamps =
+        timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
+    inputs.odometryDrivePositionsRad =
+        drivePositionQueue.stream()
+            .mapToDouble(
+                (Double value) ->
+                    Units.rotationsToRadians(value) / moduleConstants.driveReduction())
+            .toArray();
+    inputs.odometryTurnPositions =
+        turnPositionQueue.stream()
+            .map(
+                (Double value) -> Rotation2d.fromRotations(value / moduleConstants.turnReduction()))
+            .toArray(Rotation2d[]::new);
+    timestampQueue.clear();
+    drivePositionQueue.clear();
+    turnPositionQueue.clear();
     ModuleIOSparkMax.updateQueues(inputs, timestampQueue, drivePositionQueue, turnPositionQueue);
 
     inputs.driveMotorTemperatureCelsius = 25.0;

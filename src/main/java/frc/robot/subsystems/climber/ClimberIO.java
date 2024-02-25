@@ -23,6 +23,9 @@ public interface ClimberIO {
     public double appliedVolts = 0.0;
     public double currentAmps = 0.0;
     public double motorTemperatureCelsius = 0.0;
+    public boolean motorSensorFault = false;
+    public boolean motorBrownOut = false;
+    public int motorCANID = -1;
   }
 
   /** Updates the set of loggable inputs. */

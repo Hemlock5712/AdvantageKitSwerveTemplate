@@ -28,6 +28,9 @@ public class ClimberIOSparkMax implements ClimberIO {
     inputs.atBottom = !limitSwitch.get();
     inputs.positionRotations = encoder.getPosition();
     inputs.motorTemperatureCelsius = motor.getMotorTemperature();
+    inputs.motorSensorFault = motor.getFault(CANSparkBase.FaultID.kSensorFault);
+    inputs.motorBrownOut = motor.getFault(CANSparkBase.FaultID.kBrownout);
+    inputs.motorCANID = motor.getDeviceId();
   }
 
   @Override
