@@ -9,6 +9,7 @@ import frc.robot.Constants;
 import frc.robot.subsystems.shooter.ShooterConstants.Real.PIDConstants.BottomConstants;
 import frc.robot.subsystems.shooter.ShooterConstants.Real.PIDConstants.TopConstants;
 import frc.robot.util.ErrorChecker;
+import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -20,7 +21,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private final SimpleMotorFeedforward topFeedForward;
   private final SimpleMotorFeedforward bottomFeedForward;
   public final SysIdRoutine sysid;
-  private double targetVelocityRadPerSec;
+  @Getter private double targetVelocityRadPerSec;
 
   public ShooterSubsystem(ShooterIO topIO, ShooterIO bottomIO) {
     this.topIO = topIO;
@@ -29,27 +30,20 @@ public class ShooterSubsystem extends SubsystemBase {
     // Switch constants based on mode (the physics simulator is treated as a
     // separate robot with different tuning)
     switch (Constants.getMode()) {
-      case REAL:
-      case REPLAY:
+      case REAL, REPLAY -> {
         topFeedForward =
             new SimpleMotorFeedforward(
                 ShooterConstants.Real.FeedForwardConstants.TopConstants.kS.get(),
                 ShooterConstants.Real.FeedForwardConstants.TopConstants.kV.get());
-        topIO.configurePID(
-            ShooterConstants.Real.PIDConstants.TopConstants.kP.get(),
-            ShooterConstants.Real.PIDConstants.TopConstants.kI.get(),
-            ShooterConstants.Real.PIDConstants.TopConstants.kD.get());
-
+        topIO.configurePID(TopConstants.kP.get(), TopConstants.kI.get(), TopConstants.kD.get());
         bottomFeedForward =
             new SimpleMotorFeedforward(
                 ShooterConstants.Real.FeedForwardConstants.BottomConstants.kS.get(),
                 ShooterConstants.Real.FeedForwardConstants.BottomConstants.kV.get());
         bottomIO.configurePID(
-            ShooterConstants.Real.PIDConstants.BottomConstants.kP.get(),
-            ShooterConstants.Real.PIDConstants.BottomConstants.kI.get(),
-            ShooterConstants.Real.PIDConstants.BottomConstants.kD.get());
-        break;
-      case SIM:
+            BottomConstants.kP.get(), BottomConstants.kI.get(), BottomConstants.kD.get());
+      }
+      case SIM -> {
         topFeedForward =
             new SimpleMotorFeedforward(
                 ShooterConstants.Sim.FeedForwardConstants.TopConstants.kS,
@@ -58,7 +52,6 @@ public class ShooterSubsystem extends SubsystemBase {
             ShooterConstants.Sim.PIDConstants.TopConstants.kP,
             ShooterConstants.Sim.PIDConstants.TopConstants.kI,
             ShooterConstants.Sim.PIDConstants.TopConstants.kD);
-
         bottomFeedForward =
             new SimpleMotorFeedforward(
                 ShooterConstants.Sim.FeedForwardConstants.BottomConstants.kS,
@@ -67,11 +60,11 @@ public class ShooterSubsystem extends SubsystemBase {
             ShooterConstants.Sim.PIDConstants.BottomConstants.kP,
             ShooterConstants.Sim.PIDConstants.BottomConstants.kI,
             ShooterConstants.Sim.PIDConstants.BottomConstants.kD);
-        break;
-      default:
+      }
+      default -> {
         topFeedForward = new SimpleMotorFeedforward(0.0, 0.0);
         bottomFeedForward = new SimpleMotorFeedforward(0.0, 0.0);
-        break;
+      }
     }
 
     sysid =
@@ -151,5 +144,9 @@ public class ShooterSubsystem extends SubsystemBase {
   public boolean bottomShooterNearTargetVelocity() {
     return Math.abs(topInputs.velocityRadPerSec - targetVelocityRadPerSec)
         < ShooterConstants.VELOCITY_TOLERANCE.get();
+  }
+
+  public boolean bothShootersNearTargetVelocity() {
+    return topShooterNearTargetVelocity() && bottomShooterNearTargetVelocity();
   }
 }

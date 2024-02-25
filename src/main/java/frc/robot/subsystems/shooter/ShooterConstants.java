@@ -17,9 +17,13 @@ public final class ShooterConstants {
   public static final double CLOSED_LOOP_RAMP_RATE = 0.01;
   public static final double OPEN_LOOP_RAMP_RATE = 0.01;
   public static final LoggedTunableNumber VELOCITY_TOLERANCE =
-      tunableTable.makeField("velocity tolerance", 0.08);
-  public static final LoggedTunableNumber AUTO_SPEAKER_SHOOT_VELOCITY =
-      tunableTable.makeField("velocity tolerance", 1.0);
+      tunableTable.makeField("velocity tolerance rad per s", 5);
+
+  public static final LoggedTunableNumber AUTO_SHOOTER_TIMEOUT =
+      tunableTable.makeField("auto shooter timeout", 3);
+
+  public static final double TOP_GEAR_RATIO = 1;
+  public static final double BOTTOM_GEAR_RATIO = 24.0 / 22.0;
 
   public enum ShooterWheels {
     TOP,
@@ -34,8 +38,8 @@ public final class ShooterConstants {
       }
 
       public static final class BottomConstants {
-        public static final LoggedTunableNumber kS = tunableTable.makeField("bottom/kS", 0.18271);
-        public static final LoggedTunableNumber kV = tunableTable.makeField("bottom/kV", 0.021523);
+        public static final LoggedTunableNumber kS = tunableTable.makeField("bottom/kS", 0.04217);
+        public static final LoggedTunableNumber kV = tunableTable.makeField("bottom/kV", 0.020624);
       }
     }
 

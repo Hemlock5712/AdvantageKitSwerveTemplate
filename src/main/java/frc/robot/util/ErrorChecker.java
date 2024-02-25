@@ -7,7 +7,8 @@ import frc.robot.subsystems.intake.IntakeIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.ShooterIOInputsAutoLogged;
 
 public class ErrorChecker {
-  private ErrorChecker() {};
+  private ErrorChecker() {}
+  ;
 
   public static void checkError(ShooterIOInputsAutoLogged inputs) {
     // Print error messages
