@@ -123,12 +123,12 @@ public class ArmSubsystem extends SubsystemBase {
     if (volts > -.1 && armIOInputs.upperLimit) {
       volts = -0.5;
     }
-    Logger.recordOutput("ArmSubsystem/attemptedVolts", volts);
     volts = MathUtil.clamp(
         volts,
         -ArmConstants.MAX_ARM_VOLTS,
         ArmConstants.MAX_ARM_VOLTS
     );
+    Logger.recordOutput("ArmSubsystem/attemptedVolts", volts);
     armIO.setVoltage(volts);
   }
 
