@@ -1,6 +1,6 @@
 {
-  "robotWidth": 0.7366,
-  "robotLength": 0.74,
+  "robotWidth": 0.889,
+  "robotLength": 0.889,
   "holonomicMode": true,
   "pathFolders": [
     "Choreo Paths",
