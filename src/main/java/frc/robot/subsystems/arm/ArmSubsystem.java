@@ -124,6 +124,11 @@ public class ArmSubsystem extends SubsystemBase {
       volts = -0.5;
     }
     Logger.recordOutput("ArmSubsystem/attemptedVolts", volts);
+    volts = MathUtil.clamp(
+        volts,
+        -ArmConstants.MAX_ARM_VOLTS,
+        ArmConstants.MAX_ARM_VOLTS
+    );
     armIO.setVoltage(volts);
   }
 

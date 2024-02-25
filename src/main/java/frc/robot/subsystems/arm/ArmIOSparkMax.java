@@ -28,7 +28,6 @@ public class ArmIOSparkMax implements ArmIO {
     encoder.setDistancePerRotation(2 * Math.PI);
     follower.setIdleMode(CANSparkBase.IdleMode.kBrake);
     leader.setIdleMode(CANSparkBase.IdleMode.kBrake);
-    // todo tune encoder
   }
 
   @Override
