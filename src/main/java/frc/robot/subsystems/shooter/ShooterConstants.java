@@ -20,7 +20,7 @@ public final class ShooterConstants {
       tunableTable.makeField("velocity tolerance rad per s", 5);
 
   public static final LoggedTunableNumber AUTO_SHOOTER_TIMEOUT =
-          tunableTable.makeField("auto shooter timeout", 3);
+      tunableTable.makeField("auto shooter timeout", 3);
 
   public enum ShooterWheels {
     TOP,

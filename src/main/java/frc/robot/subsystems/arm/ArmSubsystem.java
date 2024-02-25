@@ -8,10 +8,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -24,12 +20,8 @@ public class ArmSubsystem extends SubsystemBase {
   private final ArmIOInputsAutoLogged armIOInputs = new ArmIOInputsAutoLogged();
   public final PIDController pidController =
       new PIDController(ArmConstants.kP.get(), ArmConstants.kI.get(), ArmConstants.kD.get());
-  @AutoLogOutput private final Mechanism2d mech = new Mechanism2d(2, 2);
-  private final MechanismRoot2d root = mech.getRoot("arm", .7, .30);
-  private final MechanismLigament2d arm = root.append(new MechanismLigament2d("arm", .8, 0));
 
-  @Getter
-  private boolean positionControlActive = false;
+  @Getter private boolean positionControlActive = false;
 
   public final SysIdRoutine sysid;
 
@@ -46,8 +38,6 @@ public class ArmSubsystem extends SubsystemBase {
     this.armIO = armIO;
     SmartDashboard.putData(this);
     double shooterAngle = 70;
-    arm.append(new MechanismLigament2d("intake", .3, -shooterAngle));
-    arm.append(new MechanismLigament2d("shooter", .2, 180 - shooterAngle));
 
     sysid =
         new SysIdRoutine(
@@ -75,7 +65,6 @@ public class ArmSubsystem extends SubsystemBase {
   public void periodic() {
     armIO.updateInputs(armIOInputs);
     Logger.processInputs("arm", armIOInputs);
-    arm.setAngle(Units.radiansToDegrees(armIOInputs.positionRad));
 
     if (positionControlActive) {
       if (pidController.getSetpoint() < 0.05 && armIOInputs.positionRad < 0.35) {
