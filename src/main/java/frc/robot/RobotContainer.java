@@ -246,14 +246,12 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
-  private Command runShooterVolts;
+  private Command runShooterVelocity;
 
   private void configureButtonBindings() {
-    runShooterVolts =
+    runShooterVelocity =
         Commands.startEnd(
-            () -> {
-              shooter.runVolts(ShooterConstants.RUN_VOLTS.get());
-            },
+            () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()),
             shooter::stop,
             shooter);
 
@@ -269,9 +267,7 @@ public class RobotContainer {
         .leftBumper()
         .whileTrue(
             Commands.startEnd(
-                () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()),
-                shooter::stop,
-                shooter));
+                () -> shooter.runVolts(ShooterConstants.RUN_VOLTS.get()), shooter::stop, shooter));
 
     driveMode.setDriveMode(DriveModeType.SPEAKER);
     driverController
@@ -335,7 +331,7 @@ public class RobotContainer {
         .povUp()
         .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD::get));
 
-    controller.rightBumper().whileTrue(runShooterVolts);
+    controller.rightBumper().whileTrue(runShooterVelocity);
   }
 
   private void configureAutoChooser() {
