@@ -175,6 +175,8 @@ public class RobotContainer {
       }
     }
 
+    shooterStateHelpers = new ShooterStateHelpers(shooter, arm, beamBreak);
+
     configureNamedCommands();
 
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -189,11 +191,10 @@ public class RobotContainer {
     driveMode.setPoseSupplier(drive::getPose);
     driveMode.disableHeadingControl();
     configureButtonBindings();
-
-    shooterStateHelpers = new ShooterStateHelpers(shooter, arm, beamBreak);
   }
 
   private void configureNamedCommands() {
+    System.out.println(shooterStateHelpers);
     // Set up auto routines
     // Arm
     NamedCommands.registerCommand(
