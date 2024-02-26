@@ -194,7 +194,6 @@ public class RobotContainer {
   }
 
   private void configureNamedCommands() {
-    System.out.println(shooterStateHelpers);
     // Set up auto routines
     // Arm
     NamedCommands.registerCommand(
