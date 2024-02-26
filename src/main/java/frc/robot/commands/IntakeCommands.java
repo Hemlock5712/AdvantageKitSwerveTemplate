@@ -22,15 +22,12 @@ public class IntakeCommands {
   }
 
   public static Command manualIntakeCommand(
-      Intake intake, DoubleSupplier speed, BooleanSupplier canMoveForward) {
+      Intake intake, DoubleSupplier speed) {
     return Commands.runEnd(
         () -> {
           double volts =
               IntakeConstants.INTAKE_VOLTAGE.get() * MathUtil.clamp(speed.getAsDouble(), -1, 1);
 
-          if (volts > 0 && !canMoveForward.getAsBoolean()) {
-            volts = 0;
-          }
 
           intake.setVoltage(volts);
         },

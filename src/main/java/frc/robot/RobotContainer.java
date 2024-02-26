@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.ArmCommands;
@@ -54,11 +55,14 @@ import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
 import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
+import frc.robot.util.ControllerLogic;
 import frc.robot.util.FieldConstants;
 import frc.robot.util.ShooterStateHelpers;
 import frc.robot.util.ShootingBasedOnPoseCalculator;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
+import java.util.function.DoubleSupplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -249,6 +253,8 @@ public class RobotContainer {
   private Command runShooterVelocity;
 
   private void configureButtonBindings() {
+    final ControllerLogic controllerLogic = new ControllerLogic(driverController, secondController);
+
     runShooterVelocity =
         Commands.startEnd(
             () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()),
@@ -275,15 +281,20 @@ public class RobotContainer {
         .toggleOnTrue(
             Commands.startEnd(driveMode::enableHeadingControl, driveMode::disableHeadingControl));
 
-    intake.setDefaultCommand(
-        IntakeCommands.manualIntakeCommand(
-            intake,
-            () ->
-                driverController.getLeftTriggerAxis()
-                    - driverController.getRightTriggerAxis()
-                    + secondController.getLeftTriggerAxis()
-                    - secondController.getRightTriggerAxis(),
-            () -> !beamBreak.detectNote() || shooterStateHelpers.canShoot()));
+    controllerLogic.getExtakeTrigger().whileTrue(
+            IntakeCommands.manualIntakeCommand(intake, controllerLogic::getIntakeSpeed));
+
+    controllerLogic.getIntakeTrigger().whileTrue(
+            new ConditionalCommand(
+                    IntakeCommands.manualIntakeCommand(intake, controllerLogic::getIntakeSpeed)
+                            .until(beamBreak::detectNote)
+                            .andThen(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get)),
+                    Commands.waitUntil(shooterStateHelpers::canShoot).andThen(
+                            IntakeCommands.manualIntakeCommand(intake, controllerLogic::getIntakeSpeed)
+                    ),
+                    beamBreak::detectNote
+            )
+    );
 
     driverController.a().onTrue(Commands.runOnce(drive::resetGyro));
 
