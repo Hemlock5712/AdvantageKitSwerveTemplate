@@ -43,9 +43,22 @@
           }
         },
         {
-          "type": "path",
+          "type": "race",
           "data": {
-            "pathName": "amp most far note"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "amp most far note"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake until note"
+                }
+              }
+            ]
           }
         },
         {
