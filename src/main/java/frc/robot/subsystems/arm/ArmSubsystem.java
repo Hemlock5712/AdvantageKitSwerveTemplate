@@ -31,8 +31,6 @@ public class ArmSubsystem extends SubsystemBase {
   private double setpoint = 0.0;
   private boolean active = false;
 
-  public final SysIdRoutine sysid;
-
   private final Translation3d ROTATION_POINT = new Translation3d(-.26, 0.0, .273);
 
   @AutoLogOutput
@@ -48,20 +46,6 @@ public class ArmSubsystem extends SubsystemBase {
     double shooterAngle = 70;
     arm.append(new MechanismLigament2d("intake", .3, -shooterAngle));
     arm.append(new MechanismLigament2d("shooter", .2, 180 - shooterAngle));
-
-    sysid =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                null,
-                null,
-                null,
-                state -> Logger.recordOutput("ArmSubsystem/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism(
-                voltage -> {
-                  limitAndSetVolts(voltage.in(Volts));
-                },
-                null,
-                this));
   }
 
   private void updateControlConstants() {

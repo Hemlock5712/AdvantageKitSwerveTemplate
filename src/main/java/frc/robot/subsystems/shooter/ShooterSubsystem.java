@@ -19,7 +19,6 @@ public class ShooterSubsystem extends SubsystemBase {
   private final ShooterIOInputsAutoLogged bottomInputs = new ShooterIOInputsAutoLogged();
   private final SimpleMotorFeedforward topFeedForward;
   private final SimpleMotorFeedforward bottomFeedForward;
-  public final SysIdRoutine sysid;
   private double targetVelocityRadPerSec;
 
   public ShooterSubsystem(ShooterIO topIO, ShooterIO bottomIO) {
@@ -73,20 +72,6 @@ public class ShooterSubsystem extends SubsystemBase {
         bottomFeedForward = new SimpleMotorFeedforward(0.0, 0.0);
         break;
     }
-
-    sysid =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                null,
-                null,
-                null,
-                state -> Logger.recordOutput("ShooterSubsystem/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism(
-                voltage -> {
-                  runVolts(voltage.in(Volts));
-                },
-                null,
-                this));
 
     targetVelocityRadPerSec = 0.0;
   }

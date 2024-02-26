@@ -13,24 +13,8 @@ public class Intake extends SubsystemBase {
   private final IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
 
-  public final SysIdRoutine sysid;
-
   public Intake(IntakeIO io) {
     this.io = io;
-
-    sysid =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                null,
-                null,
-                null,
-                state -> Logger.recordOutput("ShooterSubsystem/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism(
-                voltage -> {
-                  setVoltage(voltage.in(Volts));
-                },
-                null,
-                this));
   }
 
   @Override
