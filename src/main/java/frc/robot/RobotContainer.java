@@ -270,15 +270,15 @@ public class RobotContainer {
         .getIntakeTrigger()
         .whileTrue(
             new ConditionalCommand(
+                Commands.waitUntil(shooterStateHelpers::canShoot)
+                    .andThen(
+                        IntakeCommands.manualIntakeCommand(
+                            intake, controllerLogic::getIntakeSpeed)),
                 IntakeCommands.manualIntakeCommand(intake, controllerLogic::getIntakeSpeed)
                     .until(beamBreak::detectNote)
                     .andThen(
                         ArmCommands.autoArmToPosition(
                             arm, ArmConstants.Positions.INTAKE_POS_RAD::get)),
-                Commands.waitUntil(shooterStateHelpers::canShoot)
-                    .andThen(
-                        IntakeCommands.manualIntakeCommand(
-                            intake, controllerLogic::getIntakeSpeed)),
                 beamBreak::detectNote));
 
     // backup in case arm or shooter can't reach setpoint
