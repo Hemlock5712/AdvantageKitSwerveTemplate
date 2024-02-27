@@ -8,14 +8,11 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.util.ErrorChecker;
+import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -24,12 +21,8 @@ public class ArmSubsystem extends SubsystemBase {
   private final ArmIOInputsAutoLogged armIOInputs = new ArmIOInputsAutoLogged();
   public final PIDController pidController =
       new PIDController(ArmConstants.kP.get(), ArmConstants.kI.get(), ArmConstants.kD.get());
-  @AutoLogOutput private final Mechanism2d mech = new Mechanism2d(2, 2);
-  private final MechanismRoot2d root = mech.getRoot("arm", .7, .30);
-  private final MechanismLigament2d arm = root.append(new MechanismLigament2d("arm", .8, 0));
 
-  private double setpoint = 0.0;
-  private boolean active = false;
+  @Getter private boolean positionControlActive = false;
 
   public final SysIdRoutine sysid;
 
@@ -46,8 +39,6 @@ public class ArmSubsystem extends SubsystemBase {
     this.armIO = armIO;
     SmartDashboard.putData(this);
     double shooterAngle = 70;
-    arm.append(new MechanismLigament2d("intake", .3, -shooterAngle));
-    arm.append(new MechanismLigament2d("shooter", .2, 180 - shooterAngle));
 
     sysid =
         new SysIdRoutine(
@@ -68,6 +59,7 @@ public class ArmSubsystem extends SubsystemBase {
     pidController.setP(ArmConstants.kP.get());
     pidController.setI(ArmConstants.kI.get());
     pidController.setD(ArmConstants.kD.get());
+    pidController.setTolerance(ArmConstants.setpointToleranceRad.get());
   }
 
   @Override
@@ -75,11 +67,10 @@ public class ArmSubsystem extends SubsystemBase {
     armIO.updateInputs(armIOInputs);
     Logger.processInputs("arm", armIOInputs);
     ErrorChecker.checkError(armIOInputs);
-    arm.setAngle(Units.radiansToDegrees(armIOInputs.positionRad));
 
-    if (active) {
-      if (setpoint < 0.05 && armIOInputs.positionRad < 0.35) {
-        active = false;
+    if (positionControlActive) {
+      if (pidController.getSetpoint() < 0.05 && armIOInputs.positionRad < 0.35) {
+        positionControlActive = false;
       }
 
       double pidVolts = pidController.calculate(armIOInputs.positionRad);
@@ -107,14 +98,18 @@ public class ArmSubsystem extends SubsystemBase {
   }
 
   public void setPositionRad(double target) {
-    active = true;
+    positionControlActive = true;
     target = MathUtil.clamp(target, ArmConstants.MIN_RAD, ArmConstants.MAX_RAD);
-    setpoint = target;
     pidController.setSetpoint(target);
   }
 
+  @AutoLogOutput
+  public double getSetpointRad() {
+    return pidController.getSetpoint();
+  }
+
   public void stop() {
-    active = false;
+    positionControlActive = false;
     armIO.stop();
   }
 
@@ -125,18 +120,20 @@ public class ArmSubsystem extends SubsystemBase {
     if (volts > -.1 && armIOInputs.upperLimit) {
       volts = -0.5;
     }
-    volts = MathUtil.clamp(
-        volts,
-        -ArmConstants.MAX_ARM_VOLTS,
-        ArmConstants.MAX_ARM_VOLTS
-    );
+    volts = MathUtil.clamp(volts, -ArmConstants.MAX_ARM_VOLTS, ArmConstants.MAX_ARM_VOLTS);
     Logger.recordOutput("ArmSubsystem/attemptedVolts", volts);
     armIO.setVoltage(volts);
   }
 
+  @AutoLogOutput
+  public boolean atSetpoint() {
+    return pidController.atSetpoint();
+  }
+
   public void setManualVoltage(double volts) {
-    active = false;
+    positionControlActive = false;
     limitAndSetVolts(volts);
+    armIO.setVoltage(volts);
   }
 
   public boolean atTop() {
