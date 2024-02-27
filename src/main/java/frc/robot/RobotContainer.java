@@ -26,11 +26,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.ArmCommands;
-import frc.robot.commands.DriveCommands;
-import frc.robot.commands.IntakeCommands;
-import frc.robot.commands.MultiDistanceShot;
+import frc.robot.commands.*;
 import frc.robot.commands.climber.ManualClimberCommand;
 import frc.robot.commands.climber.ResetClimberBasic;
 import frc.robot.subsystems.arm.*;
@@ -56,13 +54,10 @@ import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
 import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
 import frc.robot.util.ControllerLogic;
-import frc.robot.util.FieldConstants;
 import frc.robot.util.ShooterStateHelpers;
 import frc.robot.util.ShootingBasedOnPoseCalculator;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-
-import java.util.function.DoubleSupplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -250,16 +245,8 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
-  private Command runShooterVelocity;
-
   private void configureButtonBindings() {
     final ControllerLogic controllerLogic = new ControllerLogic(driverController, secondController);
-
-    runShooterVelocity =
-        Commands.startEnd(
-            () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()),
-            shooter::stop,
-            shooter);
 
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
@@ -269,80 +256,73 @@ public class RobotContainer {
             () -> -driverController.getRightX(),
             () -> -driverController.getLeftX()));
 
-    driverController
-        .leftBumper()
-        .whileTrue(
-            Commands.startEnd(
-                () -> shooter.runVolts(ShooterConstants.RUN_VOLTS.get()), shooter::stop, shooter));
-
     driveMode.setDriveMode(DriveModeType.SPEAKER);
     driverController
         .y()
         .toggleOnTrue(
             Commands.startEnd(driveMode::enableHeadingControl, driveMode::disableHeadingControl));
 
-    controllerLogic.getExtakeTrigger().whileTrue(
-            IntakeCommands.manualIntakeCommand(intake, controllerLogic::getIntakeSpeed));
+    controllerLogic
+        .getExtakeTrigger()
+        .whileTrue(IntakeCommands.manualIntakeCommand(intake, controllerLogic::getIntakeSpeed));
 
-    controllerLogic.getIntakeTrigger().whileTrue(
-            new ConditionalCommand(
-                    IntakeCommands.manualIntakeCommand(intake, controllerLogic::getIntakeSpeed)
-                            .until(beamBreak::detectNote)
-                            .andThen(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get)),
-                    Commands.waitUntil(shooterStateHelpers::canShoot).andThen(
-                            IntakeCommands.manualIntakeCommand(intake, controllerLogic::getIntakeSpeed)
-                    ),
-                    beamBreak::detectNote
-            )
-    );
-
-    driverController.a().onTrue(Commands.runOnce(drive::resetGyro));
-
-    driverController
-        .povRight()
+    controllerLogic
+        .getIntakeTrigger()
         .whileTrue(
-            new MultiDistanceShot(
-                drive::getPose, FieldConstants.Speaker.centerSpeakerOpening, shooter, arm));
+            new ConditionalCommand(
+                IntakeCommands.manualIntakeCommand(intake, controllerLogic::getIntakeSpeed)
+                    .until(beamBreak::detectNote)
+                    .andThen(
+                        ArmCommands.autoArmToPosition(
+                            arm, ArmConstants.Positions.INTAKE_POS_RAD::get)),
+                Commands.waitUntil(shooterStateHelpers::canShoot)
+                    .andThen(
+                        IntakeCommands.manualIntakeCommand(
+                            intake, controllerLogic::getIntakeSpeed)),
+                beamBreak::detectNote));
 
-    leftClimber.setDefaultCommand(
-        new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
-    rightClimber.setDefaultCommand(
-        new ManualClimberCommand(rightClimber, () -> -secondController.getRightY()));
-
+    // backup in case arm or shooter can't reach setpoint
     secondController
-        .leftBumper()
-        .whileTrue(IntakeCommands.untilNote(intake, beamBreak::detectNote));
+        .b()
+        .whileTrue(
+            Commands.startEnd(
+                () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()),
+                intake::stop,
+                intake));
 
-    //    secondController
-    //        .a()
-    //        .whileTrue(
-    //            ArmCommands.manualArmCommand(
-    //                arm,
-    //                () ->
-    //                    2
-    //                        * (secondController.getLeftTriggerAxis()
-    //                            - secondController.getRightTriggerAxis())));
+    secondController.a().onTrue(Commands.runOnce(drive::resetGyro));
 
-    secondController.x().onTrue(ResetClimberBasic.on(leftClimber));
-    secondController.b().onTrue(ResetClimberBasic.on(rightClimber));
+    new Trigger(() -> Math.abs(secondController.getLeftY()) > .1)
+        .onTrue(new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
+    new Trigger(() -> Math.abs(secondController.getRightY()) > .1)
+        .onTrue(new ManualClimberCommand(leftClimber, () -> -secondController.getRightY()));
 
+    // controls on both
     for (var controller : new CommandXboxController[] {driverController, secondController}) {
-      configureUniversalControls(controller);
+      controller
+          .povDown()
+          .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
+      controller
+          .povLeft()
+          .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.SPEAKER_POS_RAD::get));
+      controller
+          .povUp()
+          .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD::get));
+
+      controller
+          .leftBumper()
+          .whileTrue(
+              ShooterCommands.runSpeed(shooter, ShooterConstants.AMP_VELOCITY_RAD_PER_SEC::get)
+                  .alongWith(
+                      ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD::get)));
+      controller
+          .rightBumper()
+          .whileTrue(
+              ShooterCommands.runSpeed(shooter, ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC::get)
+                  .alongWith(
+                      ArmCommands.autoArmToPosition(
+                          arm, ArmConstants.Positions.SPEAKER_POS_RAD::get)));
     }
-  }
-
-  private void configureUniversalControls(CommandXboxController controller) {
-    controller
-        .povDown()
-        .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
-    controller
-        .povLeft()
-        .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.SPEAKER_POS_RAD::get));
-    controller
-        .povUp()
-        .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD::get));
-
-    controller.rightBumper().whileTrue(runShooterVelocity);
   }
 
   private void configureAutoChooser() {

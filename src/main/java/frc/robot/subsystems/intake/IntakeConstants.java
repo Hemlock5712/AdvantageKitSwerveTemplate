@@ -16,7 +16,7 @@ public final class IntakeConstants {
       tunableTable.makeField("intake volts", 11.99);
 
   public static final LoggedTunableNumber INTAKE_SPEED_THRESHOLD =
-          tunableTable.makeField("intake speed threshold", .2);
+      tunableTable.makeField("intake speed threshold", .2);
 
   public static final class FeedForwardConstants {
     public static final LoggedTunableNumber kS = tunableTable.makeField("ks", 0.0);
