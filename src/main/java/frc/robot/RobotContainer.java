@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.ArmCommands;
 import frc.robot.commands.DriveCommands;
@@ -55,6 +56,7 @@ import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
 import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
 import frc.robot.util.FieldConstants;
+import frc.robot.util.LimelightHelpers;
 import frc.robot.util.ShooterStateHelpers;
 import frc.robot.util.ShootingBasedOnPoseCalculator;
 import org.littletonrobotics.junction.Logger;
@@ -190,7 +192,24 @@ public class RobotContainer {
     aprilTagVision.setDataInterfaces(drive::addVisionData);
     driveMode.setPoseSupplier(drive::getPose);
     driveMode.disableHeadingControl();
+
+    setupLimelightFlashing();
+
     configureButtonBindings();
+  }
+
+  private void setupLimelightFlashing() {
+    new Trigger(beamBreak::detectNote).onTrue(
+            Commands.startEnd(
+                    () -> LimelightHelpers.setLEDMode_ForceOn("limelight"),
+                    () -> LimelightHelpers.setLEDMode_ForceOff("limelight")
+            )
+                    .withTimeout(.2)
+                    .andThen(Commands.waitSeconds(.2))
+                    .repeatedly()
+                    .withTimeout(1.1)
+                    .ignoringDisable(true)
+    );
   }
 
   private void configureNamedCommands() {
