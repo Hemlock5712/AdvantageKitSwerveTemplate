@@ -20,7 +20,7 @@ public class ArmConstants {
   public static final double ARM_ENCODER_OFFSET_RAD = 2.1338351287912601;
   public static final int DUTY_CYCLE_ENCODER_PORT = 0;
   public static final int UPPER_LIMIT_SWITCH_PORT = 3;
-  public static final int LOWER_LIMIT_SWITCH_PORT = 4;
+  //  public static final int LOWER_LIMIT_SWITCH_PORT = 4;
 
   public static final double MIN_RAD = 0; // todo tune
   public static final double MAX_RAD = Units.degreesToRadians(90); // todo tune
@@ -30,9 +30,6 @@ public class ArmConstants {
       tunableTable.makeField("max arm manual volts", 2.0);
 
   public static final double MAX_ARM_VOLTS = 4;
-
-  // public static final int UPPER_LIMIT_SWITCH_PORT = 5;
-  // public static final int LOWER_LIMIT_SWITCH_PORT = 6;
 
   public static class Positions {
     public static final LoggedTunableNumber INTAKE_POS_RAD =
