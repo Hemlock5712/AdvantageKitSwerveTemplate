@@ -193,22 +193,6 @@ public class RobotContainer {
     configureButtonBindings();
   }
 
-<<<<<<< Updated upstream
-=======
-  private void setupLimelightFlashing() {
-    new Trigger(beamBreak::detectNote)
-        .onTrue(
-            Commands.startEnd(
-                    () -> LimelightHelpers.setLEDMode_ForceOn("limelight"),
-                    () -> LimelightHelpers.setLEDMode_ForceOff("limelight"))
-                .withTimeout(.2)
-                .andThen(Commands.waitSeconds(.2))
-                .repeatedly()
-                .withTimeout(1.1)
-                .ignoringDisable(true));
-  }
-
->>>>>>> Stashed changes
   private void configureNamedCommands() {
     // Set up auto routines
     // Arm
