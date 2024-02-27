@@ -13,20 +13,23 @@
 
 package frc.robot;
 
-import static frc.robot.subsystems.drive.DriveConstants.*;
+import static frc.robot.subsystems.drive.DriveConstants.moduleConfigs;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.*;
+import frc.robot.commands.ArmCommands;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.IntakeCommands;
+import frc.robot.commands.MultiDistanceShot;
 import frc.robot.commands.climber.ManualClimberCommand;
 import frc.robot.commands.climber.ResetClimberBasic;
 import frc.robot.subsystems.arm.*;
@@ -37,15 +40,12 @@ import frc.robot.subsystems.climber.ClimberConstants;
 import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOSparkMax;
 import frc.robot.subsystems.climber.ClimberSubsystem;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.DriveController;
+import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.drive.DriveController.DriveModeType;
-import frc.robot.subsystems.drive.GyroIO;
-import frc.robot.subsystems.drive.GyroIONavX2;
-import frc.robot.subsystems.drive.ModuleIO;
-import frc.robot.subsystems.drive.ModuleIOSim;
-import frc.robot.subsystems.drive.ModuleIOSparkMax;
-import frc.robot.subsystems.intake.*;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeConstants;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOSparkMax;
@@ -55,6 +55,7 @@ import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
 import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
 import frc.robot.util.FieldConstants;
+import frc.robot.util.ShooterStateHelpers;
 import frc.robot.util.ShootingBasedOnPoseCalculator;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -69,7 +70,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final AprilTagVision aprilTagVision;
-  private static DriveController driveMode = new DriveController();
+  private static final DriveController driveMode = new DriveController();
   private final ShooterSubsystem shooter;
 
   private final Intake intake;
@@ -86,6 +87,7 @@ public class RobotContainer {
   private final LoggedDashboardChooser<Command> autoChooser;
 
   private final Command resetClimbersCommand;
+  private final ShooterStateHelpers shooterStateHelpers;
 
   //   private final LoggedTunableNumber flywheelSpeedInput =
   //       new LoggedTunableNumber("Flywheel Speed", 1500.0);
@@ -93,7 +95,7 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     switch (Constants.getMode()) {
-      case REAL:
+      case REAL -> {
         // Real robot, instantiate hardware IO implementations
         drive =
             /*         new ModuleIOTalonFX(moduleConfigs[0]),
@@ -107,23 +109,17 @@ public class RobotContainer {
                 new ModuleIOSparkMax(moduleConfigs[1]),
                 new ModuleIOSparkMax(moduleConfigs[2]),
                 new ModuleIOSparkMax(moduleConfigs[3]));
-
         aprilTagVision =
             new AprilTagVision(
                 new AprilTagVisionIOLimelight("limelight"),
                 new AprilTagVisionIOLimelight("limelight-two"));
-
         beamBreak = new BeamBreak(new BeamBreakIOReal());
-
         shooter =
             new ShooterSubsystem(
                 new ShooterIOSparkMax(ShooterConstants.ShooterWheels.TOP),
                 new ShooterIOSparkMax(ShooterConstants.ShooterWheels.BOTTOM));
-
         intake = new Intake(new IntakeIOSparkMax());
-
         arm = new ArmSubsystem(new ArmIOSparkMax());
-
         leftClimber =
             new ClimberSubsystem(
                 new ClimberIOSparkMax(
@@ -134,10 +130,8 @@ public class RobotContainer {
                 new ClimberIOSparkMax(
                     ClimberConstants.RIGHT_MOTOR_ID, ClimberConstants.RIGHT_LIMIT_SWITCH_DIO_PORT),
                 "right");
-
-        break;
-
-      case SIM:
+      }
+      case SIM -> {
         // Sim robot, instantiate physics sim IO implementations
         drive =
             new Drive(
@@ -159,11 +153,9 @@ public class RobotContainer {
         arm = new ArmSubsystem(new ArmIOSim());
         leftClimber = new ClimberSubsystem(new ClimberIO() {}, "left");
         rightClimber = new ClimberSubsystem(new ClimberIO() {}, "right");
-
         beamBreak = new BeamBreak(new BeamBreakIO() {});
-        break;
-
-      default:
+      }
+      default -> {
         // Replayed robot, disable IO implementations
         drive =
             new Drive(
@@ -180,9 +172,10 @@ public class RobotContainer {
         leftClimber = new ClimberSubsystem(new ClimberIO() {}, "left");
         rightClimber = new ClimberSubsystem(new ClimberIO() {}, "right");
         beamBreak = new BeamBreak(new BeamBreakIO() {});
-
-        break;
+      }
     }
+
+    shooterStateHelpers = new ShooterStateHelpers(shooter, arm, beamBreak);
 
     configureNamedCommands();
 
@@ -228,24 +221,23 @@ public class RobotContainer {
 
     // Intake
     NamedCommands.registerCommand(
-        "Intake until note", new IntakeUntilNoteCommand(beamBreak, intake));
+        "Intake until note", IntakeCommands.untilNote(intake, beamBreak::detectNote));
 
     // Shooter
     NamedCommands.registerCommand(
         "shoot speaker",
-        ArmCommands.autoArmToPosition(arm, () -> ArmConstants.Positions.SPEAKER_POS_RAD.get())
+        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.SPEAKER_POS_RAD::get)
             .andThen(
                 Commands.runOnce(() -> shooter.runVolts(ShooterConstants.RUN_VOLTS.get()), shooter))
-            .andThen(Commands.waitSeconds(1.5))
+            .andThen(shooterStateHelpers.waitUntilCanShootAuto())
             .andThen(
                 Commands.runOnce(
                     () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()), intake))
-            .andThen(Commands.waitSeconds(0.5))
+            .andThen(Commands.waitUntil(() -> !beamBreak.detectNote()).withTimeout(1))
             .andThen(Commands.runOnce(() -> shooter.runVolts(0), shooter))
             .andThen(Commands.runOnce(() -> intake.setVoltage(0), intake))
             .andThen(
-                ArmCommands.autoArmToPosition(
-                    arm, () -> ArmConstants.Positions.INTAKE_POS_RAD.get())));
+                ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get)));
   }
 
   /**
@@ -254,14 +246,12 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
-  private Command runShooterVolts;
+  private Command runShooterVelocity;
 
   private void configureButtonBindings() {
-    runShooterVolts =
+    runShooterVelocity =
         Commands.startEnd(
-            () -> {
-              shooter.runVolts(ShooterConstants.RUN_VOLTS.get());
-            },
+            () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()),
             shooter::stop,
             shooter);
 
@@ -277,41 +267,25 @@ public class RobotContainer {
         .leftBumper()
         .whileTrue(
             Commands.startEnd(
-                () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()),
-                shooter::stop,
-                shooter));
+                () -> shooter.runVolts(ShooterConstants.RUN_VOLTS.get()), shooter::stop, shooter));
 
     driveMode.setDriveMode(DriveModeType.SPEAKER);
     driverController
         .y()
         .toggleOnTrue(
-            Commands.startEnd(
-                () -> {
-                  driveMode.enableHeadingControl();
-                },
-                () -> {
-                  driveMode.disableHeadingControl();
-                }));
+            Commands.startEnd(driveMode::enableHeadingControl, driveMode::disableHeadingControl));
 
     intake.setDefaultCommand(
-        Commands.runEnd(
-            () -> {
-              intake.setVoltage(
-                  IntakeConstants.INTAKE_VOLTAGE.get()
-                      * MathUtil.clamp(
-                          driverController.getLeftTriggerAxis()
-                              - driverController.getRightTriggerAxis()
-                              + secondController.getLeftTriggerAxis()
-                              - secondController.getRightTriggerAxis(),
-                          -1,
-                          1));
-            },
-            intake::stop,
-            intake));
+        IntakeCommands.manualIntakeCommand(
+            intake,
+            () ->
+                driverController.getLeftTriggerAxis()
+                    - driverController.getRightTriggerAxis()
+                    + secondController.getLeftTriggerAxis()
+                    - secondController.getRightTriggerAxis(),
+            () -> !beamBreak.detectNote() || shooterStateHelpers.canShoot()));
 
     driverController.a().onTrue(Commands.runOnce(drive::resetGyro));
-
-    driverController.x().whileTrue(new IntakeUntilNoteCommand(beamBreak, intake));
 
     driverController
         .povRight()
@@ -324,7 +298,9 @@ public class RobotContainer {
     rightClimber.setDefaultCommand(
         new ManualClimberCommand(rightClimber, () -> -secondController.getRightY()));
 
-    secondController.leftBumper().whileTrue(new IntakeUntilNoteCommand(beamBreak, intake));
+    secondController
+        .leftBumper()
+        .whileTrue(IntakeCommands.untilNote(intake, beamBreak::detectNote));
 
     //    secondController
     //        .a()
@@ -355,7 +331,7 @@ public class RobotContainer {
         .povUp()
         .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD::get));
 
-    controller.rightBumper().whileTrue(runShooterVolts);
+    controller.rightBumper().whileTrue(runShooterVelocity);
   }
 
   private void configureAutoChooser() {
