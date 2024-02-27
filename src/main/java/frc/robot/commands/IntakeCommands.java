@@ -21,13 +21,11 @@ public class IntakeCommands {
         .until(detectingNoteSupplier);
   }
 
-  public static Command manualIntakeCommand(
-      Intake intake, DoubleSupplier speed) {
+  public static Command manualIntakeCommand(Intake intake, DoubleSupplier speed) {
     return Commands.runEnd(
         () -> {
           double volts =
               IntakeConstants.INTAKE_VOLTAGE.get() * MathUtil.clamp(speed.getAsDouble(), -1, 1);
-
 
           intake.setVoltage(volts);
         },

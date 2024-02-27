@@ -62,8 +62,6 @@ import frc.robot.util.ShootingBasedOnPoseCalculator;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
-import java.util.function.DoubleSupplier;
-
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
@@ -281,20 +279,24 @@ public class RobotContainer {
         .toggleOnTrue(
             Commands.startEnd(driveMode::enableHeadingControl, driveMode::disableHeadingControl));
 
-    controllerLogic.getExtakeTrigger().whileTrue(
-            IntakeCommands.manualIntakeCommand(intake, controllerLogic::getIntakeSpeed));
+    controllerLogic
+        .getExtakeTrigger()
+        .whileTrue(IntakeCommands.manualIntakeCommand(intake, controllerLogic::getIntakeSpeed));
 
-    controllerLogic.getIntakeTrigger().whileTrue(
+    controllerLogic
+        .getIntakeTrigger()
+        .whileTrue(
             new ConditionalCommand(
-                    IntakeCommands.manualIntakeCommand(intake, controllerLogic::getIntakeSpeed)
-                            .until(beamBreak::detectNote)
-                            .andThen(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get)),
-                    Commands.waitUntil(shooterStateHelpers::canShoot).andThen(
-                            IntakeCommands.manualIntakeCommand(intake, controllerLogic::getIntakeSpeed)
-                    ),
-                    beamBreak::detectNote
-            )
-    );
+                Commands.waitUntil(shooterStateHelpers::canShoot)
+                    .andThen(
+                        IntakeCommands.manualIntakeCommand(
+                            intake, controllerLogic::getIntakeSpeed)),
+                IntakeCommands.manualIntakeCommand(intake, controllerLogic::getIntakeSpeed)
+                    .until(beamBreak::detectNote)
+                    .andThen(
+                        ArmCommands.autoArmToPosition(
+                            arm, ArmConstants.Positions.INTAKE_POS_RAD::get)),
+                beamBreak::detectNote));
 
     driverController.a().onTrue(Commands.runOnce(drive::resetGyro));
 
