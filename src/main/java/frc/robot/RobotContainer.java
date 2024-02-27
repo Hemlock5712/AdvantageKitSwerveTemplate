@@ -337,6 +337,17 @@ public class RobotContainer {
     for (var controller : new CommandXboxController[] {driverController, secondController}) {
       configureUniversalControls(controller);
     }
+
+    //    final CommandXboxController debugController = new CommandXboxController(2);
+    //
+    //    arm.setDefaultCommand(
+    //        Commands.run(
+    //            () ->
+    //                arm.setManualVoltage(
+    //                    2
+    //                        * (debugController.getRightTriggerAxis()
+    //                            - debugController.getLeftTriggerAxis())),
+    //            arm));
   }
 
   private void configureUniversalControls(CommandXboxController controller) {
