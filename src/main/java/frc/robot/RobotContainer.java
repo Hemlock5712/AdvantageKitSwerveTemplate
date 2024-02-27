@@ -213,7 +213,9 @@ public class RobotContainer {
             )
                     .withTimeout(.2)
                     .andThen(Commands.waitSeconds(.2))
-                    .repeatedly().withTimeout(1.1)
+                    .repeatedly()
+                    .withTimeout(1.1)
+                    .ignoringDisable(true)
     );
   }
 
