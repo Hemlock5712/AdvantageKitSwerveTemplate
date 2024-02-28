@@ -199,17 +199,16 @@ public class RobotContainer {
   }
 
   private void setupLimelightFlashing() {
-    new Trigger(beamBreak::detectNote).onTrue(
+    new Trigger(beamBreak::detectNote)
+        .onTrue(
             Commands.startEnd(
                     () -> LimelightHelpers.setLEDMode_ForceOn("limelight"),
-                    () -> LimelightHelpers.setLEDMode_ForceOff("limelight")
-            )
-                    .withTimeout(.2)
-                    .andThen(Commands.waitSeconds(.2))
-                    .repeatedly()
-                    .withTimeout(1.1)
-                    .ignoringDisable(true)
-    );
+                    () -> LimelightHelpers.setLEDMode_ForceOff("limelight"))
+                .withTimeout(.2)
+                .andThen(Commands.waitSeconds(.2))
+                .repeatedly()
+                .withTimeout(1.1)
+                .ignoringDisable(true));
   }
 
   private void configureNamedCommands() {

@@ -69,9 +69,9 @@ public class ArmSubsystem extends SubsystemBase {
     ErrorChecker.checkError(armIOInputs);
 
     if (positionControlActive) {
-      if (pidController.getSetpoint() < 0.05 && armIOInputs.positionRad < 0.35) {
-        positionControlActive = false;
-      }
+      //      if (pidController.getSetpoint() < 0.05 && armIOInputs.positionRad < 0.35) {
+      //        positionControlActive = false;
+      //      }
 
       double pidVolts = pidController.calculate(armIOInputs.positionRad);
       //      double ffVolts = feedforward.calculate(armIOInputs.positionRad,
