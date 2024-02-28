@@ -65,7 +65,7 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
       TimestampedDoubleArray timestampedDouble = queue[i];
       double timestamp = timestampedDouble.timestamp / 1e6; // Converts the timestamp to seconds
       double[] poseReading = timestampedDouble.value;
-      if (!allianceOptional.isPresent() || poseReading[7] == 0.0) {
+      if (queue[i].value.length < 10 || !allianceOptional.isPresent() || poseReading[7] == 0.0) {
         continue;
       }
 
