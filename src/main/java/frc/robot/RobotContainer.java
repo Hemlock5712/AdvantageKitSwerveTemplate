@@ -278,7 +278,7 @@ public class RobotContainer {
                     .until(beamBreak::detectNote)
                     .andThen(
                         ArmCommands.autoArmToPosition(
-                            arm, ArmConstants.Positions.INTAKE_POS_RAD::get)),
+                            arm, ArmConstants.Positions.LOWER_DRIVE_RAD::get)),
                 beamBreak::detectNote));
 
     // backup in case arm or shooter can't reach setpoint
@@ -304,10 +304,10 @@ public class RobotContainer {
           .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
       controller
           .povLeft()
-          .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.SPEAKER_POS_RAD::get));
+          .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.LOWER_DRIVE_RAD::get));
       controller
           .povUp()
-          .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD::get));
+          .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.UPPER_DRIVE_RAD::get));
 
       controller
           .leftBumper()
