@@ -35,8 +35,14 @@ public class ArmConstants {
     public static final LoggedTunableNumber INTAKE_POS_RAD =
         tunableTable.makeField("Intake pos", 0);
     public static final LoggedTunableNumber SPEAKER_POS_RAD =
-        tunableTable.makeField("speaker pos", 0.2); // todo tune
+        tunableTable.makeField("speaker pos", 0.25); // todo tune
     public static final LoggedTunableNumber AMP_POS_RAD =
         tunableTable.makeField("amp pos", Units.degreesToRadians(85)); // todo tune
+    public static final LoggedTunableNumber UPPER_DRIVE_RAD =
+        tunableTable.makeField("upper drive pos", Units.degreesToRadians(75));
+    public static final LoggedTunableNumber LOWER_DRIVE_RAD =
+        tunableTable.makeField("lower drive pos", 0.2);
+    public static final LoggedTunableNumber SPEAKER_FROM_PODIUM_POS_RAD =
+        tunableTable.makeField("podium shot", 0.4);
   }
 }
