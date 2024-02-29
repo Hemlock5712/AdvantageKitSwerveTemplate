@@ -178,8 +178,7 @@ public class RobotContainer {
 
     shooterStateHelpers = new ShooterStateHelpers(shooter, arm, beamBreak);
     idleShooterVolts =
-        Commands.startEnd(
-            () -> shooter.runVolts(ShooterConstants.IDLE_VOLTS.get()), shooter::stop, shooter);
+        Commands.runOnce(() -> shooter.runVolts(ShooterConstants.IDLE_VOLTS.get()), shooter);
 
     configureNamedCommands();
 
@@ -393,7 +392,9 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return resetClimbersCommand.asProxy().alongWith(autoChooser.get().asProxy());
+    return resetClimbersCommand
+        .asProxy()
+        .alongWith(autoChooser.get().asProxy());
   }
 
   public Command getTeleopCommand() {
