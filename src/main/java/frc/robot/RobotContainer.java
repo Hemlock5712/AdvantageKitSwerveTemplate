@@ -297,7 +297,9 @@ public class RobotContainer {
                     .until(beamBreak::detectNote)
                     .andThen(
                         ArmCommands.autoArmToPosition(
-                            arm, ArmConstants.Positions.LOWER_DRIVE_RAD::get)),
+                            arm, ArmConstants.Positions.LOWER_DRIVE_RAD::get))
+                    .andThen(
+                            Commands.run(() -> shooter.runVolts(1))),
                 beamBreak::detectNote));
 
     // backup in case arm or shooter can't reach setpoint
@@ -337,7 +339,7 @@ public class RobotContainer {
     new Trigger(() -> Math.abs(secondController.getLeftY()) > .1)
         .onTrue(new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
     new Trigger(() -> Math.abs(secondController.getRightY()) > .1)
-        .onTrue(new ManualClimberCommand(leftClimber, () -> -secondController.getRightY()));
+        .onTrue(new ManualClimberCommand(rightClimber, () -> -secondController.getRightY()));
 
     // controls on both
     for (var controller : new CommandXboxController[] {driverController, secondController}) {
