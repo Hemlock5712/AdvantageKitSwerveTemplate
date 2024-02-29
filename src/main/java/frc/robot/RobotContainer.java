@@ -219,7 +219,8 @@ public class RobotContainer {
         ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.SPEAKER_POS_RAD::get)
             .andThen(
                 Commands.runOnce(
-                    () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()), shooter)));
+                    () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()),
+                    shooter)));
 
     NamedCommands.registerCommand(
         "shoot auto",
