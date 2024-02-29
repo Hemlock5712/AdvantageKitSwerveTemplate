@@ -283,7 +283,7 @@ public class RobotContainer {
 
     // backup in case arm or shooter can't reach setpoint
     secondController
-        .b()
+        .rightBumper()
         .whileTrue(
             Commands.startEnd(
                 () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()),
@@ -303,25 +303,33 @@ public class RobotContainer {
           .povDown()
           .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
       controller
+          .povRight()
+          .onTrue(
+              ArmCommands.autoArmToPosition(
+                  arm, ArmConstants.Positions.SPEAKER_FROM_PODIUM_POS_RAD::get));
+      controller
           .povLeft()
-          .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.LOWER_DRIVE_RAD::get));
+          .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.SPEAKER_POS_RAD::get));
       controller
           .povUp()
-          .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.UPPER_DRIVE_RAD::get));
+          .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD::get));
 
       controller
-          .leftBumper()
-          .whileTrue(
-              ShooterCommands.runSpeed(shooter, ShooterConstants.AMP_VELOCITY_RAD_PER_SEC::get)
-                  .alongWith(
-                      ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD::get)));
+          .b()
+          .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.UPPER_DRIVE_RAD::get));
+      controller
+          .a()
+          .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.LOWER_DRIVE_RAD::get));
+
       controller
           .rightBumper()
           .whileTrue(
-              ShooterCommands.runSpeed(shooter, ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC::get)
-                  .alongWith(
-                      ArmCommands.autoArmToPosition(
-                          arm, ArmConstants.Positions.SPEAKER_POS_RAD::get)));
+              ShooterCommands.runSpeed(
+                  shooter,
+                  () ->
+                      arm.getSetpointRad() == ArmConstants.Positions.AMP_POS_RAD.get()
+                          ? ShooterConstants.AMP_VELOCITY_RAD_PER_SEC.get()
+                          : ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()));
     }
   }
 

@@ -44,6 +44,8 @@ public class ArmConstants {
     public static final LoggedTunableNumber UPPER_DRIVE_RAD =
         tunableTable.makeField("upper drive pos", Units.degreesToRadians(75));
     public static final LoggedTunableNumber LOWER_DRIVE_RAD =
-        tunableTable.makeField("upper drive pos", 0.2);
+        tunableTable.makeField("lower drive pos", 0.2);
+    public static final LoggedTunableNumber SPEAKER_FROM_PODIUM_POS_RAD =
+        tunableTable.makeField("podium shot", 0.4);
   }
 }
