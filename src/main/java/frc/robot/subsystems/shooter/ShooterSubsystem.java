@@ -21,8 +21,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private final SimpleMotorFeedforward topFeedForward;
   private final SimpleMotorFeedforward bottomFeedForward;
   public final SysIdRoutine sysid;
-  @AutoLogOutput
-  @Getter private double targetVelocityRadPerSec;
+  @AutoLogOutput @Getter private double targetVelocityRadPerSec;
 
   public ShooterSubsystem(ShooterIO topIO, ShooterIO bottomIO) {
     this.topIO = topIO;
