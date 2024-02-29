@@ -74,6 +74,12 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "source 3 part"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "ready shooter"
