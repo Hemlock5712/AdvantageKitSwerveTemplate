@@ -392,9 +392,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return resetClimbersCommand
-        .asProxy()
-        .alongWith(autoChooser.get().asProxy());
+    return resetClimbersCommand.asProxy().alongWith(autoChooser.get().asProxy());
   }
 
   public Command getTeleopCommand() {
