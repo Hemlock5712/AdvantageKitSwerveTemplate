@@ -199,14 +199,10 @@ public class RobotContainer {
 
   private void setupLimelightFlashing() {
     new Trigger(beamBreak::detectNote)
-        .onTrue(
+        .whileTrue(
             Commands.startEnd(
                     () -> LimelightHelpers.setLEDMode_ForceOn("limelight"),
                     () -> LimelightHelpers.setLEDMode_ForceOff("limelight"))
-                .withTimeout(.2)
-                .andThen(Commands.waitSeconds(.2))
-                .repeatedly()
-                .withTimeout(1.1)
                 .ignoringDisable(true));
   }
 
