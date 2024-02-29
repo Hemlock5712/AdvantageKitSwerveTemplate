@@ -58,8 +58,6 @@ import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
 import frc.robot.util.FieldConstants;
 import frc.robot.util.LimelightHelpers;
 import frc.robot.util.ShooterStateHelpers;
-import frc.robot.util.ShootingBasedOnPoseCalculator;
-import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -179,7 +177,9 @@ public class RobotContainer {
     }
 
     shooterStateHelpers = new ShooterStateHelpers(shooter, arm, beamBreak);
-    idleShooterVolts = Commands.startEnd(() -> shooter.runVolts(ShooterConstants.IDLE_VOLTS.get()), shooter::stop, shooter);
+    idleShooterVolts =
+        Commands.startEnd(
+            () -> shooter.runVolts(ShooterConstants.IDLE_VOLTS.get()), shooter::stop, shooter);
 
     configureNamedCommands();
 
@@ -226,7 +226,8 @@ public class RobotContainer {
 
     NamedCommands.registerCommand(
         "shoot auto",
-        shooterStateHelpers.waitUntilCanShootAuto()
+        shooterStateHelpers
+            .waitUntilCanShootAuto()
             .andThen(
                 Commands.runOnce(
                     () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()), intake))
