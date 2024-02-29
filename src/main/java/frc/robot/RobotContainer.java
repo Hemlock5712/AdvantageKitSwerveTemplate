@@ -55,9 +55,7 @@ import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
 import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
-import frc.robot.util.ControllerLogic;
-import frc.robot.util.ShooterStateHelpers;
-import frc.robot.util.ShootingBasedOnPoseCalculator;
+import frc.robot.util.*;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -288,14 +286,37 @@ public class RobotContainer {
 
     // backup in case arm or shooter can't reach setpoint
     secondController
-        .rightBumper()
+        .leftBumper()
         .whileTrue(
             Commands.startEnd(
                 () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()),
                 intake::stop,
                 intake));
 
-    secondController.a().onTrue(Commands.runOnce(drive::resetGyro));
+    secondController
+        .start()
+        .onTrue(
+            Commands.runOnce(
+                () ->
+                    drive.setAutoStartPose(
+                        AllianceFlipUtil.apply(
+                            new Pose2d(
+                                FieldConstants.Speaker.centerSpeakerOpening
+                                    .getTranslation()
+                                    .plus(new Translation2d(1.5, 0)),
+                                new Rotation2d(0))))));
+    secondController
+        .back()
+        .toggleOnTrue(
+            Commands.startEnd(
+                () -> aprilTagVision.setEnableVisionUpdates(false),
+                () -> aprilTagVision.setEnableVisionUpdates(true)));
+
+    secondController
+        .x()
+        .onTrue(
+            new MultiDistanceShot(
+                drive::getPose, FieldConstants.Speaker.centerSpeakerOpening, shooter, arm));
 
     new Trigger(() -> Math.abs(secondController.getLeftY()) > .1)
         .onTrue(new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));

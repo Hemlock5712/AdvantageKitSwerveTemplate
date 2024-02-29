@@ -116,7 +116,7 @@ public class ShooterSubsystem extends SubsystemBase {
     topIO.setVelocity(velocityRadPerSec, topFeedForward.calculate(velocityRadPerSec));
     bottomIO.setVelocity(velocityRadPerSec, bottomFeedForward.calculate(velocityRadPerSec));
 
-    Logger.recordOutput("Shooter Setpoint Rad/s", velocityRadPerSec);
+    Logger.recordOutput("ShooterSubsystem/Setpoint Rad per s", velocityRadPerSec);
   }
 
   public void runVolts(double volts) {
