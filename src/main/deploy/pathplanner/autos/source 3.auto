@@ -18,19 +18,19 @@
           }
         },
         {
-          "type": "race",
+          "type": "parallel",
           "data": {
             "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "AmpSideSpeakerToNote"
-                }
-              },
               {
                 "type": "named",
                 "data": {
                   "name": "Intake until note"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "source side speaker to note"
                 }
               }
             ]
@@ -45,7 +45,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "return to speaker amp side"
+            "pathName": "return to speaker source side"
           }
         },
         {
@@ -61,7 +61,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "amp most far note"
+                  "pathName": "source most far note"
                 }
               },
               {
@@ -82,7 +82,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "return to speaker amp side"
+            "pathName": "return to speaker source side"
           }
         },
         {

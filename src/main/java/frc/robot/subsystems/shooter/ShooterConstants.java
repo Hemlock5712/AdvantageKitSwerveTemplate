@@ -10,6 +10,8 @@ public final class ShooterConstants {
   public static final int TOP_MOTOR_ID = 14;
   public static final int BOTTOM_MOTOR_ID = 15;
   public static final LoggedTunableNumber RUN_VOLTS = tunableTable.makeField("run volts", 6);
+  public static final LoggedTunableNumber IDLE_VOLTS =
+          tunableTable.makeField("idle volts", 3);
   public static final LoggedTunableNumber AMP_VELOCITY_RAD_PER_SEC =
       tunableTable.makeField("amp rad per sec", 200);
   public static final LoggedTunableNumber SPEAKER_VELOCITY_RAD_PER_SEC =
@@ -20,7 +22,7 @@ public final class ShooterConstants {
       tunableTable.makeField("velocity tolerance rad per s", 5);
 
   public static final LoggedTunableNumber AUTO_SHOOTER_TIMEOUT =
-      tunableTable.makeField("auto shooter timeout", 3);
+      tunableTable.makeField("auto shooter timeout", 2);
 
   public static final double TOP_GEAR_RATIO = 1;
   public static final double BOTTOM_GEAR_RATIO = 24.0 / 22.0;

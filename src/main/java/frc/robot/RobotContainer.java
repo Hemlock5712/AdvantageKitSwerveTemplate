@@ -90,6 +90,7 @@ public class RobotContainer {
 
   private final Command resetClimbersCommand;
   private final ShooterStateHelpers shooterStateHelpers;
+  private final Command idleShooterVolts;
 
   //   private final LoggedTunableNumber flywheelSpeedInput =
   //       new LoggedTunableNumber("Flywheel Speed", 1500.0);
@@ -178,6 +179,7 @@ public class RobotContainer {
     }
 
     shooterStateHelpers = new ShooterStateHelpers(shooter, arm, beamBreak);
+    idleShooterVolts = Commands.startEnd(() -> shooter.runVolts(ShooterConstants.IDLE_VOLTS.get()), shooter::stop, shooter);
 
     configureNamedCommands();
 
@@ -212,47 +214,25 @@ public class RobotContainer {
   }
 
   private void configureNamedCommands() {
-    // Set up auto routines
-    // Arm
-    NamedCommands.registerCommand(
-        "Arm to ground intake position",
-        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
-    NamedCommands.registerCommand(
-        "Arm to amp position",
-        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD::get));
-    NamedCommands.registerCommand(
-        "Arm to speaker position",
-        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.SPEAKER_POS_RAD::get));
-    NamedCommands.registerCommand(
-        "Arm to calculated speaker angle",
-        Commands.runOnce(
-            () ->
-                Logger.recordOutput(
-                    "arm/targetShootingAngle",
-                    ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(
-                        drive.getPose()))));
-    //        ArmCommands.autoArmToPosition(
-    //            arm,
-    //            () ->
-    //                ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(
-    //                    drive.getPose())));
-
-    // Intake
     NamedCommands.registerCommand(
         "Intake until note", IntakeCommands.untilNote(intake, beamBreak::detectNote));
 
-    // Shooter
     NamedCommands.registerCommand(
-        "shoot speaker",
+        "ready shooter",
         ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.SPEAKER_POS_RAD::get)
             .andThen(
-                Commands.runOnce(() -> shooter.runVolts(ShooterConstants.RUN_VOLTS.get()), shooter))
-            .andThen(shooterStateHelpers.waitUntilCanShootAuto())
+                Commands.runOnce(
+                    () -> shooter.runVolts(ShooterConstants.RUN_VOLTS.get()), shooter)));
+
+    NamedCommands.registerCommand(
+        "shoot auto",
+        shooterStateHelpers.waitUntilCanShootAuto()
             .andThen(
                 Commands.runOnce(
                     () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()), intake))
             .andThen(Commands.waitUntil(() -> !beamBreak.detectNote()).withTimeout(1))
-            .andThen(Commands.runOnce(() -> shooter.runVolts(0), shooter))
+            .andThen(Commands.waitSeconds(.3))
+            .andThen(idleShooterVolts)
             .andThen(Commands.runOnce(() -> intake.setVoltage(0), intake))
             .andThen(
                 ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get)));
