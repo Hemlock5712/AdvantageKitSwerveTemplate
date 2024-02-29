@@ -24,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "AmpSideSpeakerToNote"
+                  "pathName": "StraightFrontSpeaker"
                 }
               },
               {
@@ -45,7 +45,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "return to speaker amp side"
+            "pathName": "return to speaker middle"
           }
         },
         {
@@ -61,7 +61,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "amp most far note"
+                  "pathName": "middle to amp note"
                 }
               },
               {
@@ -82,7 +82,44 @@
         {
           "type": "path",
           "data": {
-            "pathName": "return to speaker amp side"
+            "pathName": "return to speaker middle"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot auto"
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake until note"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "middle to source note"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ready shooter"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "return to speaker middle"
           }
         },
         {

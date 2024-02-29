@@ -22,7 +22,7 @@ public final class ShooterConstants {
       tunableTable.makeField("velocity tolerance rad per s", 5);
 
   public static final LoggedTunableNumber AUTO_SHOOTER_TIMEOUT =
-      tunableTable.makeField("auto shooter timeout", 3);
+      tunableTable.makeField("auto shooter timeout", 2);
 
   public static final double TOP_GEAR_RATIO = 1;
   public static final double BOTTOM_GEAR_RATIO = 24.0 / 22.0;

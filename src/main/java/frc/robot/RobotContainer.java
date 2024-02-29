@@ -196,32 +196,6 @@ public class RobotContainer {
   }
 
   private void configureNamedCommands() {
-    // Set up auto routines
-    // Arm
-    NamedCommands.registerCommand(
-        "Arm to ground intake position",
-        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
-    NamedCommands.registerCommand(
-        "Arm to amp position",
-        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD::get));
-    NamedCommands.registerCommand(
-        "Arm to speaker position",
-        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.SPEAKER_POS_RAD::get));
-    NamedCommands.registerCommand(
-        "Arm to calculated speaker angle",
-        Commands.runOnce(
-            () ->
-                Logger.recordOutput(
-                    "arm/targetShootingAngle",
-                    ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(
-                        drive.getPose()))));
-    //        ArmCommands.autoArmToPosition(
-    //            arm,
-    //            () ->
-    //                ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(
-    //                    drive.getPose())));
-
-    // Intake
     NamedCommands.registerCommand(
         "Intake until note", IntakeCommands.untilNote(intake, beamBreak::detectNote));
 
@@ -232,7 +206,6 @@ public class RobotContainer {
                 Commands.runOnce(
                     () -> shooter.runVolts(ShooterConstants.RUN_VOLTS.get()), shooter)));
 
-    // Shooter
     NamedCommands.registerCommand(
         "shoot auto",
         shooterStateHelpers.waitUntilCanShootAuto()
