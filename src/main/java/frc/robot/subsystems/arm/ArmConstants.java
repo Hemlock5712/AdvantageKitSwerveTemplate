@@ -11,10 +11,10 @@ public class ArmConstants {
 
   public static final int LEFT_MOTOR_ID = 9;
   public static final int RIGHT_MOTOR_ID = 10;
-  public static final LoggedTunableNumber kS = tunableTable.makeField("kS", .15);
-  public static final LoggedTunableNumber kP = tunableTable.makeField("kP", 7);
+  public static final LoggedTunableNumber kS = tunableTable.makeField("kS", .25);
+  public static final LoggedTunableNumber kP = tunableTable.makeField("kP", 13);
   public static final LoggedTunableNumber kI = tunableTable.makeField("kI", 0.0);
-  public static final LoggedTunableNumber kD = tunableTable.makeField("kD", 0.7);
+  public static final LoggedTunableNumber kD = tunableTable.makeField("kD", 1.3);
   public static final LoggedTunableNumber setpointToleranceRad =
       tunableTable.makeField("setpoint tolerance rad", 0.04); // todo tune
   public static final double ARM_ENCODER_OFFSET_RAD = 2.1338351287912601;
@@ -35,14 +35,14 @@ public class ArmConstants {
     public static final LoggedTunableNumber INTAKE_POS_RAD =
         tunableTable.makeField("Intake pos", 0);
     public static final LoggedTunableNumber SPEAKER_POS_RAD =
-        tunableTable.makeField("speaker pos", 0.25); // todo tune
+        tunableTable.makeField("speaker pos", 0.3); // todo tune
     public static final LoggedTunableNumber AMP_POS_RAD =
-        tunableTable.makeField("amp pos", Units.degreesToRadians(85)); // todo tune
+        tunableTable.makeField("amp pos", Units.degreesToRadians(89)); // todo tune
     public static final LoggedTunableNumber UPPER_DRIVE_RAD =
-        tunableTable.makeField("upper drive pos", Units.degreesToRadians(75));
+        tunableTable.makeField("upper drive pos", 1.3);
     public static final LoggedTunableNumber LOWER_DRIVE_RAD =
-        tunableTable.makeField("lower drive pos", 0.2);
+        tunableTable.makeField("lower drive pos", 0.15);
     public static final LoggedTunableNumber SPEAKER_FROM_PODIUM_POS_RAD =
-        tunableTable.makeField("podium shot", 0.4);
+        tunableTable.makeField("podium shot", 0.642);
   }
 }

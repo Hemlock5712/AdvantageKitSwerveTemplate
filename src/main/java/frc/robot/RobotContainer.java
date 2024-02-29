@@ -298,8 +298,7 @@ public class RobotContainer {
                     .andThen(
                         ArmCommands.autoArmToPosition(
                             arm, ArmConstants.Positions.LOWER_DRIVE_RAD::get))
-                    .andThen(
-                            Commands.run(() -> shooter.runVolts(1))),
+                    .andThen(Commands.run(() -> shooter.runVolts(1))),
                 beamBreak::detectNote));
 
     // backup in case arm or shooter can't reach setpoint
@@ -395,10 +394,15 @@ public class RobotContainer {
         .whileTrue(
             ShooterCommands.runSpeed(
                 shooter,
-                () ->
-                    arm.getSetpointRad() == ArmConstants.Positions.AMP_POS_RAD.get()
-                        ? ShooterConstants.AMP_VELOCITY_RAD_PER_SEC.get()
-                        : ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()));
+                () -> {
+                  if (arm.getSetpointRad() == ArmConstants.Positions.AMP_POS_RAD.get()) {
+                    return ShooterConstants.AMP_VELOCITY_RAD_PER_SEC.get();
+                  } else if (arm.getSetpointRad()
+                      == ArmConstants.Positions.SPEAKER_FROM_PODIUM_POS_RAD.get()) {
+                    return ShooterConstants.PODIUM_VELOCITY_RAD_PER_SEC.get();
+                  }
+                  return ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get();
+                }));
   }
 
   private void configureAutoChooser() {
