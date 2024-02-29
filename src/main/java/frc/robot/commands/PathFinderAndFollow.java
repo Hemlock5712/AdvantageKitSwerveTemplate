@@ -10,38 +10,25 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.subsystems.drive.DriveController.DriveModeType;
-import java.util.function.Supplier;
 
 /** A command that runs pathfindThenFollowPath based on the current drive mode. */
 public class PathFinderAndFollow extends Command {
-  private final Supplier<DriveModeType> driveModeSupplier;
   private Command scoreCommand;
   private Command pathRun;
-  private DriveModeType driveMode;
+  private PathPlannerPath targetPath;
 
-  /**
-   * Creates a new PathFinderAndFollow command.
-   *
-   * @param driveModeSupplier a supplier for the drive mode type
-   */
-  public PathFinderAndFollow(Supplier<DriveModeType> driveModeSupplier) {
-    this.driveModeSupplier = driveModeSupplier;
+  /** Creates a new PathFinderAndFollow command. */
+  public PathFinderAndFollow(PathPlannerPath targetPath) {
+    this.targetPath = targetPath;
   }
 
   @Override
   public void initialize() {
-    runNewAutonPath();
+    runNewAutoPath();
   }
 
   @Override
-  public void execute() {
-    DriveModeType currentDriveMode = driveModeSupplier.get();
-    if (driveMode != currentDriveMode) {
-      scoreCommand.cancel();
-      runNewAutonPath();
-    }
-  }
+  public void execute() {}
 
   @Override
   public void end(boolean interrupted) {
@@ -55,14 +42,10 @@ public class PathFinderAndFollow extends Command {
   }
 
   /** Runs a new autonomous path based on the current drive mode. */
-  public void runNewAutonPath() {
-    driveMode = driveModeSupplier.get();
-    String pathName =
-        driveMode == DriveModeType.SPEAKER ? "Speaker Placement Path" : "Amp Placement Path";
-    PathPlannerPath ampPath = PathPlannerPath.fromPathFile(pathName);
+  public void runNewAutoPath() {
     PathConstraints constraints =
-        new PathConstraints(3.0, 4.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
-    pathRun = AutoBuilder.pathfindThenFollowPath(ampPath, constraints, 0.0);
+        new PathConstraints(2.0, 2.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+    pathRun = AutoBuilder.pathfindThenFollowPath(targetPath, constraints, 0.0);
     scoreCommand = Commands.sequence(pathRun);
     scoreCommand.schedule();
   }
