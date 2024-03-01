@@ -278,9 +278,9 @@ public class RobotContainer {
                     .andThen(
                         ArmCommands.autoArmToPosition(
                             arm, ArmConstants.Positions.SPEAKER_POS_RAD::get))
-                    // arm, ArmConstants.Positions.LOWER_DRIVE_RAD::get))
-//                    .andThen(Commands.run(() -> shooter.runVolts(1), shooter)),
-                    ,
+                // arm, ArmConstants.Positions.LOWER_DRIVE_RAD::get))
+                //                    .andThen(Commands.run(() -> shooter.runVolts(1), shooter)),
+                ,
                 beamBreak::detectNote));
 
     // backup in case arm or shooter can't reach setpoint
