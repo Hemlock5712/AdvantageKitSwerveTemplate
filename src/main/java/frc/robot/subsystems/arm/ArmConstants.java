@@ -37,7 +37,7 @@ public class ArmConstants {
     public static final LoggedTunableNumber SPEAKER_POS_RAD =
         tunableTable.makeField("speaker pos", 0.3); // todo tune
     public static final LoggedTunableNumber AMP_POS_RAD =
-        tunableTable.makeField("amp pos", Units.degreesToRadians(89)); // todo tune
+        tunableTable.makeField("amp pos", 1.53); // todo tune
     public static final LoggedTunableNumber UPPER_DRIVE_RAD =
         tunableTable.makeField("upper drive pos", 1.3);
     public static final LoggedTunableNumber LOWER_DRIVE_RAD =
