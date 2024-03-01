@@ -1,0 +1,184 @@
+{
+  "hubs": [
+    {
+      "x": 12,
+      "y": 18,
+      "width": 1084,
+      "height": 628,
+      "state": {
+        "sidebar": {
+          "width": 320,
+          "expanded": [
+            "/RealOutputs/Odometry/Drive",
+            "/RealOutputs/Odometry/Drive/rotation",
+            "/ReplayOutputs",
+            "/ReplayOutputs/Odometry",
+            "/ReplayOutputs/Odometry/Drive",
+            "/ReplayOutputs/Odometry/Drive/rotation",
+            "/ReplayOutputs/Odometry/Drive/translation",
+            "/RealOutputs/Odometry/Drive/translation",
+            "/Drive/Gyro/YawPosition",
+            "/RealOutputs/Odometry/PoseEstimation",
+            "/RealOutputs/Odometry/PoseEstimation/translation",
+            "/RealOutputs/Odometry/PoseEstimation/rotation",
+            "/RealOutputs/AprilTagVision/TagPoses/1",
+            "/RealOutputs/AprilTagVision/Inst0/RobotPose/translation",
+            "/ShooterSubsystem/Bottom",
+            "/ShooterSubsystem/Top",
+            "/RealOutputs/Arm",
+            "/AprilTagVision/Inst0/estimatedPose",
+            "/Drive/Gyro",
+            "/Drive/Gyro/OdometryYawPositions",
+            "/Drive/Gyro/OdometryYawPositions/0",
+            "/Drive/Gyro/OdometryYawPositions/1",
+            "/RealOutputs/Climber/left",
+            "/RealOutputs/Climber/right",
+            "/RealOutputs/Climber/right/climberStagePoses",
+            "/RealOutputs/Climber/left/climberStagePoses",
+            "/RealOutputs/Climber/left/climberStagePoses/0/translation",
+            "/RealOutputs/Climber/left/climberStagePoses/1",
+            "/RealOutputs/Climber/left/climberStagePoses/1/translation",
+            "/RealOutputs/Climber/right/climberStagePoses/1",
+            "/RealOutputs/Climber/right/climberStagePoses/1/translation",
+            "/RealOutputs/AprilTagVision/Inst0/RobotPose3D",
+            "/RealOutputs/AprilTagVision/Inst0/RobotPose3D/rotation",
+            "/RealOutputs/AprilTagVision/Inst0/RobotPose3D/rotation/q",
+            "/RealOutputs/AprilTagVision/Inst0",
+            "/AprilTagVision/Inst0",
+            "/limelight",
+            "/limelight/botpose_wpiblue",
+            "/AprilTagVision/Inst0/tagIDs",
+            "/AprilTagVision/Inst0/estimatedPose/0",
+            "/RealOutputs/ArmSubsystem",
+            "/DashboardInputs/TunableNumbers/ArmConstants",
+            "/RealOutputs/MultiDistanceShot",
+            "/RealOutputs/Shooter Setpoint Rad",
+            "/RealOutputs/ShooterSubsystem",
+            "/RealOutputs/MultDistanceShot",
+            "/RealOutputs/MultDistanceShot/target pose"
+          ]
+        },
+        "tabs": {
+          "selected": 1,
+          "tabs": [
+            {
+              "type": 0,
+              "path": "../docs/INDEX.md"
+            },
+            {
+              "type": 5,
+              "uuid": "bdvhnr2ljy2m9govtclghsk0mdxtmpsw",
+              "fields": [],
+              "listFields": [
+                [
+                  {
+                    "type": "Trajectory",
+                    "key": "/RealOutputs/Odometry/Trajectory",
+                    "sourceTypeIndex": 2,
+                    "sourceType": "Pose2d[]"
+                  },
+                  {
+                    "type": "Robot",
+                    "key": "/RealOutputs/Odometry/PoseEstimation",
+                    "sourceTypeIndex": 1,
+                    "sourceType": "Pose2d"
+                  }
+                ]
+              ],
+              "options": {
+                "game": "2024 Field",
+                "unitDistance": "meters",
+                "unitRotation": "radians",
+                "origin": "right",
+                "size": 0.75,
+                "allianceBumpers": "auto",
+                "allianceOrigin": "blue",
+                "orientation": "blue left, red right"
+              },
+              "configHidden": false,
+              "visualizer": null,
+              "title": "Odometry"
+            },
+            {
+              "type": 8,
+              "uuid": "1m3w8irj83n21l39pynyf9s8cadua3ps",
+              "fields": [],
+              "listFields": [],
+              "options": {
+                "ids": [
+                  0,
+                  1,
+                  2
+                ],
+                "layouts": [
+                  "Xbox Controller (White)",
+                  "Xbox Controller (Blue)",
+                  "None"
+                ]
+              },
+              "configHidden": false,
+              "visualizer": null,
+              "title": "Joysticks"
+            },
+            {
+              "type": 9,
+              "uuid": "xnrovabb4x4y99blz9h8qhhp2rdd9cih",
+              "fields": [
+                {
+                  "key": "/RealOutputs/SwerveStates/Measured",
+                  "sourceTypeIndex": 1,
+                  "sourceType": "SwerveModuleState[]"
+                },
+                {
+                  "key": "/RealOutputs/SwerveStates/SetpointsOptimized",
+                  "sourceTypeIndex": 1,
+                  "sourceType": "SwerveModuleState[]"
+                },
+                {
+                  "key": "/RealOutputs/Odometry/PoseEstimation/rotation",
+                  "sourceTypeIndex": 1,
+                  "sourceType": "Rotation2d"
+                }
+              ],
+              "listFields": [],
+              "options": {
+                "maxSpeed": 4.5,
+                "rotationUnits": "radians",
+                "arrangement": "0,1,2,3",
+                "sizeLeftRight": 0.65,
+                "sizeFrontBack": 0.65,
+                "forwardDirection": "up"
+              },
+              "configHidden": false,
+              "visualizer": null,
+              "title": "Swerve"
+            },
+            {
+              "type": 3,
+              "field": "/RealOutputs/Console",
+              "title": "Console"
+            },
+            {
+              "type": 12,
+              "title": "Metadata"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "satellites": [
+    {
+      "x": 30,
+      "y": 26,
+      "width": 580,
+      "height": 320,
+      "state": {
+        "type": 5,
+        "visualizer": null
+      },
+      "uuid": "bdvhnr2ljy2m9govtclghsk0mdxtmpsw"
+    }
+  ],
+  "version": "3.2.0"
+}

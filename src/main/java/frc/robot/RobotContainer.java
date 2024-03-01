@@ -17,6 +17,8 @@ import static frc.robot.subsystems.drive.DriveConstants.moduleConfigs;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.path.PathPlannerPath;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -24,13 +26,11 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.ArmCommands;
-import frc.robot.commands.DriveCommands;
-import frc.robot.commands.IntakeCommands;
-import frc.robot.commands.MultiDistanceShot;
+import frc.robot.commands.*;
 import frc.robot.commands.climber.ManualClimberCommand;
 import frc.robot.commands.climber.ResetClimberBasic;
 import frc.robot.subsystems.arm.*;
@@ -55,11 +55,7 @@ import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
 import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
-import frc.robot.util.FieldConstants;
-import frc.robot.util.LimelightHelpers;
-import frc.robot.util.ShooterStateHelpers;
-import frc.robot.util.ShootingBasedOnPoseCalculator;
-import org.littletonrobotics.junction.Logger;
+import frc.robot.util.*;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -90,6 +86,7 @@ public class RobotContainer {
 
   private final Command resetClimbersCommand;
   private final ShooterStateHelpers shooterStateHelpers;
+  private final Command idleShooterVolts;
 
   //   private final LoggedTunableNumber flywheelSpeedInput =
   //       new LoggedTunableNumber("Flywheel Speed", 1500.0);
@@ -178,6 +175,8 @@ public class RobotContainer {
     }
 
     shooterStateHelpers = new ShooterStateHelpers(shooter, arm, beamBreak);
+    idleShooterVolts =
+        Commands.runOnce(() -> shooter.runVolts(ShooterConstants.IDLE_VOLTS.get()), shooter);
 
     configureNamedCommands();
 
@@ -200,59 +199,35 @@ public class RobotContainer {
 
   private void setupLimelightFlashing() {
     new Trigger(beamBreak::detectNote)
-        .onTrue(
+        .whileTrue(
             Commands.startEnd(
                     () -> LimelightHelpers.setLEDMode_ForceOn("limelight"),
                     () -> LimelightHelpers.setLEDMode_ForceOff("limelight"))
-                .withTimeout(.2)
-                .andThen(Commands.waitSeconds(.2))
-                .repeatedly()
-                .withTimeout(1.1)
                 .ignoringDisable(true));
   }
 
   private void configureNamedCommands() {
-    // Set up auto routines
-    // Arm
-    NamedCommands.registerCommand(
-        "Arm to ground intake position",
-        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
-    NamedCommands.registerCommand(
-        "Arm to amp position",
-        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD::get));
-    NamedCommands.registerCommand(
-        "Arm to speaker position",
-        ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.SPEAKER_POS_RAD::get));
-    NamedCommands.registerCommand(
-        "Arm to calculated speaker angle",
-        Commands.runOnce(
-            () ->
-                Logger.recordOutput(
-                    "arm/targetShootingAngle",
-                    ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(
-                        drive.getPose()))));
-    //        ArmCommands.autoArmToPosition(
-    //            arm,
-    //            () ->
-    //                ShootingBasedOnPoseCalculator.calculateAngleInRadiansWithConstantVelocity(
-    //                    drive.getPose())));
-
-    // Intake
     NamedCommands.registerCommand(
         "Intake until note", IntakeCommands.untilNote(intake, beamBreak::detectNote));
 
-    // Shooter
     NamedCommands.registerCommand(
-        "shoot speaker",
+        "ready shooter",
         ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.SPEAKER_POS_RAD::get)
             .andThen(
-                Commands.runOnce(() -> shooter.runVolts(ShooterConstants.RUN_VOLTS.get()), shooter))
-            .andThen(shooterStateHelpers.waitUntilCanShootAuto())
+                Commands.runOnce(
+                    () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()),
+                    shooter)));
+
+    NamedCommands.registerCommand(
+        "shoot auto",
+        shooterStateHelpers
+            .waitUntilCanShootAuto()
             .andThen(
                 Commands.runOnce(
                     () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()), intake))
             .andThen(Commands.waitUntil(() -> !beamBreak.detectNote()).withTimeout(1))
-            .andThen(Commands.runOnce(() -> shooter.runVolts(0), shooter))
+            .andThen(Commands.waitSeconds(.3))
+            .andThen(idleShooterVolts)
             .andThen(Commands.runOnce(() -> intake.setVoltage(0), intake))
             .andThen(
                 ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get)));
@@ -264,14 +239,8 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
-  private Command runShooterVelocity;
-
   private void configureButtonBindings() {
-    runShooterVelocity =
-        Commands.startEnd(
-            () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()),
-            shooter::stop,
-            shooter);
+    final ControllerLogic controllerLogic = new ControllerLogic(driverController, secondController);
 
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
@@ -281,58 +250,87 @@ public class RobotContainer {
             () -> -driverController.getRightX(),
             () -> -driverController.getLeftX()));
 
-    driverController
-        .leftBumper()
-        .whileTrue(
-            Commands.startEnd(
-                () -> shooter.runVolts(ShooterConstants.RUN_VOLTS.get()), shooter::stop, shooter));
-
     driveMode.setDriveMode(DriveModeType.SPEAKER);
     driverController
         .y()
         .toggleOnTrue(
             Commands.startEnd(driveMode::enableHeadingControl, driveMode::disableHeadingControl));
-
-    intake.setDefaultCommand(
-        IntakeCommands.manualIntakeCommand(
-            intake,
-            () ->
-                driverController.getLeftTriggerAxis()
-                    - driverController.getRightTriggerAxis()
-                    + secondController.getLeftTriggerAxis()
-                    - secondController.getRightTriggerAxis(),
-            () -> !beamBreak.detectNote() || shooterStateHelpers.canShoot()));
-
-    driverController.a().onTrue(Commands.runOnce(drive::resetGyro));
-
     driverController
-        .povRight()
+        .x()
+        .whileTrue(new PathFinderAndFollow(PathPlannerPath.fromPathFile("LineUpAmp")));
+    new Trigger(() -> Math.abs(driverController.getLeftX()) > .1)
+        .onTrue(Commands.runOnce(driveMode::disableHeadingControl));
+
+    controllerLogic
+        .getExtakeTrigger()
+        .whileTrue(IntakeCommands.manualIntakeCommand(intake, controllerLogic::getIntakeSpeed));
+
+    controllerLogic
+        .getIntakeTrigger()
         .whileTrue(
-            new MultiDistanceShot(
-                drive::getPose, FieldConstants.Speaker.centerSpeakerOpening, shooter, arm));
+            new ConditionalCommand(
+                Commands.waitUntil(shooterStateHelpers::canShoot)
+                    .andThen(
+                        IntakeCommands.manualIntakeCommand(
+                            intake, controllerLogic::getIntakeSpeed)),
+                IntakeCommands.manualIntakeCommand(intake, controllerLogic::getIntakeSpeed)
+                    .until(beamBreak::detectNote)
+                    .andThen(
+                        ArmCommands.autoArmToPosition(
+                            arm, ArmConstants.Positions.LOWER_DRIVE_RAD::get))
+                    .andThen(Commands.run(() -> shooter.runVolts(1))),
+                beamBreak::detectNote));
 
-    leftClimber.setDefaultCommand(
-        new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
-    rightClimber.setDefaultCommand(
-        new ManualClimberCommand(rightClimber, () -> -secondController.getRightY()));
-
+    // backup in case arm or shooter can't reach setpoint
     secondController
         .leftBumper()
-        .whileTrue(IntakeCommands.untilNote(intake, beamBreak::detectNote));
+        .whileTrue(
+            Commands.startEnd(
+                () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()),
+                intake::stop,
+                intake));
+
+    secondController
+        .start()
+        .onTrue(
+            Commands.runOnce(
+                () ->
+                    drive.setAutoStartPose(
+                        AllianceFlipUtil.apply(
+                            new Pose2d(
+                                FieldConstants.Speaker.centerSpeakerOpening
+                                    .getTranslation()
+                                    .plus(new Translation2d(1.5, 0)),
+                                new Rotation2d(0))))));
+    secondController
+        .back()
+        .toggleOnTrue(
+            Commands.startEnd(
+                () -> aprilTagVision.setEnableVisionUpdates(false),
+                () -> aprilTagVision.setEnableVisionUpdates(true)));
 
     //    secondController
-    //        .a()
-    //        .whileTrue(
-    //            ArmCommands.manualArmCommand(
-    //                arm,
-    //                () ->
-    //                    2
-    //                        * (secondController.getLeftTriggerAxis()
-    //                            - secondController.getRightTriggerAxis())));
+    //        .x()
+    //        .onTrue(
+    //            new MultiDistanceShot(
+    //                drive::getPose, FieldConstants.Speaker.centerSpeakerOpening, shooter, arm));
 
-    secondController.x().onTrue(ResetClimberBasic.on(leftClimber));
-    secondController.b().onTrue(ResetClimberBasic.on(rightClimber));
+    secondController
+        .y()
+        .whileTrue(
+            Commands.startEnd(
+                    () -> LimelightHelpers.setLEDMode_ForceOn("limelight"),
+                    () -> LimelightHelpers.setLEDMode_ForceOff("limelight"))
+                .withTimeout(.2)
+                .andThen(Commands.waitSeconds(.1))
+                .repeatedly());
 
+    new Trigger(() -> Math.abs(secondController.getLeftY()) > .1)
+        .onTrue(new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
+    new Trigger(() -> Math.abs(secondController.getRightY()) > .1)
+        .onTrue(new ManualClimberCommand(rightClimber, () -> -secondController.getRightY()));
+
+    // controls on both
     for (var controller : new CommandXboxController[] {driverController, secondController}) {
       configureUniversalControls(controller);
     }
@@ -359,8 +357,42 @@ public class RobotContainer {
     controller
         .povUp()
         .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD::get));
+    controller
+        .povDown()
+        .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
+    controller
+        .povRight()
+        .onTrue(
+            ArmCommands.autoArmToPosition(
+                arm, ArmConstants.Positions.SPEAKER_FROM_PODIUM_POS_RAD::get));
+    controller
+        .povLeft()
+        .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.SPEAKER_POS_RAD::get));
+    controller
+        .povUp()
+        .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.AMP_POS_RAD::get));
 
-    controller.rightBumper().whileTrue(runShooterVelocity);
+    controller
+        .b()
+        .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.UPPER_DRIVE_RAD::get));
+    controller
+        .a()
+        .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.LOWER_DRIVE_RAD::get));
+
+    controller
+        .rightBumper()
+        .whileTrue(
+            ShooterCommands.runSpeed(
+                shooter,
+                () -> {
+                  if (arm.getSetpointRad() == ArmConstants.Positions.AMP_POS_RAD.get()) {
+                    return ShooterConstants.AMP_VELOCITY_RAD_PER_SEC.get();
+                  } else if (arm.getSetpointRad()
+                      == ArmConstants.Positions.SPEAKER_FROM_PODIUM_POS_RAD.get()) {
+                    return ShooterConstants.PODIUM_VELOCITY_RAD_PER_SEC.get();
+                  }
+                  return ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get();
+                }));
   }
 
   private void configureAutoChooser() {

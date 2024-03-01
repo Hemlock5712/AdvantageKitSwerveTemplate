@@ -39,7 +39,7 @@ public class ShooterStateHelpers {
   }
 
   public Command waitUntilCanShootWithoutNoteDetection() {
-    return Commands.waitUntil(this::canShoot);
+    return Commands.waitUntil(this::canShootWithoutNoteDetection);
   }
 
   public Command waitUntilCanShootAuto() {

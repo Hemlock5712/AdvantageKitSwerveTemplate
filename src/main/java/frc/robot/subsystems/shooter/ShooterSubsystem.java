@@ -21,7 +21,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private final SimpleMotorFeedforward topFeedForward;
   private final SimpleMotorFeedforward bottomFeedForward;
   public final SysIdRoutine sysid;
-  @Getter private double targetVelocityRadPerSec;
+  @AutoLogOutput @Getter private double targetVelocityRadPerSec;
 
   public ShooterSubsystem(ShooterIO topIO, ShooterIO bottomIO) {
     this.topIO = topIO;
@@ -116,7 +116,7 @@ public class ShooterSubsystem extends SubsystemBase {
     topIO.setVelocity(velocityRadPerSec, topFeedForward.calculate(velocityRadPerSec));
     bottomIO.setVelocity(velocityRadPerSec, bottomFeedForward.calculate(velocityRadPerSec));
 
-    Logger.recordOutput("Shooter Setpoint Rad/s", velocityRadPerSec);
+    Logger.recordOutput("ShooterSubsystem/Setpoint Rad per s", velocityRadPerSec);
   }
 
   public void runVolts(double volts) {
@@ -136,13 +136,17 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @AutoLogOutput
   public boolean topShooterNearTargetVelocity() {
+    Logger.recordOutput(
+        "shooter top offset", topInputs.velocityRadPerSec - targetVelocityRadPerSec);
     return Math.abs(topInputs.velocityRadPerSec - targetVelocityRadPerSec)
         < ShooterConstants.VELOCITY_TOLERANCE.get();
   }
 
   @AutoLogOutput
   public boolean bottomShooterNearTargetVelocity() {
-    return Math.abs(topInputs.velocityRadPerSec - targetVelocityRadPerSec)
+    Logger.recordOutput(
+        "shooter bottom offset", bottomInputs.velocityRadPerSec - targetVelocityRadPerSec);
+    return Math.abs(bottomInputs.velocityRadPerSec - targetVelocityRadPerSec)
         < ShooterConstants.VELOCITY_TOLERANCE.get();
   }
 

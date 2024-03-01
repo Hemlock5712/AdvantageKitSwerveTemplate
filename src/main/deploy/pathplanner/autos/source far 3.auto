@@ -22,15 +22,15 @@
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "path",
                 "data": {
-                  "name": "Intake until note"
+                  "pathName": "source most far note"
                 }
               },
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "source side speaker to note"
+                  "name": "Intake until note"
                 }
               }
             ]
@@ -45,7 +45,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "return to speaker source side"
+            "pathName": "source 3 part"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot auto"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "source 2nd most far note"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ready shooter"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "source 3 part"
           }
         },
         {
@@ -57,6 +81,6 @@
       ]
     }
   },
-  "folder": "2 notes",
+  "folder": null,
   "choreoAuto": false
 }
