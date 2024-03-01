@@ -307,11 +307,11 @@ public class RobotContainer {
                 () -> aprilTagVision.setEnableVisionUpdates(false),
                 () -> aprilTagVision.setEnableVisionUpdates(true)));
 
-    secondController
-        .x()
-        .onTrue(
-            new MultiDistanceShot(
-                drive::getPose, FieldConstants.Speaker.centerSpeakerOpening, shooter, arm));
+//    secondController
+//        .x()
+//        .onTrue(
+//            new MultiDistanceShot(
+//                drive::getPose, FieldConstants.Speaker.centerSpeakerOpening, shooter, arm));
 
     new Trigger(() -> Math.abs(secondController.getLeftY()) > .1)
         .onTrue(new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
