@@ -258,6 +258,8 @@ public class RobotContainer {
     driverController
         .x()
         .whileTrue(new PathFinderAndFollow(PathPlannerPath.fromPathFile("LineUpAmp")));
+    new Trigger(() -> Math.abs(driverController.getLeftX()) > .1)
+        .onTrue(Commands.runOnce(driveMode::disableHeadingControl));
 
     controllerLogic
         .getExtakeTrigger()
@@ -312,6 +314,16 @@ public class RobotContainer {
     //        .onTrue(
     //            new MultiDistanceShot(
     //                drive::getPose, FieldConstants.Speaker.centerSpeakerOpening, shooter, arm));
+
+    secondController
+        .y()
+        .whileTrue(
+            Commands.startEnd(
+                    () -> LimelightHelpers.setLEDMode_ForceOn("limelight"),
+                    () -> LimelightHelpers.setLEDMode_ForceOff("limelight"))
+                .withTimeout(.2)
+                .andThen(Commands.waitSeconds(.1))
+                .repeatedly());
 
     new Trigger(() -> Math.abs(secondController.getLeftY()) > .1)
         .onTrue(new ManualClimberCommand(leftClimber, () -> -secondController.getLeftY()));
