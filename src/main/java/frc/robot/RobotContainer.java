@@ -320,8 +320,8 @@ public class RobotContainer {
         .y()
         .whileTrue(
             Commands.startEnd(
-                    () -> LimelightHelpers.setLEDMode_ForceOn("limelight"),
-                    () -> LimelightHelpers.setLEDMode_ForceOff("limelight"))
+                    () -> LimelightHelpers.setLEDMode_ForceOn("limelight-two"),
+                    () -> LimelightHelpers.setLEDMode_ForceOff("limelight-two"))
                 .withTimeout(.2)
                 .andThen(Commands.waitSeconds(.1))
                 .repeatedly());
