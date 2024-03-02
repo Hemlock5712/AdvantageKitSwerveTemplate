@@ -65,15 +65,15 @@
           "data": {
             "commands": [
               {
-                "type": "path",
-                "data": {
-                  "pathName": "middle to amp note"
-                }
-              },
-              {
                 "type": "named",
                 "data": {
                   "name": "Intake until note"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "middle to source note"
                 }
               }
             ]
