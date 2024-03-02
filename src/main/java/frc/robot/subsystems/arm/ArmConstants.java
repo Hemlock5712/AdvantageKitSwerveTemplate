@@ -11,7 +11,7 @@ public class ArmConstants {
 
   public static final int LEFT_MOTOR_ID = 9;
   public static final int RIGHT_MOTOR_ID = 10;
-  public static final LoggedTunableNumber kS = tunableTable.makeField("kS", .25);
+  public static final LoggedTunableNumber kS = tunableTable.makeField("kS", .23);
   public static final LoggedTunableNumber kP = tunableTable.makeField("kP", 13);
   public static final LoggedTunableNumber kI = tunableTable.makeField("kI", 0.0);
   public static final LoggedTunableNumber kD = tunableTable.makeField("kD", 1.3);
@@ -35,7 +35,7 @@ public class ArmConstants {
     public static final LoggedTunableNumber INTAKE_POS_RAD =
         tunableTable.makeField("Intake pos", 0);
     public static final LoggedTunableNumber SPEAKER_POS_RAD =
-        tunableTable.makeField("speaker pos", 0.3); // todo tune
+        tunableTable.makeField("speaker pos", 0.27); // todo tune
     public static final LoggedTunableNumber AMP_POS_RAD =
         tunableTable.makeField("amp pos", 1.53); // todo tune
     public static final LoggedTunableNumber UPPER_DRIVE_RAD =
