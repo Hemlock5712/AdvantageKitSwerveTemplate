@@ -8,11 +8,14 @@
 package frc.robot.subsystems.vision;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
-import edu.wpi.first.networktables.StringSubscriber;
-import edu.wpi.first.networktables.TimestampedString;
+import edu.wpi.first.networktables.TimestampedDoubleArray;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.util.LimelightHelpers;
@@ -24,7 +27,7 @@ import java.util.Optional;
 public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
 
   String limelightName;
-  private final StringSubscriber observationSubscriber;
+  DoubleArraySubscriber observationSubscriber;
 
   /**
    * Constructs a new AprilTagVisionIOLimelight instance.
@@ -37,8 +40,9 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
 
     observationSubscriber =
         limelightTable
-            .getStringTopic("json")
-            .subscribe("", PubSubOption.keepDuplicates(true), PubSubOption.sendAll(true));
+            .getDoubleArrayTopic("botpose_wpiblue")
+            .subscribe(
+                new double[] {}, PubSubOption.keepDuplicates(true), PubSubOption.sendAll(true));
   }
 
   /**
@@ -48,55 +52,45 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
    */
   @Override
   public void updateInputs(AprilTagVisionIOInputs inputs) {
-    TimestampedString[] queue =
-        observationSubscriber.readQueue(); // Reads the queue of timestamped strings
     ArrayList<PoseEstimate> poseEstimates =
         new ArrayList<>(); // Creates an empty ArrayList to store pose estimates
 
-    // Iterates over each timestamped string in the queue
-    for (TimestampedString timestampedString : queue) {
-      double timestamp = timestampedString.timestamp / 1e6; // Converts the timestamp to seconds
-      LimelightHelpers.Results results =
-          LimelightHelpers.parseJsonDump(timestampedString.value)
-              .targetingResults; // Parses the JSON dump and retrieves the targeting results
+    TimestampedDoubleArray[] queue =
+        new TimestampedDoubleArray[] {observationSubscriber.getAtomic()};
+
+    for (int i = 0; i < queue.length; i++) {
+
       Optional<Alliance> allianceOptional =
           DriverStation.getAlliance(); // Retrieves the alliance information from the DriverStation
-
-      // Checks if there are no targets or if the alliance information is not present
-      if (results.targets_Fiducials.length == 0 || !allianceOptional.isPresent()) {
-        continue; // Skips to the next iteration of the loop
+      TimestampedDoubleArray timestampedDouble = queue[i];
+      double timestamp = timestampedDouble.timestamp / 1e6; // Converts the timestamp to seconds
+      double[] poseReading = timestampedDouble.value;
+      if (queue[i].value.length < 10 || !allianceOptional.isPresent() || poseReading[7] == 0.0) {
+        continue;
       }
 
-      double latencyMS =
-          results.latency_capture
-              + results.latency_pipeline; // Calculates the total latency in milliseconds
+      // [tx,ty,tz,r,p,y,latency,tagcount, max tag span in meters, average tag distance in meters,
+      // average tag area]
+
       Pose3d poseEstimation =
-          results.getBotPose3d_wpiBlue(); // Retrieves the pose estimation for the robot
-      double averageTagDistance = 0.0; // Initializes the average tag distance to 0.0
+          new Pose3d(
+              new Translation3d(poseReading[0], poseReading[1], poseReading[2]),
+              new Rotation3d(
+                  Rotation2d.fromDegrees(poseReading[3]).getRadians(),
+                  Rotation2d.fromDegrees(poseReading[4]).getRadians(),
+                  Rotation2d.fromDegrees(poseReading[5])
+                      .getRadians())); // Retrieves the pose estimation for the robot
+      double latencyMS = poseReading[6];
+      double tagCount = poseReading[7];
+      double averageTagDistance = poseReading[9]; // Initializes the average tag distance to 0.0
       timestamp -= (latencyMS / 1e3); // Adjusts the timestamp by subtracting the latency in seconds
 
-      int[] tagIDs =
-          new int[results.targets_Fiducials.length]; // Creates an array to store the tag IDs
-
-      // Iterates over each target in the targeting results
-      for (int i = 0; i < results.targets_Fiducials.length; i++) {
-        tagIDs[i] =
-            (int) results.targets_Fiducials[i].fiducialID; // Retrieves and stores the tag ID
-        averageTagDistance +=
-            results
-                .targets_Fiducials[i]
-                .getTargetPose_CameraSpace()
-                .getTranslation()
-                .getNorm(); // Calculates the sum of the tag distances
-      }
-
-      averageTagDistance /= tagIDs.length; // Calculates the average tag distance
       poseEstimates.add(
           new PoseEstimate(
               poseEstimation,
               timestamp,
               averageTagDistance,
-              tagIDs)); // Creates a new PoseEstimate object and adds it to the poseEstimates
+              tagCount)); // Creates a new PoseEstimate object and adds it to the poseEstimates
       // ArrayList
     }
 
