@@ -52,11 +52,9 @@ import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOSparkMax;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
-import frc.robot.subsystems.vision.AprilTagVision;
-import frc.robot.subsystems.vision.AprilTagVisionIO;
-import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
-import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
+import frc.robot.subsystems.vision.*;
 import frc.robot.util.*;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -69,6 +67,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final AprilTagVision aprilTagVision;
+  private final NoteVisionSubsystem noteVision;
   private static final DriveController driveMode = new DriveController();
   private final ShooterSubsystem shooter;
 
@@ -113,6 +112,9 @@ public class RobotContainer {
             new AprilTagVision(
                 new AprilTagVisionIOLimelight("limelight"),
                 new AprilTagVisionIOLimelight("limelight-two"));
+        noteVision =
+            new NoteVisionSubsystem(
+                new NoteVisionIOPhotonVision("lefty"), new NoteVisionIOPhotonVision("righty"));
         beamBreak = new BeamBreak(new BeamBreakIOReal());
         shooter =
             new ShooterSubsystem(
@@ -147,6 +149,22 @@ public class RobotContainer {
                     "photonCamera1",
                     new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
                     drive::getDrive));
+        noteVision =
+            new NoteVisionSubsystem(
+                new NoteVisionIO() {
+                  @Override
+                  public void updateInputs(NoteVisionIOInputs inputs) {
+                    inputs.noteYaws = new double[] {0, .1, -.4};
+                    inputs.notePitches = new double[] {.1, 0, -.2};
+                  }
+                },
+                new NoteVisionIO() {
+                  @Override
+                  public void updateInputs(NoteVisionIOInputs inputs) {
+                    inputs.noteYaws = new double[] {0, .2, -.4};
+                    inputs.notePitches = new double[] {.3, -.05, -.3};
+                  }
+                });
         // flywheel = new Flywheel(new FlywheelIOSim());
         shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
@@ -166,6 +184,7 @@ public class RobotContainer {
                 new ModuleIO() {});
         // flywheel = new Flywheel(new FlywheelIO() {});
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
+        noteVision = new NoteVisionSubsystem(new NoteVisionIO() {}, new NoteVisionIO() {});
         shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
         arm = new ArmSubsystem(new ArmIO() {});
@@ -196,6 +215,15 @@ public class RobotContainer {
     setupLimelightFlashing();
 
     configureButtonBindings();
+
+    Commands.run(
+            () ->
+                Logger.recordOutput(
+                    "global notes", noteVision.getNotesInGlobalSpace(drive.getPose())))
+        .ignoringDisable(true)
+        .schedule();
+
+    drive.setPose(new Pose2d(1, 1, new Rotation2d(1, 1)));
   }
 
   private void setupLimelightFlashing() {
