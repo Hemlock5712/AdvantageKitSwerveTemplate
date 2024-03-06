@@ -1,6 +1,12 @@
 {
   "version": 1.0,
-  "startingPose": null,
+  "startingPose": {
+    "position": {
+      "x": 0.72,
+      "y": 6.67
+    },
+    "rotation": 60.0
+  },
   "command": {
     "type": "sequential",
     "data": {
@@ -8,11 +14,17 @@
         {
           "type": "named",
           "data": {
-            "name": "shoot speaker"
+            "name": "ready shooter"
           }
         },
         {
-          "type": "deadline",
+          "type": "named",
+          "data": {
+            "name": "shoot auto"
+          }
+        },
+        {
+          "type": "race",
           "data": {
             "commands": [
               {
@@ -31,6 +43,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "ready shooter"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "return to speaker amp side"
@@ -39,7 +57,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shoot speaker"
+            "name": "shoot auto"
           }
         }
       ]

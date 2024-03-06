@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.72,
-      "y": 6.67
+      "x": 1.4,
+      "y": 5.54
     },
-    "rotation": 60.0
+    "rotation": 0
   },
   "command": {
     "type": "sequential",
@@ -30,7 +30,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "AmpSideSpeakerToNote"
+                  "pathName": "StraightFrontSpeaker"
                 }
               },
               {
@@ -51,7 +51,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "return to speaker amp side"
+            "pathName": "return to speaker middle"
           }
         },
         {
@@ -67,7 +67,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "amp most far note"
+                  "pathName": "middle to amp note"
                 }
               },
               {
@@ -88,7 +88,44 @@
         {
           "type": "path",
           "data": {
-            "pathName": "return to speaker amp side"
+            "pathName": "return to speaker middle"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot auto"
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake until note"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "middle to source note"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ready shooter"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "return to speaker middle"
           }
         },
         {

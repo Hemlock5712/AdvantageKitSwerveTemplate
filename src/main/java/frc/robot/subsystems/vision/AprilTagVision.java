@@ -11,25 +11,23 @@ import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.AprilTagVisionIO.AprilTagVisionIOInputs;
 import frc.robot.util.FieldConstants;
 import frc.robot.util.VisionHelpers.PoseEstimate;
 import frc.robot.util.VisionHelpers.TimestampedVisionUpdate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class AprilTagVision extends SubsystemBase {
 
   // Time interval for logging tag poses
-  private static final double targetLogTimeSecs = 0.1;
+  private static final double targetProcessSecs = 0.1;
 
   // Margin around the field border
   private static final double fieldBorderMargin = 0.5;
@@ -40,7 +38,7 @@ public class AprilTagVision extends SubsystemBase {
   // Path for logging vision data
   private static final String VISION_PATH = "AprilTagVision/Inst";
 
-  private boolean enableVisionUpdates = true;
+  @AutoLogOutput private boolean enableVisionUpdates = true;
 
   private Consumer<List<TimestampedVisionUpdate>> visionConsumer = x -> {};
   private Map<Integer, Double> lastFrameTimes = new HashMap<>();
@@ -72,7 +70,10 @@ public class AprilTagVision extends SubsystemBase {
 
   @Override
   public void periodic() {
-    for (int i = 0; i < io.length; i++) {
+    long startTime = Logger.getRealTimestamp();
+    for (int i = 0;
+        (i < io.length) && ((Logger.getRealTimestamp() - startTime) < (targetProcessSecs * 1.0e6));
+        i++) {
       io[i].updateInputs(inputs[i]);
       Logger.processInputs(VISION_PATH + Integer.toString(i), inputs[i]);
     }
@@ -94,13 +95,11 @@ public class AprilTagVision extends SubsystemBase {
         }
         double timestamp = poseEstimates.timestampSeconds();
         Pose3d robotPose = poseEstimates.pose();
-        List<Pose3d> tagPoses = getTagPoses(poseEstimates);
-        double xyStdDev = calculateXYStdDev(poseEstimates, tagPoses.size());
-        double thetaStdDev = calculateThetaStdDev(poseEstimates, tagPoses.size());
+        double xyStdDev = calculateXYStdDev(poseEstimates, (int) poseEstimates.tagCount());
+        double thetaStdDev = calculateThetaStdDev(poseEstimates, (int) poseEstimates.tagCount());
         visionUpdates.add(
             new TimestampedVisionUpdate(
                 timestamp, robotPose.toPose2d(), VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
-        logData(instanceIndex, timestamp, robotPose, tagPoses);
       }
     }
     return visionUpdates;
@@ -113,7 +112,7 @@ public class AprilTagVision extends SubsystemBase {
    * @return True if the pose estimate should be skipped, false otherwise
    */
   private boolean shouldSkipPoseEstimate(PoseEstimate poseEstimates) {
-    return poseEstimates.tagIDs().length < 1
+    return poseEstimates.tagCount() < 1
         || poseEstimates.pose() == null
         || isOutsideFieldBorder(poseEstimates.pose());
   }
@@ -131,24 +130,6 @@ public class AprilTagVision extends SubsystemBase {
         || robotPose.getY() > FieldConstants.fieldWidth + fieldBorderMargin
         || robotPose.getZ() < -zMargin
         || robotPose.getZ() > zMargin;
-  }
-
-  /**
-   * Get the poses of the detected tags.
-   *
-   * @param poseEstimates The pose estimate
-   * @return List of tag poses
-   */
-  private List<Pose3d> getTagPoses(PoseEstimate poseEstimates) {
-    List<Pose3d> tagPoses = new ArrayList<>();
-    Arrays.stream(poseEstimates.tagIDs())
-        .forEachOrdered(
-            tagId -> {
-              lastTagDetectionTimes.put(tagId, Timer.getFPGATimestamp());
-              Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(tagId);
-              tagPose.ifPresent(tagPoses::add);
-            });
-    return tagPoses;
   }
 
   /**
@@ -173,43 +154,6 @@ public class AprilTagVision extends SubsystemBase {
     return thetaStdDevCoefficient
         * Math.pow(poseEstimates.averageTagDistance(), 2.0)
         / tagPosesSize;
-  }
-
-  /**
-   * Log the data for a specific instance.
-   *
-   * @param instanceIndex The index of the instance
-   * @param timestamp The timestamp of the data
-   * @param robotPose The robot pose
-   * @param tagPoses The tag poses
-   */
-  private void logData(
-      int instanceIndex, double timestamp, Pose3d robotPose, List<Pose3d> tagPoses) {
-    Logger.recordOutput(
-        VISION_PATH + Integer.toString(instanceIndex) + "/LatencySecs",
-        Timer.getFPGATimestamp() - timestamp);
-    Logger.recordOutput(
-        VISION_PATH + Integer.toString(instanceIndex) + "/RobotPose", robotPose.toPose2d());
-    Logger.recordOutput(VISION_PATH + Integer.toString(instanceIndex) + "/RobotPose3D", robotPose);
-    Logger.recordOutput(
-        VISION_PATH + Integer.toString(instanceIndex) + "/TagPoses",
-        tagPoses.toArray(new Pose3d[tagPoses.size()]));
-    logTagPoses();
-  }
-
-  /** Log the poses of the detected tags. */
-  private void logTagPoses() {
-    List<Pose3d> allTagPoses = new ArrayList<>();
-    for (Map.Entry<Integer, Double> detectionEntry : lastTagDetectionTimes.entrySet()) {
-      if (Timer.getFPGATimestamp() - detectionEntry.getValue() < targetLogTimeSecs) {
-        Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(detectionEntry.getKey());
-        if (tagPose.isPresent()) {
-          allTagPoses.add(tagPose.get());
-        }
-      }
-    }
-    Logger.recordOutput(
-        "AprilTagVision/TagPoses", allTagPoses.toArray(new Pose3d[allTagPoses.size()]));
   }
 
   /**

@@ -17,8 +17,6 @@ public class ArmIOSparkMax implements ArmIO {
 
   private final DigitalInput upperLimitSwitch =
       new DigitalInput(ArmConstants.UPPER_LIMIT_SWITCH_PORT);
-  private final DigitalInput lowerLimitSwitch =
-      new DigitalInput(ArmConstants.LOWER_LIMIT_SWITCH_PORT);
 
   public ArmIOSparkMax() {
     // The motors are mirrored, so invert
@@ -34,7 +32,7 @@ public class ArmIOSparkMax implements ArmIO {
   public void updateInputs(ArmIOInputs inputs) {
     inputs.positionRad =
         (encoder.getAbsolutePosition() * Math.PI * 2) - ArmConstants.ARM_ENCODER_OFFSET_RAD;
-    inputs.upperLimit = (inputs.positionRad > ArmConstants.MAX_RAD);
+    inputs.upperLimit = (inputs.positionRad > ArmConstants.MAX_RAD) || (!upperLimitSwitch.get());
     inputs.lowerLimit = (inputs.positionRad < ArmConstants.MIN_RAD);
     inputs.appliedVolts = leader.getAppliedOutput() * leader.getBusVoltage();
     inputs.currentAmps = new double[] {leader.getOutputCurrent(), follower.getOutputCurrent()};

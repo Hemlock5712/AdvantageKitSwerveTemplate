@@ -11,13 +11,13 @@ import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.interpolation.InterpolationMaps;
 import java.util.function.Supplier;
-
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /** A command that shoots game piece from multi-distance position from the target. */
 public class MultiDistanceShot extends Command {
   private final Supplier<Pose2d> poseSupplier;
-  private final Pose2d targetPose;
+  @AutoLogOutput private final Pose2d targetPose;
   private final ShooterSubsystem shooter;
   private final ArmSubsystem arm;
 
@@ -34,7 +34,7 @@ public class MultiDistanceShot extends Command {
       ShooterSubsystem shooter,
       ArmSubsystem arm) {
     this.poseSupplier = poseSupplier;
-    this.targetPose = AllianceFlipUtil.apply(targetPose);
+    this.targetPose = targetPose;
     this.shooter = shooter;
     this.arm = arm;
   }
@@ -45,7 +45,11 @@ public class MultiDistanceShot extends Command {
   @Override
   public void execute() {
     // Calculate the distance from the current pose to the target pose
-    double distance = poseSupplier.get().getTranslation().getDistance(targetPose.getTranslation());
+    double distance =
+        poseSupplier
+            .get()
+            .getTranslation()
+            .getDistance(AllianceFlipUtil.apply(targetPose.getTranslation()));
 
     // Get the corresponding speed from the distance-speed map
     double speed = InterpolationMaps.shooterDistanceToVelocity.get(distance);

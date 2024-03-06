@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.4,
-      "y": 5.54
+      "x": 0.78,
+      "y": 4.46
     },
-    "rotation": 0
+    "rotation": -60.0
   },
   "command": {
     "type": "sequential",
@@ -24,13 +24,13 @@
           }
         },
         {
-          "type": "deadline",
+          "type": "race",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "StraightFrontSpeaker"
+                  "pathName": "source most far note"
                 }
               },
               {
@@ -51,7 +51,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "return to speaker middle"
+            "pathName": "source 3 part"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot auto"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "source 2nd most far note"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ready shooter"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "source 3 part"
           }
         },
         {
@@ -63,6 +87,6 @@
       ]
     }
   },
-  "folder": "2 notes",
+  "folder": null,
   "choreoAuto": false
 }

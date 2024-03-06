@@ -10,16 +10,23 @@ public final class ShooterConstants {
   public static final int TOP_MOTOR_ID = 14;
   public static final int BOTTOM_MOTOR_ID = 15;
   public static final LoggedTunableNumber RUN_VOLTS = tunableTable.makeField("run volts", 6);
+  public static final LoggedTunableNumber IDLE_VOLTS = tunableTable.makeField("idle volts", 1);
   public static final LoggedTunableNumber AMP_VELOCITY_RAD_PER_SEC =
-      tunableTable.makeField("amp rad per sec", 200);
+      tunableTable.makeField("amp rad per sec", 150);
   public static final LoggedTunableNumber SPEAKER_VELOCITY_RAD_PER_SEC =
       tunableTable.makeField("speaker rad per sec", 280);
+  public static final LoggedTunableNumber PODIUM_VELOCITY_RAD_PER_SEC =
+      tunableTable.makeField("podium rad per sec", 300);
   public static final double CLOSED_LOOP_RAMP_RATE = 0.01;
   public static final double OPEN_LOOP_RAMP_RATE = 0.01;
   public static final LoggedTunableNumber VELOCITY_TOLERANCE =
-      tunableTable.makeField("velocity tolerance", 0.08);
-  public static final LoggedTunableNumber AUTO_SPEAKER_SHOOT_VELOCITY =
-      tunableTable.makeField("velocity tolerance", 1.0);
+      tunableTable.makeField("velocity tolerance rad per s", 5);
+
+  public static final LoggedTunableNumber AUTO_SHOOTER_TIMEOUT =
+      tunableTable.makeField("auto shooter timeout", 2);
+
+  public static final double TOP_GEAR_RATIO = 1;
+  public static final double BOTTOM_GEAR_RATIO = 24.0 / 22.0;
 
   public enum ShooterWheels {
     TOP,
@@ -34,8 +41,8 @@ public final class ShooterConstants {
       }
 
       public static final class BottomConstants {
-        public static final LoggedTunableNumber kS = tunableTable.makeField("bottom/kS", 0.18271);
-        public static final LoggedTunableNumber kV = tunableTable.makeField("bottom/kV", 0.021523);
+        public static final LoggedTunableNumber kS = tunableTable.makeField("bottom/kS", 0.04217);
+        public static final LoggedTunableNumber kV = tunableTable.makeField("bottom/kV", 0.020624);
       }
     }
 

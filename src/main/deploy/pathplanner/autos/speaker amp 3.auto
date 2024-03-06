@@ -24,7 +24,7 @@
           }
         },
         {
-          "type": "deadline",
+          "type": "race",
           "data": {
             "commands": [
               {
@@ -59,10 +59,47 @@
           "data": {
             "name": "shoot auto"
           }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "middle to amp note"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake until note"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ready shooter"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "return to speaker middle"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot auto"
+          }
         }
       ]
     }
   },
-  "folder": "2 notes",
+  "folder": null,
   "choreoAuto": false
 }

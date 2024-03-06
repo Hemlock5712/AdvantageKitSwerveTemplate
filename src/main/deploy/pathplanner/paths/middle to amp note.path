@@ -3,25 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.9971079591281993,
-        "y": 4.1046482092964185
+        "x": 1.3558755194356344,
+        "y": 5.5693396526711165
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.8870286261520046,
-        "y": 4.29531120687448
+        "x": 1.589315228021213,
+        "y": 5.880592597451887
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.7041386162544403,
-        "y": 4.385307915914978
+        "x": 1.8501657516135543,
+        "y": 6.326537553360007
       },
       "prevControl": {
-        "x": 0.8700169712892263,
-        "y": 4.09799817711878
+        "x": 1.665359315649971,
+        "y": 6.141731117396424
+      },
+      "nextControl": {
+        "x": 2.025245533052738,
+        "y": 6.50161733479919
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.7389214892389893,
+        "y": 6.852774503269805
+      },
+      "prevControl": {
+        "x": 2.670834907568195,
+        "y": 6.813867885172208
       },
       "nextControl": null,
       "isLocked": false,
@@ -30,19 +46,19 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.0,
-      "rotationDegrees": -60.0,
+      "waypointRelativePos": 0.75,
+      "rotationDegrees": 26.57,
       "rotateFast": false
     }
   ],
   "constraintZones": [
     {
       "name": "New Constraints Zone",
-      "minWaypointRelativePos": 0,
-      "maxWaypointRelativePos": 1.0,
+      "minWaypointRelativePos": 1.55,
+      "maxWaypointRelativePos": 2.0,
       "constraints": {
-        "maxVelocity": 1.0,
-        "maxAcceleration": 2.0,
+        "maxVelocity": 0.5,
+        "maxAcceleration": 4.0,
         "maxAngularVelocity": 200.0,
         "maxAngularAcceleration": 200.0
       }
@@ -57,13 +73,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -63.0,
+    "rotation": 26.57,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "return to speaker",
+  "folder": null,
   "previewStartingState": {
-    "rotation": -60.0,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true
