@@ -22,6 +22,7 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -350,6 +351,32 @@ public class RobotContainer {
   }
 
   private void configureUniversalControls(CommandXboxController controller) {
+    new Trigger(() -> DriverStation.getMatchTime() < 30)
+        .onTrue(
+            Commands.runOnce(
+                    () -> {
+                      controller.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.5);
+                    })
+                .andThen(Commands.waitSeconds(1))
+                .andThen(
+                    Commands.runOnce(
+                        () -> {
+                          controller.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0);
+                        })));
+
+    new Trigger(() -> DriverStation.getMatchTime() < 15)
+        .onTrue(
+            Commands.runOnce(
+                    () -> {
+                      controller.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.5);
+                    })
+                .andThen(Commands.waitSeconds(1))
+                .andThen(
+                    Commands.runOnce(
+                        () -> {
+                          controller.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0);
+                        })));
+
     controller
         .povDown()
         .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
