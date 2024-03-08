@@ -17,7 +17,6 @@ import static frc.robot.subsystems.drive.DriveConstants.moduleConfigs;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -38,9 +37,7 @@ import frc.robot.subsystems.arm.*;
 import frc.robot.subsystems.beamBreak.BeamBreak;
 import frc.robot.subsystems.beamBreak.BeamBreakIO;
 import frc.robot.subsystems.beamBreak.BeamBreakIOReal;
-import frc.robot.subsystems.climber.ClimberConstants;
 import frc.robot.subsystems.climber.ClimberIO;
-import frc.robot.subsystems.climber.ClimberIOSparkMax;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.drive.DriveController.DriveModeType;
@@ -114,7 +111,10 @@ public class RobotContainer {
                 new AprilTagVisionIOLimelight("limelight-two"));
         noteVision =
             new NoteVisionSubsystem(
-                new NoteVisionIOPhotonVision("lefty"), new NoteVisionIOPhotonVision("righty"));
+                new NoteVisionIOPhotonVision("lefty"),
+                new NoteVisionIOPhotonVision("righty"),
+                drive.getPoseLogForNoteDetection(),
+                drive::getDrive);
         beamBreak = new BeamBreak(new BeamBreakIOReal());
         shooter =
             new ShooterSubsystem(
@@ -124,13 +124,17 @@ public class RobotContainer {
         arm = new ArmSubsystem(new ArmIOSparkMax());
         leftClimber =
             new ClimberSubsystem(
-                new ClimberIOSparkMax(
-                    ClimberConstants.LEFT_MOTOR_ID, ClimberConstants.LEFT_LIMIT_SWITCH_DIO_PORT),
+                new ClimberIO() {},
+                //                new ClimberIOSparkMax(
+                //                    ClimberConstants.LEFT_MOTOR_ID,
+                // ClimberConstants.LEFT_LIMIT_SWITCH_DIO_PORT),
                 "left");
         rightClimber =
             new ClimberSubsystem(
-                new ClimberIOSparkMax(
-                    ClimberConstants.RIGHT_MOTOR_ID, ClimberConstants.RIGHT_LIMIT_SWITCH_DIO_PORT),
+                new ClimberIO() {},
+                //                new ClimberIOSparkMax(
+                //                    ClimberConstants.RIGHT_MOTOR_ID,
+                // ClimberConstants.RIGHT_LIMIT_SWITCH_DIO_PORT),
                 "right");
       }
       case SIM -> {
@@ -151,20 +155,10 @@ public class RobotContainer {
                     drive::getDrive));
         noteVision =
             new NoteVisionSubsystem(
-                new NoteVisionIO() {
-                  @Override
-                  public void updateInputs(NoteVisionIOInputs inputs) {
-                    inputs.noteYaws = new double[] {0, .1, -.4};
-                    inputs.notePitches = new double[] {.1, 0, -.2};
-                  }
-                },
-                new NoteVisionIO() {
-                  @Override
-                  public void updateInputs(NoteVisionIOInputs inputs) {
-                    inputs.noteYaws = new double[] {0, .2, -.4};
-                    inputs.notePitches = new double[] {.3, -.05, -.3};
-                  }
-                });
+                new NoteVisionIOPhotonVision("lefty"),
+                new NoteVisionIO() {},
+                drive.getPoseLogForNoteDetection(),
+                drive::getDrive);
         // flywheel = new Flywheel(new FlywheelIOSim());
         shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
@@ -184,7 +178,12 @@ public class RobotContainer {
                 new ModuleIO() {});
         // flywheel = new Flywheel(new FlywheelIO() {});
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
-        noteVision = new NoteVisionSubsystem(new NoteVisionIO() {}, new NoteVisionIO() {});
+        noteVision =
+            new NoteVisionSubsystem(
+                new NoteVisionIO() {},
+                new NoteVisionIO() {},
+                drive.getPoseLogForNoteDetection(),
+                drive::getDrive);
         shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
         arm = new ArmSubsystem(new ArmIO() {});
@@ -281,12 +280,39 @@ public class RobotContainer {
 
     driveMode.setDriveMode(DriveModeType.SPEAKER);
     driverController
+        .x()
+        .whileTrue(
+            Commands.startEnd(
+                () -> {
+                  driveMode.setDriveMode(DriveModeType.SPEAKER);
+                  driveMode.enableHeadingControl();
+                },
+                driveMode::disableHeadingControl));
+    driverController
         .y()
         .toggleOnTrue(
-            Commands.startEnd(driveMode::enableHeadingControl, driveMode::disableHeadingControl));
-    driverController
-        .x()
-        .whileTrue(new PathFinderAndFollow(PathPlannerPath.fromPathFile("LineUpAmp")));
+            Commands.startEnd(
+                () -> {
+                  driveMode.setHeadingSupplier(
+                      () -> {
+                        var closestNote =
+                            NoteVisionSubsystem.getClosestNote(
+                                noteVision.getNotesInRelativeSpace());
+
+                        if (closestNote.isEmpty()) {
+                          Logger.recordOutput("closest note for orienation", new Translation2d());
+                          return drive.getRotation();
+                        }
+
+                        Logger.recordOutput("closest note for orienation", closestNote.get());
+
+                        return closestNote.get().getAngle().plus(drive.getRotation());
+                      });
+                },
+                driveMode::disableHeadingControl));
+    //    driverController
+    //        .x()
+    //        .whileTrue(new PathFinderAndFollow(PathPlannerPath.fromPathFile("LineUpAmp")));
     new Trigger(() -> Math.abs(driverController.getLeftX()) > .1)
         .onTrue(Commands.runOnce(driveMode::disableHeadingControl));
 
@@ -453,6 +479,9 @@ public class RobotContainer {
   }
 
   private void configureAutoChooser() {
+    autoChooser.addOption(
+        "test note pickup",
+        new PickUpNoteCommand(drive, intake, noteVision, beamBreak::detectNote));
     // Set up SysId routines
     autoChooser.addOption(
         "Drive SysId (Quasistatic Forward)",

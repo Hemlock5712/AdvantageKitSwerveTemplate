@@ -41,10 +41,12 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.util.PoseLog;
 import frc.robot.util.VisionHelpers.TimestampedVisionUpdate;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -54,12 +56,14 @@ public class Drive extends SubsystemBase {
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private final SysIdRoutine sysId;
+  @Getter private final PoseLog poseLogForNoteDetection = new PoseLog();
 
-  private static final ProfiledPIDController thetaController =
+  @Getter
+  private final ProfiledPIDController thetaController =
       new ProfiledPIDController(
-          headingControllerConstants.Kp(),
+          DriveConstants.HeadingControllerConstants.kP.get(),
           0,
-          headingControllerConstants.Kd(),
+          DriveConstants.HeadingControllerConstants.kD.get(),
           new TrapezoidProfile.Constraints(
               drivetrainConfig.maxAngularVelocity(), drivetrainConfig.maxAngularAcceleration()));
 
@@ -202,7 +206,17 @@ public class Drive extends SubsystemBase {
       // Apply update
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
       odometryDrive.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
+
+      Logger.recordOutput("pose timestamp", sampleTimestamps[i]);
+      poseLogForNoteDetection.addNewPose(odometryDrive.getEstimatedPosition(), sampleTimestamps[i]);
     }
+
+    updateControllerConstants();
+  }
+
+  private void updateControllerConstants() {
+    thetaController.setP(HeadingControllerConstants.kP.get());
+    thetaController.setD(HeadingControllerConstants.kD.get());
   }
 
   /**
@@ -341,10 +355,6 @@ public class Drive extends SubsystemBase {
         visionUpdate ->
             addVisionMeasurement(
                 visionUpdate.pose(), visionUpdate.timestamp(), visionUpdate.stdDevs()));
-  }
-
-  public static ProfiledPIDController getThetaController() {
-    return thetaController;
   }
 
   public void resetGyro() {

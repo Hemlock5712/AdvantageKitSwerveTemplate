@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveController;
 import java.util.function.DoubleSupplier;
+import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
@@ -61,22 +62,30 @@ public class DriveCommands {
                   DEADBAND);
           Rotation2d linearDirection =
               new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-          double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
+          double omega;
+          Logger.recordOutput("heading controll on", driveMode.isHeadingControlled());
           if (driveMode.isHeadingControlled()) {
             final var targetAngle = driveMode.getHeadingAngle();
+            Logger.recordOutput("drive heading", targetAngle.get().getDegrees());
             omega =
-                Drive.getThetaController()
+                drive
+                    .getThetaController()
                     .calculate(
                         drive.getPose().getRotation().getRadians(), targetAngle.get().getRadians());
-            if (Drive.getThetaController().atGoal()) {
+            if (drive.getThetaController().atGoal()) {
               omega = 0;
             }
-            omega = Math.copySign(Math.min(1, Math.abs(omega)), omega);
+            omega = MathUtil.clamp(omega, -1, 1);
+          } else {
+            omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
+            omega = Math.copySign(omega * omega, omega);
           }
+          Logger.recordOutput("omega pre clamp", omega);
+          omega = MathUtil.clamp(omega, -0.2, 0.2);
+          Logger.recordOutput("omega", omega);
 
           // Square values
           linearMagnitude = linearMagnitude * linearMagnitude;
-          omega = Math.copySign(omega * omega, omega);
 
           // Calcaulate new linear velocity
           Translation2d linearVelocity =

@@ -18,9 +18,10 @@ public class NoteVisionIOPhotonVision implements NoteVisionIO {
 
     inputs.notePitches = new double[targets.size()];
     inputs.noteYaws = new double[targets.size()];
+    inputs.timeStampSeconds = result.getTimestampSeconds();
 
     for (int i = 0; i < targets.size(); i++) {
-      inputs.noteYaws[i] = Units.degreesToRadians(targets.get(i).getYaw());
+      inputs.noteYaws[i] = -Units.degreesToRadians(targets.get(i).getYaw());
       inputs.notePitches[i] = Units.degreesToRadians(targets.get(i).getPitch());
     }
   }

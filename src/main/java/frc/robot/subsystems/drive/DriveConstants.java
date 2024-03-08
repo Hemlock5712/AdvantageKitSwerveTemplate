@@ -10,9 +10,16 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
+import frc.robot.util.LoggedTunableNumber;
+import frc.robot.util.TunableNumberWrapper;
+import java.lang.invoke.MethodHandles;
 
 /** All Constants Measured in Meters and Radians (m/s, m/s^2, rad/s, rad/s^2) */
 public final class DriveConstants {
+
+  private static final TunableNumberWrapper tunableTable =
+      new TunableNumberWrapper(MethodHandles.lookup().lookupClass());
+
   public static DrivetrainConfig drivetrainConfig =
       switch (Constants.getRobot()) {
         default ->
@@ -91,11 +98,11 @@ public final class DriveConstants {
             new ModuleConstants(Mk4iReductions.L1.reduction, Mk4iReductions.TURN.reduction);
       };
 
-  public static HeadingControllerConstants headingControllerConstants =
-      switch (Constants.getRobot()) {
-        case COMPBOT -> new HeadingControllerConstants(3.0, 0.0);
-        case SIMBOT -> new HeadingControllerConstants(3.0, 0.0);
-      };
+  public static class HeadingControllerConstants {
+    public static final LoggedTunableNumber kP =
+        tunableTable.makeField("headingController/kp", 0.7);
+    public static final LoggedTunableNumber kD = tunableTable.makeField("headingController/kd", 0);
+  }
 
   public static final PIDConstants PPtranslationConstants =
       switch (Constants.getRobot()) {
@@ -130,8 +137,6 @@ public final class DriveConstants {
       boolean turnMotorInverted) {}
 
   public record ModuleConstants(double driveReduction, double turnReduction) {}
-
-  public record HeadingControllerConstants(double Kp, double Kd) {}
 
   private enum Mk4iReductions {
     L1((50.0 / 14.0) * (19.0 / 25.0) * (45.0 / 15.0)),
