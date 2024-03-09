@@ -22,7 +22,6 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -82,7 +81,8 @@ public class RobotContainer {
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandXboxController secondController = new CommandXboxController(1);
-  private final RumbleSubsystem rumbleSubsystem = new RumbleSubsystem(driverController.getHID(), secondController.getHID());
+  private final RumbleSubsystem rumbleSubsystem =
+      new RumbleSubsystem(driverController.getHID(), secondController.getHID());
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -353,9 +353,7 @@ public class RobotContainer {
   }
 
   private void configureUniversalControls(CommandXboxController controller) {
-    new TimeTrigger(40).or(new TimeTrigger(20))
-        .onTrue(rumbleSubsystem.rumbleForTime(1, 0.5));
-
+    new TimeTrigger(40).or(new TimeTrigger(20)).onTrue(rumbleSubsystem.rumbleForTime(1, 0.5));
 
     controller
         .povDown()
