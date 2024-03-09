@@ -247,6 +247,9 @@ public class RobotContainer {
                     shooter)));
 
     NamedCommands.registerCommand(
+        "pickup note", new PickUpNoteCommand(drive, intake, noteVision, beamBreak::detectNote));
+
+    NamedCommands.registerCommand(
         "shoot auto",
         shooterStateHelpers
             .waitUntilCanShootAuto()
