@@ -147,7 +147,7 @@ public class Drive extends SubsystemBase {
                 null,
                 this));
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
-    thetaController.setTolerance(Units.degreesToRadians(1.5));
+    thetaController.setTolerance(Units.degreesToRadians(5));
   }
 
   @Override
