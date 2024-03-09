@@ -80,8 +80,6 @@ public class DriveCommands {
             omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
             omega = Math.copySign(omega * omega, omega);
           }
-          Logger.recordOutput("omega pre clamp", omega);
-          omega = MathUtil.clamp(omega, -0.2, 0.2);
           Logger.recordOutput("omega", omega);
 
           // Square values

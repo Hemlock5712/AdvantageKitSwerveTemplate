@@ -295,9 +295,7 @@ public class RobotContainer {
                 () -> {
                   driveMode.setHeadingSupplier(
                       () -> {
-                        var closestNote =
-                            NoteVisionSubsystem.getClosestNote(
-                                noteVision.getNotesInRelativeSpace());
+                        var closestNote = noteVision.getCurrentNote();
 
                         if (closestNote.isEmpty()) {
                           Logger.recordOutput("closest note for orienation", new Translation2d());
@@ -305,6 +303,10 @@ public class RobotContainer {
                         }
 
                         Logger.recordOutput("closest note for orienation", closestNote.get());
+                        Logger.recordOutput(
+                            "closest note for orienation global",
+                            NoteVisionSubsystem.projectRelativeNotePoseOntoRobotPose(
+                                closestNote.get(), drive.getPose()));
 
                         return closestNote.get().getAngle().plus(drive.getRotation());
                       });

@@ -13,7 +13,7 @@ import org.littletonrobotics.junction.Logger;
 public class NoteVisionSubsystem extends SubsystemBase {
   private static final Pose3d CAMERA_POS =
       new Pose3d(
-          new Translation3d(0.4, 0, 0.45), new Rotation3d(0, -Units.degreesToRadians(10), 0));
+          new Translation3d(0.4, 0, 0.45), new Rotation3d(0, -Units.degreesToRadians(30), 0));
   private final NoteVisionIO noteVisionIO;
   private final NoteVisionIOInputsAutoLogged noteVisionIOInputs =
       new NoteVisionIOInputsAutoLogged();
@@ -92,7 +92,7 @@ public class NoteVisionSubsystem extends SubsystemBase {
 
   @AutoLogOutput
   public Translation2d[] getNotesInRelativeSpace() {
-    return relativeNotePoses;
+    return relativeNotePoses.clone();
   }
 
   public static Translation2d projectRelativeNotePoseOntoRobotPose(
