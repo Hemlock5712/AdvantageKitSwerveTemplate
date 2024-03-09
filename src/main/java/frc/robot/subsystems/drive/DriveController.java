@@ -1,7 +1,9 @@
 package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.FieldConstants;
 import java.util.Optional;
@@ -84,8 +86,10 @@ public class DriveController {
   public void enableHeadingControl() {
     if (this.driveModeType == DriveModeType.AMP) {
       enableAmpHeading();
-    } else {
+    } else if (this.driveModeType == DriveModeType.SPEAKER){
       enableSpeakerHeading();
+    } else {
+      enableClosestChainHeading();
     }
   }
 
@@ -121,9 +125,60 @@ public class DriveController {
                         .getY()));
   }
 
+  private void enableClosestChainHeading() {
+    int closestChainAprilTagID;
+    double targetAngleDegrees;
+    //If the alliance is red
+    if(DriverStation.getAlliance().isPresent()
+            && DriverStation.getAlliance().get() == DriverStation.Alliance.Red) {
+      closestChainAprilTagID = getIDOfClosestChainAprilTag(FieldConstants.redAllianceStageAprilTagIDs);
+      if(closestChainAprilTagID == 13){
+        targetAngleDegrees = -180.0;
+      } else if(closestChainAprilTagID == 11) {
+        targetAngleDegrees = -60.0;
+      } else {
+        targetAngleDegrees = 60.0;
+      }
+
+    } else {
+      //If the alliance is blue
+      closestChainAprilTagID = getIDOfClosestChainAprilTag(FieldConstants.blueAllianceStageAprilTagIDs);
+      if(closestChainAprilTagID == 14){
+        targetAngleDegrees = -180.0;
+      } else if(closestChainAprilTagID == 15) {
+        targetAngleDegrees = -60.0;
+      } else {
+        targetAngleDegrees = 60.0;
+      }
+    }
+
+  setHeadingSupplier(() -> Rotation2d.fromDegrees(targetAngleDegrees));
+  }
+
+  private int getIDOfClosestChainAprilTag(int[] AprilTagIDs) {
+    int closestAprilTagID = AprilTagIDs[0];
+    Optional<Pose3d> closestPose3d = FieldConstants.aprilTags.getTagPose(closestAprilTagID);
+    Pose2d closestPose2d = closestPose3d.get().toPose2d();
+    double closestDistance = closestPose2d.getTranslation().getDistance(poseSupplier.get().getTranslation());
+    for (int aprilTagID : AprilTagIDs) {
+      Optional<Pose3d> currentPose = FieldConstants.aprilTags.getTagPose(aprilTagID);
+      Pose2d currentPose2d = currentPose.get().toPose2d();
+      double currentDistance = currentPose2d.getTranslation().getDistance(poseSupplier.get().getTranslation());
+      if (currentDistance < closestDistance) {
+        closestDistance = currentDistance;
+        closestPose2d = currentPose2d;
+        closestAprilTagID = aprilTagID;
+      }
+    }
+
+    return closestAprilTagID;
+  }
+
+
   /** Possible Drive Modes. */
   public enum DriveModeType {
     AMP,
     SPEAKER,
+    STAGE
   }
 }

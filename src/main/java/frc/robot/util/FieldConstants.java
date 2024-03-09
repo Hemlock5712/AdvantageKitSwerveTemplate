@@ -95,4 +95,17 @@ public class FieldConstants {
       throw new RuntimeException(e);
     }
   }
+
+  public static int[] blueAllianceStageAprilTagIDs = new int[3];
+  public static int[] redAllianceStageAprilTagIDs = new int[3];
+
+  static {
+    blueAllianceStageAprilTagIDs[0] = 16;
+    blueAllianceStageAprilTagIDs[1] = 14;
+    blueAllianceStageAprilTagIDs[2] = 15;
+
+    redAllianceStageAprilTagIDs[0] = 13;
+    redAllianceStageAprilTagIDs[1] =12;
+    redAllianceStageAprilTagIDs[2] = 11;
+  }
 }
