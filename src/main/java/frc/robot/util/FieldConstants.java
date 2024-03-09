@@ -105,7 +105,7 @@ public class FieldConstants {
     blueAllianceStageAprilTagIDs[2] = 15;
 
     redAllianceStageAprilTagIDs[0] = 13;
-    redAllianceStageAprilTagIDs[1] =12;
+    redAllianceStageAprilTagIDs[1] = 12;
     redAllianceStageAprilTagIDs[2] = 11;
   }
 }
