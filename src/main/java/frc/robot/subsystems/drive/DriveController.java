@@ -89,7 +89,7 @@ public class DriveController {
     } else if (this.driveModeType == DriveModeType.SPEAKER) {
       enableSpeakerHeading();
     } else {
-      enableClosestChainHeading();
+      enableStageHeading();
     }
   }
 
@@ -125,14 +125,14 @@ public class DriveController {
                         .getY()));
   }
 
-  private void enableClosestChainHeading() {
+  private void enableStageHeading() {
     int closestChainAprilTagID;
     double targetAngleDegrees;
     // If the alliance is red
     if (DriverStation.getAlliance().isPresent()
         && DriverStation.getAlliance().get() == DriverStation.Alliance.Red) {
       closestChainAprilTagID =
-          getIDOfClosestChainAprilTag(FieldConstants.redAllianceStageAprilTagIDs);
+          getIDOfClosestStageAprilTag(FieldConstants.redAllianceStageAprilTagIDs);
       if (closestChainAprilTagID == 13) {
         targetAngleDegrees = 0;
       } else if (closestChainAprilTagID == 11) {
@@ -144,7 +144,7 @@ public class DriveController {
     } else {
       // If the alliance is blue
       closestChainAprilTagID =
-          getIDOfClosestChainAprilTag(FieldConstants.blueAllianceStageAprilTagIDs);
+          getIDOfClosestStageAprilTag(FieldConstants.blueAllianceStageAprilTagIDs);
       if (closestChainAprilTagID == 14) {
         targetAngleDegrees = -180.0;
       } else if (closestChainAprilTagID == 15) {
@@ -157,7 +157,7 @@ public class DriveController {
     setHeadingSupplier(() -> Rotation2d.fromDegrees(targetAngleDegrees));
   }
 
-  private int getIDOfClosestChainAprilTag(int[] AprilTagIDs) {
+  private int getIDOfClosestStageAprilTag(int[] AprilTagIDs) {
     int closestAprilTagID = AprilTagIDs[0];
     Optional<Pose3d> closestPose3d = FieldConstants.aprilTags.getTagPose(closestAprilTagID);
     Pose2d closestPose2d = closestPose3d.get().toPose2d();
@@ -170,7 +170,6 @@ public class DriveController {
           currentPose2d.getTranslation().getDistance(poseSupplier.get().getTranslation());
       if (currentDistance < closestDistance) {
         closestDistance = currentDistance;
-        closestPose2d = currentPose2d;
         closestAprilTagID = aprilTagID;
       }
     }
