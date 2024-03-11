@@ -17,7 +17,6 @@ import static frc.robot.subsystems.drive.DriveConstants.moduleConfigs;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -258,7 +257,7 @@ public class RobotContainer {
             Commands.startEnd(driveMode::enableHeadingControl, driveMode::disableHeadingControl));
     driverController
         .x()
-        .whileTrue(new PathFinderAndFollow(PathPlannerPath.fromPathFile("LineUpAmp")));
+        .whileTrue(new DriveToAmp(drive::getPose));
     new Trigger(() -> Math.abs(driverController.getLeftX()) > .1)
         .onTrue(Commands.runOnce(driveMode::disableHeadingControl));
 

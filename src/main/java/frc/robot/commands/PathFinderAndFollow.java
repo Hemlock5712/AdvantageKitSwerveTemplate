@@ -5,11 +5,10 @@
 package frc.robot.commands;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.drive.DriveConstants;
 
 /** A command that runs pathfindThenFollowPath based on the current drive mode. */
 public class PathFinderAndFollow extends Command {
@@ -43,9 +42,8 @@ public class PathFinderAndFollow extends Command {
 
   /** Runs a new autonomous path based on the current drive mode. */
   public void runNewAutoPath() {
-    PathConstraints constraints =
-        new PathConstraints(4.0, 3.0, Units.degreesToRadians(200), Units.degreesToRadians(200));
-    pathRun = AutoBuilder.pathfindThenFollowPath(targetPath, constraints, 0.0);
+    pathRun =
+        AutoBuilder.pathfindThenFollowPath(targetPath, DriveConstants.pathPlannerConstraints, 0.0);
     scoreCommand = Commands.sequence(pathRun);
     scoreCommand.schedule();
   }

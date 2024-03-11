@@ -5,27 +5,16 @@
 package frc.robot.commands;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.AllianceFlipUtil;
 
 public class DriveToPoint extends Command {
-  // THIS IS JUST A DOCUMENT FOR TESTING pathfindToPose. I RECOMMEND YOU USE pathfindThenFollowPath
-  // INSTEAD
-  Drive drive;
-  Pose2d targetPose;
-  Command pathRun;
-  private Command scoreCommand;
+  protected final Pose2d targetPose;
+  protected Command pathRun;
 
-  /** Creates a new ShootPoint. */
-  public DriveToPoint(Drive drive, Pose2d targetPose) {
-    // Use addRequirements() here to declare subsystem dependencies.
-    // For shooting you would also want to pass in your shooter subsystem
-    this.drive = drive;
+  public DriveToPoint(Pose2d targetPose) {
     this.targetPose = targetPose;
   }
 
@@ -34,12 +23,8 @@ public class DriveToPoint extends Command {
   public void initialize() {
     pathRun =
         AutoBuilder.pathfindToPose(
-            AllianceFlipUtil.apply(targetPose),
-            new PathConstraints(4.0, 4.0, Units.degreesToRadians(360), Units.degreesToRadians(540)),
-            0,
-            0.0);
-    scoreCommand = Commands.sequence(pathRun);
-    scoreCommand.schedule();
+            AllianceFlipUtil.apply(targetPose), DriveConstants.pathPlannerConstraints, 0, 0.0);
+    pathRun.schedule();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -50,7 +35,7 @@ public class DriveToPoint extends Command {
   @Override
   public void end(boolean interrupted) {
     super.end(interrupted);
-    scoreCommand.cancel();
+    pathRun.cancel();
   }
 
   // Returns true when the command should end.
