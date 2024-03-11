@@ -243,6 +243,8 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    rumbleSubsystem.setRumbleTimes(40, 10);
+
     final ControllerLogic controllerLogic = new ControllerLogic(driverController, secondController);
 
     drive.setDefaultCommand(
@@ -353,8 +355,6 @@ public class RobotContainer {
   }
 
   private void configureUniversalControls(CommandXboxController controller) {
-    new TimeTrigger(40).or(new TimeTrigger(20)).onTrue(rumbleSubsystem.rumbleForTime(1, 0.5));
-
     controller
         .povDown()
         .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
