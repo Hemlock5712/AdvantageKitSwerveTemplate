@@ -112,7 +112,6 @@ public class RobotContainer {
         noteVision =
             new NoteVisionSubsystem(
                 new NoteVisionIOPhotonVision("lefty"),
-                new NoteVisionIOPhotonVision("righty"),
                 drive.getPoseLogForNoteDetection(),
                 drive::getDrive);
         beamBreak = new BeamBreak(new BeamBreakIOReal());
@@ -155,8 +154,15 @@ public class RobotContainer {
                     drive::getDrive));
         noteVision =
             new NoteVisionSubsystem(
-                new NoteVisionIOPhotonVision("lefty"),
-                new NoteVisionIO() {},
+                //                new NoteVisionIOPhotonVision("lefty"),
+                new NoteVisionIO() {
+                  @Override
+                  public void updateInputs(NoteVisionIOInputs inputs) {
+                    inputs.timeStampSeconds = Math.floor(Logger.getTimestamp() / 1e5) / 10 - 0.5;
+                    inputs.notePitches = new double[] {0, .1};
+                    inputs.noteYaws = new double[] {-.5, 0.4};
+                  }
+                },
                 drive.getPoseLogForNoteDetection(),
                 drive::getDrive);
         // flywheel = new Flywheel(new FlywheelIOSim());
@@ -180,10 +186,7 @@ public class RobotContainer {
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
         noteVision =
             new NoteVisionSubsystem(
-                new NoteVisionIO() {},
-                new NoteVisionIO() {},
-                drive.getPoseLogForNoteDetection(),
-                drive::getDrive);
+                new NoteVisionIO() {}, drive.getPoseLogForNoteDetection(), drive::getDrive);
         shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
         arm = new ArmSubsystem(new ArmIO() {});
