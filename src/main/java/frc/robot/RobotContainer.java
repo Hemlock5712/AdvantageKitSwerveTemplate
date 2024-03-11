@@ -208,7 +208,9 @@ public class RobotContainer {
         .povUp()
         .whileTrue(
             new MultiDistanceShot(
-                drive::getPose, FieldConstants.Speaker.centerSpeakerOpening, flywheel));
+                drive::getPose,
+                FieldConstants.Speaker.centerSpeakerOpening.getTranslation(),
+                flywheel));
 
     // controller
     //     .b()
