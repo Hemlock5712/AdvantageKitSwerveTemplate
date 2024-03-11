@@ -22,8 +22,8 @@ public class MultiDistanceShot extends Command {
   double distance;
   double speed;
 
-  Translation2d orignalPose;
-  Translation2d targetPose;
+  Translation2d orignalTranslation;
+  Translation2d targetTranslation;
 
   /**
    * Creates a new MultiDistanceShot command.
@@ -33,10 +33,10 @@ public class MultiDistanceShot extends Command {
    * @param flywheel The flywheel subsystem.
    */
   public MultiDistanceShot(
-      Supplier<Pose2d> poseSupplier, Translation2d targetPose, Flywheel flywheel) {
+      Supplier<Pose2d> poseSupplier, Translation2d targetTranslation, Flywheel flywheel) {
     this.poseSupplier = poseSupplier;
     this.flywheel = flywheel;
-    this.orignalPose = targetPose;
+    this.orignalTranslation = targetTranslation;
 
     // Populate the distance map with distance-speed pairs
     distanceMap.put(1.0, 10.0);
@@ -49,14 +49,14 @@ public class MultiDistanceShot extends Command {
 
   @Override
   public void initialize() {
-    this.targetPose = AllianceFlipUtil.apply(orignalPose);
+    this.targetTranslation = AllianceFlipUtil.apply(orignalTranslation);
     // Apply any necessary transformations to the target pose
   }
 
   @Override
   public void execute() {
     // Calculate the distance from the current pose to the target pose
-    distance = poseSupplier.get().getTranslation().getDistance(targetPose);
+    distance = poseSupplier.get().getTranslation().getDistance(targetTranslation);
 
     // Get the corresponding speed from the distance-speed map
     speed = distanceMap.get(distance);
