@@ -5,6 +5,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.flywheel.Flywheel;
@@ -15,12 +16,13 @@ import org.littletonrobotics.junction.AutoLogOutput;
 /** A command that shoots game piece from multi-distance position from the target. */
 public class MultiDistanceShot extends Command {
   Supplier<Pose2d> poseSupplier;
-  Pose2d targetPose;
   Flywheel flywheel;
   InterpolatingDoubleTreeMap distanceMap = new InterpolatingDoubleTreeMap();
 
   double distance;
   double speed;
+
+  Translation2d targetTranslation;
 
   /**
    * Creates a new MultiDistanceShot command.
@@ -29,10 +31,11 @@ public class MultiDistanceShot extends Command {
    * @param targetPose The target pose to shoot at.
    * @param flywheel The flywheel subsystem.
    */
-  public MultiDistanceShot(Supplier<Pose2d> poseSupplier, Pose2d targetPose, Flywheel flywheel) {
+  public MultiDistanceShot(
+      Supplier<Pose2d> poseSupplier, Translation2d targetTranslation, Flywheel flywheel) {
     this.poseSupplier = poseSupplier;
-    this.targetPose = targetPose;
     this.flywheel = flywheel;
+    this.targetTranslation = targetTranslation;
 
     // Populate the distance map with distance-speed pairs
     distanceMap.put(1.0, 10.0);
@@ -44,15 +47,13 @@ public class MultiDistanceShot extends Command {
   }
 
   @Override
-  public void initialize() {
-    // Apply any necessary transformations to the target pose
-    targetPose = AllianceFlipUtil.apply(targetPose);
-  }
+  public void initialize() {}
 
   @Override
   public void execute() {
     // Calculate the distance from the current pose to the target pose
-    distance = poseSupplier.get().getTranslation().getDistance(targetPose.getTranslation());
+    distance =
+        poseSupplier.get().getTranslation().getDistance(AllianceFlipUtil.apply(targetTranslation));
 
     // Get the corresponding speed from the distance-speed map
     speed = distanceMap.get(distance);
