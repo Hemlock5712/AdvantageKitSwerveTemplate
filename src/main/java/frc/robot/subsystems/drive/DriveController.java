@@ -126,35 +126,37 @@ public class DriveController {
   }
 
   private void enableStageHeading() {
-    int closestChainAprilTagID;
-    double targetAngleDegrees;
-    // If the alliance is red
-    if (DriverStation.getAlliance().isPresent()
-        && DriverStation.getAlliance().get() == DriverStation.Alliance.Red) {
-      closestChainAprilTagID =
-          getIDOfClosestStageAprilTag(FieldConstants.redAllianceStageAprilTagIDs);
-      if (closestChainAprilTagID == 13) {
-        targetAngleDegrees = 0;
-      } else if (closestChainAprilTagID == 11) {
-        targetAngleDegrees = 120.0;
-      } else {
-        targetAngleDegrees = 240.0;
-      }
+    setHeadingSupplier(
+        () -> {
+          int closestChainAprilTagID;
+          double targetAngleDegrees;
+          // If the alliance is red
+          if (DriverStation.getAlliance().isPresent()
+              && DriverStation.getAlliance().get() == DriverStation.Alliance.Red) {
+            closestChainAprilTagID =
+                getIDOfClosestStageAprilTag(FieldConstants.redAllianceStageAprilTagIDs);
+            if (closestChainAprilTagID == 13) {
+              targetAngleDegrees = 0;
+            } else if (closestChainAprilTagID == 11) {
+              targetAngleDegrees = 120.0;
+            } else {
+              targetAngleDegrees = 240.0;
+            }
 
-    } else {
-      // If the alliance is blue
-      closestChainAprilTagID =
-          getIDOfClosestStageAprilTag(FieldConstants.blueAllianceStageAprilTagIDs);
-      if (closestChainAprilTagID == 14) {
-        targetAngleDegrees = -180.0;
-      } else if (closestChainAprilTagID == 15) {
-        targetAngleDegrees = -60.0;
-      } else {
-        targetAngleDegrees = 60.0;
-      }
-    }
-
-    setHeadingSupplier(() -> Rotation2d.fromDegrees(targetAngleDegrees));
+          } else {
+            // If the alliance is blue
+            closestChainAprilTagID =
+                getIDOfClosestStageAprilTag(FieldConstants.blueAllianceStageAprilTagIDs);
+            if (closestChainAprilTagID == 14) {
+              targetAngleDegrees = -180.0;
+            } else if (closestChainAprilTagID == 15) {
+              targetAngleDegrees = -60.0;
+            } else {
+              targetAngleDegrees = 60.0;
+            }
+          }
+          return Rotation2d.fromDegrees(targetAngleDegrees);
+        });
   }
 
   private int getIDOfClosestStageAprilTag(int[] AprilTagIDs) {
