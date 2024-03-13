@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.util.ErrorChecker;
+import frc.robot.util.interpolation.InterpolationMaps;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -69,15 +70,18 @@ public class ArmSubsystem extends SubsystemBase {
     ErrorChecker.checkError(armIOInputs);
 
     if (positionControlActive) {
-      //      if (pidController.getSetpoint() < 0.05 && armIOInputs.positionRad < 0.35) {
-      //        positionControlActive = false;
-      //      }
+      if (pidController.getSetpoint() < 0.05
+          && armIOInputs.positionRad < 0.05
+          && Math.abs(armIOInputs.velocityRadPerSec) < 0.05) {
+        positionControlActive = false;
+      }
 
       double pidVolts = pidController.calculate(armIOInputs.positionRad);
-      //      double ffVolts = feedforward.calculate(armIOInputs.positionRad,
-      // Math.signum(pidVolts));
       double holdVolts = angleToHoldVolts.get(armIOInputs.positionRad);
-      double frictionVolts = ArmConstants.kS.get() * Math.signum(pidVolts);
+      double frictionVolts =
+          InterpolationMaps.angleToKS.get(armIOInputs.positionRad)
+              * ArmConstants.kkS.get()
+              * Math.signum(pidVolts);
 
       double volts = pidVolts + frictionVolts;
 

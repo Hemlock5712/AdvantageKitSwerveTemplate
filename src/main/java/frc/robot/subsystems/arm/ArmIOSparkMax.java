@@ -3,6 +3,7 @@ package frc.robot.subsystems.arm;
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
@@ -15,6 +16,7 @@ public class ArmIOSparkMax implements ArmIO {
   private final DutyCycleEncoder encoder =
       new DutyCycleEncoder(ArmConstants.DUTY_CYCLE_ENCODER_PORT);
 
+  private final RelativeEncoder velocityEncoder = leader.getEncoder();
   private final DigitalInput upperLimitSwitch =
       new DigitalInput(ArmConstants.UPPER_LIMIT_SWITCH_PORT);
 
@@ -22,8 +24,12 @@ public class ArmIOSparkMax implements ArmIO {
     // The motors are mirrored, so invert
     leader.setInverted(true);
     follower.follow(leader, true);
+
     encoder.reset();
     encoder.setDistancePerRotation(2 * Math.PI);
+
+    velocityEncoder.setVelocityConversionFactor(Math.PI * 2 / 60 / ArmConstants.MOTOR_TO_ARM_RATIO);
+
     follower.setIdleMode(CANSparkBase.IdleMode.kBrake);
     leader.setIdleMode(CANSparkBase.IdleMode.kBrake);
   }
@@ -32,6 +38,7 @@ public class ArmIOSparkMax implements ArmIO {
   public void updateInputs(ArmIOInputs inputs) {
     inputs.positionRad =
         (encoder.getAbsolutePosition() * Math.PI * 2) - ArmConstants.ARM_ENCODER_OFFSET_RAD;
+    inputs.velocityRadPerSec = velocityEncoder.getVelocity();
     inputs.upperLimit = (inputs.positionRad > ArmConstants.MAX_RAD) || (!upperLimitSwitch.get());
     inputs.lowerLimit = (inputs.positionRad < ArmConstants.MIN_RAD);
     inputs.appliedVolts = leader.getAppliedOutput() * leader.getBusVoltage();
