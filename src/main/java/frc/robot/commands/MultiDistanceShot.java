@@ -5,6 +5,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
@@ -17,7 +18,7 @@ import org.littletonrobotics.junction.Logger;
 /** A command that shoots game piece from multi-distance position from the target. */
 public class MultiDistanceShot extends Command {
   private final Supplier<Pose2d> poseSupplier;
-  @AutoLogOutput private final Pose2d targetPose;
+  @AutoLogOutput private final Translation2d targetTranslation;
   private final ShooterSubsystem shooter;
   private final ArmSubsystem arm;
 
@@ -25,16 +26,16 @@ public class MultiDistanceShot extends Command {
    * Creates a new MultiDistanceShot command.
    *
    * @param poseSupplier The supplier for the robot's current pose.
-   * @param targetPose The target pose to shoot at.
+   * @param targetTranslation The target pose to shoot at.
    * @param shooter shooter subsystem
    */
   public MultiDistanceShot(
       Supplier<Pose2d> poseSupplier,
-      Pose2d targetPose,
+      Translation2d targetTranslation,
       ShooterSubsystem shooter,
       ArmSubsystem arm) {
     this.poseSupplier = poseSupplier;
-    this.targetPose = targetPose;
+    this.targetTranslation = targetTranslation;
     this.shooter = shooter;
     this.arm = arm;
   }
@@ -46,10 +47,7 @@ public class MultiDistanceShot extends Command {
   public void execute() {
     // Calculate the distance from the current pose to the target pose
     double distance =
-        poseSupplier
-            .get()
-            .getTranslation()
-            .getDistance(AllianceFlipUtil.apply(targetPose.getTranslation()));
+        poseSupplier.get().getTranslation().getDistance(AllianceFlipUtil.apply(targetTranslation));
 
     // Get the corresponding speed from the distance-speed map
     double speed = InterpolationMaps.shooterDistanceToVelocity.get(distance);
