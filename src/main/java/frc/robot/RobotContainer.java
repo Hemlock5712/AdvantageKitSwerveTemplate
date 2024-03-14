@@ -251,7 +251,7 @@ public class RobotContainer {
             () -> -driverController.getRightX(),
             () -> -driverController.getLeftX()));
 
-    driveMode.setDriveMode(DriveModeType.STAGE);
+    driveMode.setDriveMode(DriveModeType.SPEAKER);
     driverController
         .y()
         .toggleOnTrue(
