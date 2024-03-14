@@ -83,6 +83,10 @@ public class ArmSubsystem extends SubsystemBase {
               * ArmConstants.kkS.get()
               * Math.signum(pidVolts);
 
+      if (pidController.atSetpoint()) {
+        frictionVolts = 0;
+      }
+
       double volts = pidVolts + frictionVolts;
 
       volts =

@@ -11,12 +11,12 @@ public class ArmConstants {
 
   public static final int LEFT_MOTOR_ID = 9;
   public static final int RIGHT_MOTOR_ID = 10;
-  public static final LoggedTunableNumber kkS = tunableTable.makeField("ks mult", 0.6);
+  public static final LoggedTunableNumber kkS = tunableTable.makeField("ks mult", 1);
   public static final LoggedTunableNumber kP = tunableTable.makeField("kP", 3);
   public static final LoggedTunableNumber kI = tunableTable.makeField("kI", 0.0);
   public static final LoggedTunableNumber kD = tunableTable.makeField("kD", 0);
   public static final LoggedTunableNumber setpointToleranceRad =
-      tunableTable.makeField("setpoint tolerance rad", 0.02); // todo tune
+      tunableTable.makeField("setpoint tolerance rad", 0.01); // todo tune
   public static final double ARM_ENCODER_OFFSET_RAD = 2.1338351287912601;
   public static final int DUTY_CYCLE_ENCODER_PORT = 0;
   public static final int UPPER_LIMIT_SWITCH_PORT = 3;
