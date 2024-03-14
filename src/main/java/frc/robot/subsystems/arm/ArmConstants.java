@@ -11,7 +11,6 @@ public class ArmConstants {
 
   public static final int LEFT_MOTOR_ID = 9;
   public static final int RIGHT_MOTOR_ID = 10;
-  public static final LoggedTunableNumber kkS = tunableTable.makeField("ks mult", 1);
   public static final LoggedTunableNumber kP = tunableTable.makeField("kP", 3);
   public static final LoggedTunableNumber kI = tunableTable.makeField("kI", 0.0);
   public static final LoggedTunableNumber kD = tunableTable.makeField("kD", 0);

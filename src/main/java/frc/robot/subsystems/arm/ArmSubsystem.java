@@ -79,9 +79,7 @@ public class ArmSubsystem extends SubsystemBase {
       double pidVolts = pidController.calculate(armIOInputs.positionRad);
       double holdVolts = angleToHoldVolts.get(armIOInputs.positionRad);
       double frictionVolts =
-          InterpolationMaps.angleToKS.get(armIOInputs.positionRad)
-              * ArmConstants.kkS.get()
-              * Math.signum(pidVolts);
+          InterpolationMaps.angleToKS.get(armIOInputs.positionRad) * Math.signum(pidVolts);
 
       if (pidController.atSetpoint()) {
         frictionVolts = 0;

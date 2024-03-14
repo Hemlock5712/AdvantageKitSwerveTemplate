@@ -58,7 +58,6 @@ import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
 import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
 import frc.robot.util.*;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -339,17 +338,7 @@ public class RobotContainer {
       configureUniversalControls(controller);
     }
 
-    //    final CommandXboxController debugController = new CommandXboxController(2);
-    //
-    //    arm.setDefaultCommand(
-    //        Commands.run(
-    //            () ->
-    //                arm.setManualVoltage(
-    //                    2
-    //                        * (debugController.getRightTriggerAxis()
-    //                            - debugController.getLeftTriggerAxis())),
-    //            arm));
-    LoggedDashboardNumber armVolts = new LoggedDashboardNumber("arm volts", 0);
+    //    LoggedDashboardNumber armVolts = new LoggedDashboardNumber("arm volts", 0);
     //    arm.setDefaultCommand(arm.run(() -> arm.setManualVoltage(armVolts.get())));
   }
 
