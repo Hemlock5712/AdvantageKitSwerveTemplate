@@ -146,23 +146,26 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim());
         // flywheel = new Flywheel(new FlywheelIOSim());
-        aprilTagVision =
-            new AprilTagVision(
-                new AprilTagVisionIOPhotonVisionSIM(
-                    "photonCamera1",
-                    new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
-                    drive::getDrive));
+        var simApriltagVisionIO =
+            new AprilTagVisionIOPhotonVisionSIM(
+                "photonCamera1",
+                new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
+                drive::getDrive);
+
+        aprilTagVision = new AprilTagVision(simApriltagVisionIO);
         noteVision =
             new NoteVisionSubsystem(
                 //                new NoteVisionIOPhotonVision("lefty"),
-                new NoteVisionIO() {
-                  @Override
-                  public void updateInputs(NoteVisionIOInputs inputs) {
-                    inputs.timeStampSeconds = Math.floor(Logger.getTimestamp() / 1e5) / 10 - 0.5;
-                    inputs.notePitches = new double[] {0, .1};
-                    inputs.noteYaws = new double[] {-.5, 0.4};
-                  }
-                },
+                //                new NoteVisionIO() {
+                //                  @Override
+                //                  public void updateInputs(NoteVisionIOInputs inputs) {
+                //                    inputs.timeStampSeconds = Math.floor(Logger.getTimestamp() /
+                // 1e5) / 10 - 0.5;
+                //                    inputs.notePitches = new double[] {0, .1};
+                //                    inputs.noteYaws = new double[] {-.5, 0.4};
+                //                  }
+                //                },
+                new NoteVisionIOSim(simApriltagVisionIO.getVisionSim()),
                 drive.getPoseLogForNoteDetection(),
                 drive::getDrive);
         // flywheel = new Flywheel(new FlywheelIOSim());

@@ -20,6 +20,7 @@ import frc.robot.util.VisionHelpers.PoseEstimate;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.Supplier;
+import lombok.Getter;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -32,7 +33,8 @@ import org.photonvision.targeting.PhotonPipelineResult;
 public class AprilTagVisionIOPhotonVisionSIM implements AprilTagVisionIO {
   private final PhotonCamera camera;
   private final PhotonPoseEstimator photonEstimator;
-  private VisionSystemSim visionSim;
+  @Getter private final VisionSystemSim visionSim = new VisionSystemSim("main");
+  ;
   private PhotonCameraSim cameraSim;
 
   private double lastEstTimestamp = 0;
@@ -56,9 +58,6 @@ public class AprilTagVisionIOPhotonVisionSIM implements AprilTagVisionIO {
             camera,
             robotToCamera);
     photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
-    // Create the vision system simulation which handles cameras and targets on the
-    // field.
-    visionSim = new VisionSystemSim("main");
     // Add all the AprilTags inside the tag layout as visible targets to this
     // simulated field.
     visionSim.addAprilTags(FieldConstants.aprilTags);
