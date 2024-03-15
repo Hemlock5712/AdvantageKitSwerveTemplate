@@ -65,7 +65,7 @@ public class NoteVisionSubsystem extends SubsystemBase {
     var currentNotes =
         updateNotes(oldNotesInCamera, groupNotes(newNotes), noteVisionIOInputs.timeStampSeconds);
 
-    filterUnseenNotes(oldNotesOutOfCamera, noteVisionIOInputs.timeStampSeconds);
+    filterOldUnseenNotes(oldNotesOutOfCamera, noteVisionIOInputs.timeStampSeconds);
 
     currentNotes.addAll(oldNotesOutOfCamera);
 
@@ -90,7 +90,7 @@ public class NoteVisionSubsystem extends SubsystemBase {
         "NoteVisionSubsystem/note poses odometry space", newNotes.toArray(new Translation2d[0]));
   }
 
-  private static void filterUnseenNotes(
+  private static void filterOldUnseenNotes(
       ArrayList<TimestampedNote> oldNotesOutOfCamera, double currentTime) {
     for (int i = 0; i < oldNotesOutOfCamera.size(); ) {
       if (oldNotesOutOfCamera.get(i).timestamp
@@ -142,8 +142,20 @@ public class NoteVisionSubsystem extends SubsystemBase {
       }
     }
 
-    return new ArrayList<>(
-        newNotes.stream().map(note -> new TimestampedNote(note, timeStampSeconds)).toList());
+    var currentNotes =
+        new ArrayList<>(
+            newNotes.stream().map(note -> new TimestampedNote(note, timeStampSeconds)).toList());
+
+    var recentNotes =
+        oldNotesInCamera.stream()
+            .filter(
+                note ->
+                    note.timestamp < timeStampSeconds - NoteVisionConstants.IN_CAMERA_EXPIRATION)
+            .toList();
+
+    currentNotes.addAll(recentNotes);
+
+    return currentNotes;
   }
 
   private static boolean areNotesSame(Translation2d a, Translation2d b) {

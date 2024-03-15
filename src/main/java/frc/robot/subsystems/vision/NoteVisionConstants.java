@@ -18,4 +18,5 @@ public class NoteVisionConstants {
   public static final double MAX_CAMERA_DISTANCE = 5;
 
   public static final double OUT_OF_CAMERA_EXPIRATION = 5;
+  public static final double IN_CAMERA_EXPIRATION = 0.1;
 }
