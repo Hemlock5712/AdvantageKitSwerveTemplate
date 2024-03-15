@@ -86,6 +86,7 @@ public class RobotContainer {
 
   private final Command resetClimbersCommand;
   private final ShooterStateHelpers shooterStateHelpers;
+  private final DriveToPointBuilder driveToPointBuilder;
   private final Command idleShooterVolts;
 
   //   private final LoggedTunableNumber flywheelSpeedInput =
@@ -175,6 +176,7 @@ public class RobotContainer {
     }
 
     shooterStateHelpers = new ShooterStateHelpers(shooter, arm, beamBreak);
+    driveToPointBuilder = new DriveToPointBuilder(drive::getPose, arm, shooter);
     idleShooterVolts =
         Commands.runOnce(() -> shooter.runVolts(ShooterConstants.IDLE_VOLTS.get()), shooter);
 
@@ -218,19 +220,20 @@ public class RobotContainer {
                     () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()),
                     shooter)));
 
-    NamedCommands.registerCommand(
-        "shoot auto",
-        shooterStateHelpers
-            .waitUntilCanShootAuto()
-            .andThen(
-                Commands.runOnce(
-                    () -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()), intake))
-            .andThen(Commands.waitUntil(() -> !beamBreak.detectNote()).withTimeout(1))
-            .andThen(Commands.waitSeconds(.3))
-            .andThen(idleShooterVolts)
-            .andThen(Commands.runOnce(() -> intake.setVoltage(0), intake))
-            .andThen(
-                ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get)));
+    NamedCommands.registerCommand("shoot auto", autoShoot());
+  }
+
+  /** assumes the shooter is at the correct speed and the arm is in the correct position */
+  private Command autoShoot() {
+    return shooterStateHelpers
+        .waitUntilCanShootAuto()
+        .andThen(
+            Commands.runOnce(() -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()), intake))
+        .andThen(Commands.waitUntil(() -> !beamBreak.detectNote()).withTimeout(1))
+        .andThen(Commands.waitSeconds(.3))
+        .andThen(idleShooterVolts)
+        .andThen(Commands.runOnce(() -> intake.setVoltage(0), intake))
+        .andThen(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
   }
 
   /**
@@ -253,11 +256,15 @@ public class RobotContainer {
     driveMode.setDriveMode(DriveModeType.SPEAKER);
     driverController
         .y()
-        .toggleOnTrue(
-            Commands.startEnd(driveMode::enableHeadingControl, driveMode::disableHeadingControl));
-    driverController
-        .x()
-        .whileTrue(new DriveToAmp(drive::getPose));
+        .whileTrue(
+            DriveToPointBuilder.driveTo(FieldConstants.ampScoringPose)
+                .alongWith(
+                    driveToPointBuilder.raiseArmAndReadyShooterNearPose(
+                        FieldConstants.ampScoringPose,
+                        1,
+                        ArmConstants.Positions.AMP_POS_RAD::get,
+                        ShooterConstants.AMP_VELOCITY_RAD_PER_SEC::get)));
+    driverController.x().whileTrue(DriveToPointBuilder.driveTo(FieldConstants.ampScoringPose));
     new Trigger(() -> Math.abs(driverController.getLeftX()) > .1)
         .onTrue(Commands.runOnce(driveMode::disableHeadingControl));
 
