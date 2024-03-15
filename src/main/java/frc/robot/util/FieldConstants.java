@@ -96,16 +96,6 @@ public class FieldConstants {
     }
   }
 
-  public static int[] blueAllianceStageAprilTagIDs = new int[3];
-  public static int[] redAllianceStageAprilTagIDs = new int[3];
-
-  static {
-    blueAllianceStageAprilTagIDs[0] = 16;
-    blueAllianceStageAprilTagIDs[1] = 14;
-    blueAllianceStageAprilTagIDs[2] = 15;
-
-    redAllianceStageAprilTagIDs[0] = 13;
-    redAllianceStageAprilTagIDs[1] = 12;
-    redAllianceStageAprilTagIDs[2] = 11;
-  }
+  public static int[] blueAllianceStageAprilTagIDs = new int[] {16, 14, 15};
+  public static int[] redAllianceStageAprilTagIDs = new int[] {13, 12, 11};
 }
