@@ -43,7 +43,7 @@ import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOSparkMax;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.drive.*;
-import frc.robot.subsystems.drive.DriveController.DriveModeType;
+import frc.robot.subsystems.drive.DriveController;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.intake.IntakeIO;
@@ -251,11 +251,10 @@ public class RobotContainer {
             () -> -driverController.getRightX(),
             () -> -driverController.getLeftX()));
 
-    driveMode.setDriveMode(DriveModeType.SPEAKER);
     driverController
         .y()
         .toggleOnTrue(
-            Commands.startEnd(driveMode::enableHeadingControl, driveMode::disableHeadingControl));
+            Commands.startEnd(driveMode::enableAmpHeading, driveMode::disableHeadingControl));
     driverController
         .x()
         .whileTrue(new PathFinderAndFollow(PathPlannerPath.fromPathFile("LineUpAmp")));
@@ -395,7 +394,8 @@ public class RobotContainer {
 
     controller
         .b()
-        .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.UPPER_DRIVE_RAD::get));
+        .onTrue(
+            ShooterCommands.runSpeed(shooter, ShooterConstants.AMP_LOB_VELOCITY_RAD_PER_SEC::get));
     controller
         .a()
         .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.LOWER_DRIVE_RAD::get));
