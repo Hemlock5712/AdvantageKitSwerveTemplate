@@ -254,7 +254,8 @@ public class RobotContainer {
     driverController
         .y()
         .toggleOnTrue(
-            Commands.startEnd(driveMode::enableAmpHeading, driveMode::disableHeadingControl));
+            Commands.startEnd(
+                driveMode::enableAmpLobbingHeading, driveMode::disableHeadingControl));
     driverController
         .x()
         .whileTrue(new PathFinderAndFollow(PathPlannerPath.fromPathFile("LineUpAmp")));

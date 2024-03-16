@@ -35,7 +35,7 @@ public class DriveController {
 
   /** Turns on heading control and sets the heading to AMP mode (90 degrees). */
   public void enableAmpHeading() {
-    setHeadingSupplier(() -> Rotation2d.fromDegrees(90));
+    setHeadingSupplier(() -> Rotation2d.fromDegrees(-90));
   }
 
   /** Turns on heading control and sets the heading to SPEAKER mode. */
