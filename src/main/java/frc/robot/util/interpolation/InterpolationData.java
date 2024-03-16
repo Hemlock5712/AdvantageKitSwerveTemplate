@@ -1,27 +1,44 @@
 package frc.robot.util.interpolation;
 
+import java.util.Arrays;
+
 public class InterpolationData {
 
-  protected static double[][] armHoldData = {
-    /* rad position, hold volts */
-    {-0.0247590494015499, 0.5},
-    {0.0177718330060208, 0.566929161548615},
-    {0.0976691335288145, 0.850393712520599},
-    {0.150746185658508, 0.850393712520599},
-    {0.25062841418747, 0.598425209522247},
-    {0.262780094875348, 0.535433053970337},
-    {0.435030168626009, 0.566929161548615},
-    {0.453105793649226, 0.582677185535431},
-    {0.759480042992334, 0.409448832273483},
-    {0.766163467370666, 0.362204730510712},
-    {0.784087196385285, 0.236220479011536},
-    {0.814922086130774, 0.267716526985168},
-    {1.1, 0},
-    {1.34245692399325, -0.299212604761124},
-    {1.55708598414288, -0.267716526985168},
-    {1.8, -0.5},
-    {3, -10},
+  protected static double[][] armHoldDataRaw = {
+    /* rad position, upper hold volts, lower hold volts */
+    {-1, 1.35, 0.39},
+    {-0.1, 1.29, 0.47},
+    {0.1, 1.37, 0.55},
+    {0.2, 1.27, 0.51},
+    {0.3, 1.23, 0.49},
+    {0.4, 1.11, 0.44},
+    {0.5, 1.03, 0.40},
+    {0.6, 0.89, 0.35},
+    {0.7, 0.78, 0.27},
+    {0.8, 0.63, 0.21},
+    {0.9, 0.555, 0.16},
+    {1.0, 0.41, 0.11},
+    {1.1, 0.29, 0.08},
+    {1.2, 0.19, -0.18},
+    {1.3, 0.1, -0.28},
+    {1.4, -0.10, -0.38},
+    {1.5, -0.013, -0.4},
+    {3, -2, -2},
   };
+
+  protected static double[][] armHoldData =
+      Arrays.stream(armHoldDataRaw)
+          .map(
+              row -> {
+                double upper = row[1];
+                double lower = row[2];
+
+                double middle = (upper + lower) / 2;
+                double kS = (upper - lower) / 2;
+
+                return new double[] {row[0], middle, kS};
+              })
+          .toArray(double[][]::new);
 
   protected static final double[][] shooterDistanceData = {
     /* distance m, angle rad, velocity rad/s */
