@@ -26,13 +26,12 @@ public class ShooterSubsystem extends SubsystemBase {
 
     topFeedForward =
         new SimpleMotorFeedforward(
-            ShooterConstants.FlywheelModelConstants.Top.kS.get(),
-            ShooterConstants.FlywheelModelConstants.Top.kV.get());
+            ShooterConstants.CURRENT_TUNE.top().ks(), ShooterConstants.CURRENT_TUNE.top().kv());
     topIO.configurePID(ShooterConstants.FlywheelModelConstants.Top.kP.get(), 0, 0);
     bottomFeedForward =
         new SimpleMotorFeedforward(
-            ShooterConstants.FlywheelModelConstants.Bottom.kS.get(),
-            ShooterConstants.FlywheelModelConstants.Bottom.kV.get());
+            ShooterConstants.CURRENT_TUNE.bottom().ks(),
+            ShooterConstants.CURRENT_TUNE.bottom().kv());
     bottomIO.configurePID(ShooterConstants.FlywheelModelConstants.Bottom.kP.get(), 0, 0);
 
     sysid =

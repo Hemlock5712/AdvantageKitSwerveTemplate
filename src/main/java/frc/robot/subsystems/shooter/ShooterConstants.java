@@ -33,33 +33,23 @@ public final class ShooterConstants {
     BOTTOM
   }
 
-  private record FlywheelConstants(double ks, double kv, double kp) {}
+  public record FlywheelConstants(double ks, double kv, double kp) {}
 
-  private record ShooterTune(FlywheelConstants top, FlywheelConstants bottom) {}
-  ;
+  public record ShooterTune(FlywheelConstants top, FlywheelConstants bottom) {}
 
-  private static final ShooterTune mainTune =
+  public static final ShooterTune CURRENT_TUNE =
       new ShooterTune(
-          new FlywheelConstants(0.045715, 0.019471, 0.0001),
-          new FlywheelConstants(0.18493, 0.02069, 0.0001));
+          new FlywheelConstants(0.0508, 0.0196, 1E-5), new FlywheelConstants(0.1828, 0.0209, 1E-5));
 
   public static final class FlywheelModelConstants {
     public static final class Top {
-      public static final LoggedTunableNumber kS =
-          tunableTable.makeField("top/kS", mainTune.top.ks);
-      public static final LoggedTunableNumber kV =
-          tunableTable.makeField("top/kV", mainTune.top.kv);
       public static final LoggedTunableNumber kP =
-          tunableTable.makeField("top/kP", mainTune.top.kp);
+          tunableTable.makeField("top/kP", CURRENT_TUNE.top.kp);
     }
 
     public static final class Bottom {
-      public static final LoggedTunableNumber kS =
-          tunableTable.makeField("bottom/kS", mainTune.bottom.ks);
-      public static final LoggedTunableNumber kV =
-          tunableTable.makeField("bottom/kV", mainTune.bottom.kv);
       public static final LoggedTunableNumber kP =
-          tunableTable.makeField("bottom/kP", mainTune.bottom.kp);
+          tunableTable.makeField("bottom/kP", CURRENT_TUNE.bottom.kp);
     }
   }
 }
