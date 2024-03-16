@@ -28,66 +28,30 @@ public final class ShooterConstants {
       tunableTable.makeField("auto shooter timeout", 2);
 
   public static final double TOP_GEAR_RATIO = 1;
-  public static final double BOTTOM_GEAR_RATIO = 24.0 / 22.0;
+  public static final double BOTTOM_GEAR_RATIO = 1;
 
   public enum ShooterWheels {
     TOP,
     BOTTOM
   }
 
-  public static final class Real {
-    public static final class FeedForwardConstants {
-      public static final class TopConstants {
-        public static final LoggedTunableNumber kS = tunableTable.makeField("top/kS", 0.097527);
-        public static final LoggedTunableNumber kV = tunableTable.makeField("top/kV", 0.02056);
-      }
+  public record FlywheelConstants(double ks, double kv, double kp) {}
 
-      public static final class BottomConstants {
-        public static final LoggedTunableNumber kS = tunableTable.makeField("bottom/kS", 0.04217);
-        public static final LoggedTunableNumber kV = tunableTable.makeField("bottom/kV", 0.020624);
-      }
+  public record ShooterTune(FlywheelConstants top, FlywheelConstants bottom) {}
+
+  public static final ShooterTune CURRENT_TUNE =
+      new ShooterTune(
+          new FlywheelConstants(0.0508, 0.0196, 1E-5), new FlywheelConstants(0.1828, 0.0209, 1E-5));
+
+  public static final class FlywheelModelConstants {
+    public static final class Top {
+      public static final LoggedTunableNumber kP =
+          tunableTable.makeField("top/kP", CURRENT_TUNE.top.kp);
     }
 
-    public static final class PIDConstants {
-      public static final class TopConstants {
-        public static final LoggedTunableNumber kP = tunableTable.makeField("top/kP", 0.00011219);
-        public static final LoggedTunableNumber kI = tunableTable.makeField("top/kI", 0.0);
-        public static final LoggedTunableNumber kD = tunableTable.makeField("top/kD", 0.0);
-      }
-
-      public static final class BottomConstants {
-        public static final LoggedTunableNumber kP = tunableTable.makeField("bottom/kP", 0.0005);
-        public static final LoggedTunableNumber kI = tunableTable.makeField("bottom/kI", 0.0);
-        public static final LoggedTunableNumber kD = tunableTable.makeField("bottom/kD", 0.0);
-      }
-    }
-  }
-
-  public static final class Sim {
-    public static final class FeedForwardConstants {
-      public static final class TopConstants {
-        public static final double kS = 0.2;
-        public static final double kV = 0.05;
-      }
-
-      public static final class BottomConstants {
-        public static final double kS = 0.2;
-        public static final double kV = 0.05;
-      }
-    }
-
-    public static final class PIDConstants {
-      public static final class TopConstants {
-        public static final double kP = 0.1;
-        public static final double kI = 0.0;
-        public static final double kD = 0.0;
-      }
-
-      public static final class BottomConstants {
-        public static final double kP = 0.1;
-        public static final double kI = 0.0;
-        public static final double kD = 0.0;
-      }
+    public static final class Bottom {
+      public static final LoggedTunableNumber kP =
+          tunableTable.makeField("bottom/kP", CURRENT_TUNE.bottom.kp);
     }
   }
 }
