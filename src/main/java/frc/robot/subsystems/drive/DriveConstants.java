@@ -16,10 +16,17 @@ import java.lang.invoke.MethodHandles;
 
 /** All Constants Measured in Meters and Radians (m/s, m/s^2, rad/s, rad/s^2) */
 public final class DriveConstants {
-
   private static final TunableNumberWrapper tunableTable =
       new TunableNumberWrapper(MethodHandles.lookup().lookupClass());
 
+  public static final LoggedTunableNumber NOTE_PICKUP_MAX_SPEED =
+      tunableTable.makeField("note pickup max speed", 3);
+  public static final LoggedTunableNumber NOTE_PICKUP_MIN_SPEED =
+      tunableTable.makeField("note pickup min speed", 1);
+  public static final LoggedTunableNumber NOTE_PICKUP_DISTANCE_TO_SPEED_MULT =
+      tunableTable.makeField("note distance to speed mult", 1.5);
+  public static final LoggedTunableNumber NOTE_PICKUP_MAX_TURN_SPEED =
+      tunableTable.makeField("note pickup max turn speed", 5);
   public static DrivetrainConfig drivetrainConfig =
       switch (Constants.getRobot()) {
         default ->
@@ -99,9 +106,9 @@ public final class DriveConstants {
       };
 
   public static class HeadingControllerConstants {
-    public static final LoggedTunableNumber kP =
-        tunableTable.makeField("headingController/kp", 0.7);
-    public static final LoggedTunableNumber kD = tunableTable.makeField("headingController/kd", 0);
+    public static final LoggedTunableNumber kP = tunableTable.makeField("headingController/kp", 5);
+    public static final LoggedTunableNumber kD =
+        tunableTable.makeField("headingController/kd", 0.4);
   }
 
   public static final PIDConstants PPtranslationConstants =

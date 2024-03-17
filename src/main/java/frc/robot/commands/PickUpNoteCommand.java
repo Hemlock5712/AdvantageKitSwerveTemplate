@@ -1,9 +1,11 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.vision.NoteVisionSubsystem;
@@ -43,29 +45,34 @@ public class PickUpNoteCommand extends Command {
     }
 
     var angle = currentNote.get().getAngle();
-    double distance = currentNote.get().getNorm();
+    double distanceToNote = currentNote.get().getNorm();
 
     var omega = drive.getThetaController().calculate(0, angle.getRadians());
     if (drive.getThetaController().atGoal()) {
       omega = 0;
     }
-    omega = Math.copySign(Math.min(1, Math.abs(omega)), omega);
+    omega =
+        Math.copySign(
+            Math.min(DriveConstants.NOTE_PICKUP_MAX_TURN_SPEED.get(), Math.abs(omega)), omega);
 
-    var speed = 1;
+    double speed =
+        MathUtil.clamp(
+            distanceToNote * DriveConstants.NOTE_PICKUP_DISTANCE_TO_SPEED_MULT.get(),
+            DriveConstants.NOTE_PICKUP_MIN_SPEED.get(),
+            DriveConstants.NOTE_PICKUP_MAX_SPEED.get());
 
-    var speedx = speed * angle.getCos();
-    var speedy = speed * angle.getSin();
-
-    if (distance < 1 && !drive.getThetaController().atGoal()) {
-      speedx = 0;
-      speedy = 0;
+    if (distanceToNote < 1 && !drive.getThetaController().atGoal()) {
+      speed = 0;
     }
+
+    double speedx = speed * angle.getCos();
+    double speedy = speed * angle.getSin();
 
     var speeds = ChassisSpeeds.fromRobotRelativeSpeeds(speedx, speedy, omega, new Rotation2d());
 
     drive.runVelocity(speeds);
 
-    if (currentNote.get().getNorm() < 2) {
+    if (distanceToNote < 2) {
       intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get());
     } else {
       intake.stop();

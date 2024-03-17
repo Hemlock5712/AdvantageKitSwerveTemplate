@@ -291,12 +291,8 @@ public class RobotContainer {
     driverController
         .x()
         .whileTrue(
-            Commands.startEnd(
-                () -> {
-                  driveMode.setDriveMode(DriveModeType.SPEAKER);
-                  driveMode.enableHeadingControl();
-                },
-                driveMode::disableHeadingControl));
+            new PickUpNoteCommand(
+                drive, intake, noteVision, driverController.getHID()::getAButton));
     driverController
         .y()
         .toggleOnTrue(

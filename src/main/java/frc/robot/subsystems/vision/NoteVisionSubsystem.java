@@ -39,11 +39,11 @@ public class NoteVisionSubsystem extends SubsystemBase {
     noteVisionIO.updateInputs(noteVisionIOInputs);
     Logger.processInputs("NoteVision", noteVisionIOInputs);
 
-    if (lastTimestamp == noteVisionIOInputs.timeStampSeconds) {
-      return;
-    } else {
-      lastTimestamp = noteVisionIOInputs.timeStampSeconds;
-    }
+    //    if (lastTimestamp == noteVisionIOInputs.timeStampSeconds) {
+    //      return;
+    //    } else {
+    //      lastTimestamp = noteVisionIOInputs.timeStampSeconds;
+    //    }
 
     var oldNotes = notesInOdometrySpace;
     var newNotes =
@@ -57,7 +57,9 @@ public class NoteVisionSubsystem extends SubsystemBase {
 
     splitOldNotesInCameraView(
         noVisionPoseLog.getPoseAtTime(noteVisionIOInputs.timeStampSeconds),
-        NoteVisionConstants.CAMERA_POS.toPose2d(),
+        new Pose2d(
+            NoteVisionConstants.CAMERA_POS.getTranslation().toTranslation2d(),
+            NoteVisionConstants.CAMERA_POS.getRotation().toRotation2d()),
         oldNotes,
         oldNotesInCamera,
         oldNotesOutOfCamera);
@@ -205,17 +207,18 @@ public class NoteVisionSubsystem extends SubsystemBase {
   }
 
   private static List<Translation2d> calculateNotesInOdometrySpace(
-      NoteVisionIO.NoteVisionIOInputs inputs, Pose3d cameraPose, Pose2d oldRobotPose) {
+      NoteVisionIO.NoteVisionIOInputs inputs, Transform3d cameraPose, Pose2d oldRobotPose) {
     final ArrayList<Translation2d> notes = new ArrayList<>();
 
     for (int i = 0; i < inputs.notePitches.length; i++) {
       double noteAngle = inputs.notePitches[i] + cameraPose.getRotation().getY();
 
-      if (noteAngle >= 0) {
+      if (noteAngle <= 0) {
         continue;
       }
 
-      double distanceFromCamera = cameraPose.getZ() / Math.tan(-noteAngle);
+      double distanceFromCamera =
+          cameraPose.getZ() / Math.tan(noteAngle) / Math.cos(inputs.noteYaws[i]);
 
       Translation2d noteToCameraPose =
           new Translation2d(distanceFromCamera, new Rotation2d(inputs.noteYaws[i]));
@@ -223,7 +226,7 @@ public class NoteVisionSubsystem extends SubsystemBase {
       var noteRelativeToOldRobot =
           noteToCameraPose
               .rotateBy(cameraPose.getRotation().toRotation2d())
-              .plus(cameraPose.toPose2d().getTranslation());
+              .plus(cameraPose.getTranslation().toTranslation2d());
       var noteInOdometrySpace =
           projectRelativeNotePoseOntoRobotPose(noteRelativeToOldRobot, oldRobotPose);
 
