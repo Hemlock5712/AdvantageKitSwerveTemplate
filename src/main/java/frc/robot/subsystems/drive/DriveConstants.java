@@ -1,5 +1,6 @@
 package frc.robot.subsystems.drive;
 
+import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -27,6 +28,9 @@ public final class DriveConstants {
       tunableTable.makeField("note distance to speed mult", 1.5);
   public static final LoggedTunableNumber NOTE_PICKUP_MAX_TURN_SPEED =
       tunableTable.makeField("note pickup max turn speed", 5);
+  public static final PathConstraints pathPlannerConstraints =
+      new PathConstraints(4.0, 3.0, Units.degreesToRadians(200), Units.degreesToRadians(200));
+
   public static DrivetrainConfig drivetrainConfig =
       switch (Constants.getRobot()) {
         default ->

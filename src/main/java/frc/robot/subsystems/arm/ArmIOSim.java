@@ -11,7 +11,7 @@ public class ArmIOSim implements ArmIO {
   private final SingleJointedArmSim arm =
       new SingleJointedArmSim(
           gearbox,
-          20.0 * 60 / 24,
+          ArmConstants.MOTOR_TO_ARM_RATIO,
           SingleJointedArmSim.estimateMOI(.7, 5),
           .7,
           ArmConstants.MIN_RAD,

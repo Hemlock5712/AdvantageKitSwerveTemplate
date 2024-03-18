@@ -28,6 +28,9 @@ public class FieldConstants {
   public static Translation2d ampCenter =
       new Translation2d(Units.inchesToMeters(72.455), Units.inchesToMeters(322.996));
 
+  public static Pose2d ampScoringPose =
+      new Pose2d(ampCenter.getX(), 7.75, Rotation2d.fromDegrees(-90));
+
   /** Staging locations for each note */
   public static final class StagingLocations {
     public static double centerlineX = fieldLength / 2.0;
@@ -95,4 +98,7 @@ public class FieldConstants {
       throw new RuntimeException(e);
     }
   }
+
+  public static int[] blueAllianceStageAprilTagIDs = new int[] {16, 14, 15};
+  public static int[] redAllianceStageAprilTagIDs = new int[] {13, 12, 11};
 }
