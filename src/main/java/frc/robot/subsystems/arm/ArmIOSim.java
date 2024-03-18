@@ -10,7 +10,14 @@ public class ArmIOSim implements ArmIO {
   private final DCMotor gearbox = DCMotor.getNEO(2);
   private final SingleJointedArmSim arm =
       new SingleJointedArmSim(
-          gearbox, 20.0 * 60 / 24, SingleJointedArmSim.estimateMOI(.7, 12.5), .7, 0, 1, true, 0);
+          gearbox,
+          20.0 * 60 / 24,
+          SingleJointedArmSim.estimateMOI(.7, 5),
+          .7,
+          ArmConstants.MIN_RAD,
+          ArmConstants.MAX_RAD,
+          true,
+          0);
 
   private double volts = 0.0;
 

@@ -6,13 +6,14 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.util.ErrorChecker;
+import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
   private final IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
-
+  @Getter private double voltage = 0;
   public final SysIdRoutine sysid;
 
   public Intake(IntakeIO io) {
@@ -41,6 +42,7 @@ public class Intake extends SubsystemBase {
   }
 
   public void stop() {
+    voltage = 0;
     io.stop();
   }
 
@@ -50,6 +52,7 @@ public class Intake extends SubsystemBase {
   }
 
   public void setVoltage(double volts) {
+    voltage = volts;
     io.setVoltage(volts);
   }
 }

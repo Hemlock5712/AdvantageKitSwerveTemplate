@@ -37,6 +37,7 @@ import frc.robot.subsystems.arm.*;
 import frc.robot.subsystems.beamBreak.BeamBreak;
 import frc.robot.subsystems.beamBreak.BeamBreakIO;
 import frc.robot.subsystems.beamBreak.BeamBreakIOReal;
+import frc.robot.subsystems.beamBreak.BeamBreakIOSim;
 import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.drive.*;
@@ -45,14 +46,12 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
-import frc.robot.subsystems.shooter.ShooterConstants;
-import frc.robot.subsystems.shooter.ShooterIO;
-import frc.robot.subsystems.shooter.ShooterIOSparkMax;
-import frc.robot.subsystems.shooter.ShooterSubsystem;
+import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.vision.*;
 import frc.robot.util.*;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.photonvision.simulation.VisionSystemSim;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -152,29 +151,36 @@ public class RobotContainer {
                 new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
                 drive::getDrive);
 
+        VisionSystemSim noteVisionSimSystem = new VisionSystemSim("notes");
+        Commands.run(
+                () -> {
+                  noteVisionSimSystem.update(drive.getDrive());
+                })
+            .ignoringDisable(true)
+            .schedule();
+
         aprilTagVision = new AprilTagVision(simApriltagVisionIO);
+        final var noteVisionIO = new NoteVisionIOSim(noteVisionSimSystem);
         noteVision =
             new NoteVisionSubsystem(
-                //                new NoteVisionIOPhotonVision("lefty"),
-                //                new NoteVisionIO() {
-                //                  @Override
-                //                  public void updateInputs(NoteVisionIOInputs inputs) {
-                //                    inputs.timeStampSeconds = Math.floor(Logger.getTimestamp() /
-                // 1e5) / 10 - 0.5;
-                //                    inputs.notePitches = new double[] {0, .1};
-                //                    inputs.noteYaws = new double[] {-.5, 0.4};
-                //                  }
-                //                },
-                new NoteVisionIOSim(simApriltagVisionIO.getVisionSim()),
-                drive.getPoseLogForNoteDetection(),
-                drive::getDrive);
-        // flywheel = new Flywheel(new FlywheelIOSim());
-        shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
+                noteVisionIO, drive.getPoseLogForNoteDetection(), drive::getDrive);
+
+        new Trigger(DriverStation::isAutonomousEnabled)
+            .onTrue(Commands.runOnce(noteVisionIO::resetNotePoses));
+
+        shooter = new ShooterSubsystem(new ShooterIOSim(), new ShooterIOSim());
         intake = new Intake(new IntakeIO() {});
         arm = new ArmSubsystem(new ArmIOSim());
         leftClimber = new ClimberSubsystem(new ClimberIO() {}, "left");
         rightClimber = new ClimberSubsystem(new ClimberIO() {}, "right");
-        beamBreak = new BeamBreak(new BeamBreakIO() {});
+        beamBreak =
+            new BeamBreak(
+                new BeamBreakIOSim(
+                    drive::getDrive,
+                    noteVisionIO::getNoteLocations,
+                    intake::getVoltage,
+                    shooter::getTargetVelocityRadPerSec,
+                    noteVisionIO::removeNote));
       }
       default -> {
         // Replayed robot, disable IO implementations
@@ -290,9 +296,7 @@ public class RobotContainer {
     driveMode.setDriveMode(DriveModeType.SPEAKER);
     driverController
         .x()
-        .whileTrue(
-            new PickUpNoteCommand(
-                drive, intake, noteVision, driverController.getHID()::getAButton));
+        .whileTrue(new PickUpNoteCommand(drive, intake, noteVision, beamBreak::detectNote));
     driverController
         .y()
         .toggleOnTrue(
