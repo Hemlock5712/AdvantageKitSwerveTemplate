@@ -1,13 +1,7 @@
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.Volts;
-
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants;
-import frc.robot.subsystems.shooter.ShooterConstants.Real.PIDConstants.BottomConstants;
-import frc.robot.subsystems.shooter.ShooterConstants.Real.PIDConstants.TopConstants;
 import frc.robot.util.ErrorChecker;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -20,66 +14,21 @@ public class ShooterSubsystem extends SubsystemBase {
   private final ShooterIOInputsAutoLogged bottomInputs = new ShooterIOInputsAutoLogged();
   private final SimpleMotorFeedforward topFeedForward;
   private final SimpleMotorFeedforward bottomFeedForward;
-  public final SysIdRoutine sysid;
   @AutoLogOutput @Getter private double targetVelocityRadPerSec;
 
   public ShooterSubsystem(ShooterIO topIO, ShooterIO bottomIO) {
     this.topIO = topIO;
     this.bottomIO = bottomIO;
 
-    // Switch constants based on mode (the physics simulator is treated as a
-    // separate robot with different tuning)
-    switch (Constants.getMode()) {
-      case REAL, REPLAY -> {
-        topFeedForward =
-            new SimpleMotorFeedforward(
-                ShooterConstants.Real.FeedForwardConstants.TopConstants.kS.get(),
-                ShooterConstants.Real.FeedForwardConstants.TopConstants.kV.get());
-        topIO.configurePID(TopConstants.kP.get(), TopConstants.kI.get(), TopConstants.kD.get());
-        bottomFeedForward =
-            new SimpleMotorFeedforward(
-                ShooterConstants.Real.FeedForwardConstants.BottomConstants.kS.get(),
-                ShooterConstants.Real.FeedForwardConstants.BottomConstants.kV.get());
-        bottomIO.configurePID(
-            BottomConstants.kP.get(), BottomConstants.kI.get(), BottomConstants.kD.get());
-      }
-      case SIM -> {
-        topFeedForward =
-            new SimpleMotorFeedforward(
-                ShooterConstants.Sim.FeedForwardConstants.TopConstants.kS,
-                ShooterConstants.Sim.FeedForwardConstants.TopConstants.kV);
-        topIO.configurePID(
-            ShooterConstants.Sim.PIDConstants.TopConstants.kP,
-            ShooterConstants.Sim.PIDConstants.TopConstants.kI,
-            ShooterConstants.Sim.PIDConstants.TopConstants.kD);
-        bottomFeedForward =
-            new SimpleMotorFeedforward(
-                ShooterConstants.Sim.FeedForwardConstants.BottomConstants.kS,
-                ShooterConstants.Sim.FeedForwardConstants.BottomConstants.kV);
-        bottomIO.configurePID(
-            ShooterConstants.Sim.PIDConstants.BottomConstants.kP,
-            ShooterConstants.Sim.PIDConstants.BottomConstants.kI,
-            ShooterConstants.Sim.PIDConstants.BottomConstants.kD);
-      }
-      default -> {
-        topFeedForward = new SimpleMotorFeedforward(0.0, 0.0);
-        bottomFeedForward = new SimpleMotorFeedforward(0.0, 0.0);
-      }
-    }
-
-    sysid =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                null,
-                null,
-                null,
-                state -> Logger.recordOutput("ShooterSubsystem/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism(
-                voltage -> {
-                  runVolts(voltage.in(Volts));
-                },
-                null,
-                this));
+    topFeedForward =
+        new SimpleMotorFeedforward(
+            ShooterConstants.CURRENT_TUNE.top().ks(), ShooterConstants.CURRENT_TUNE.top().kv());
+    topIO.configurePID(ShooterConstants.FlywheelModelConstants.Top.kP.get(), 0, 0);
+    bottomFeedForward =
+        new SimpleMotorFeedforward(
+            ShooterConstants.CURRENT_TUNE.bottom().ks(),
+            ShooterConstants.CURRENT_TUNE.bottom().kv());
+    bottomIO.configurePID(ShooterConstants.FlywheelModelConstants.Bottom.kP.get(), 0, 0);
 
     targetVelocityRadPerSec = 0.0;
   }
@@ -98,16 +47,11 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   private void updateControlConstants() {
-    if (TopConstants.kP.hasChanged(0)
-        || TopConstants.kI.hasChanged(0)
-        || TopConstants.kD.hasChanged(0)) {
-      topIO.configurePID(TopConstants.kP.get(), TopConstants.kI.get(), TopConstants.kD.get());
+    if (ShooterConstants.FlywheelModelConstants.Top.kP.hasChanged(0)) {
+      topIO.configurePID(ShooterConstants.FlywheelModelConstants.Top.kP.get(), 0, 0);
     }
-    if (BottomConstants.kP.hasChanged(0)
-        || BottomConstants.kI.hasChanged(0)
-        || BottomConstants.kD.hasChanged(0)) {
-      bottomIO.configurePID(
-          BottomConstants.kP.get(), BottomConstants.kI.get(), BottomConstants.kD.get());
+    if (ShooterConstants.FlywheelModelConstants.Bottom.kP.hasChanged(0)) {
+      bottomIO.configurePID(ShooterConstants.FlywheelModelConstants.Bottom.kP.get(), 0, 0);
     }
   }
 

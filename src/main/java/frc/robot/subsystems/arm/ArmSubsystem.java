@@ -1,6 +1,5 @@
 package frc.robot.subsystems.arm;
 
-import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.util.interpolation.InterpolationMaps.angleToHoldVolts;
 
 import edu.wpi.first.math.MathUtil;
@@ -10,8 +9,8 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.util.ErrorChecker;
+import frc.robot.util.interpolation.InterpolationMaps;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -23,8 +22,6 @@ public class ArmSubsystem extends SubsystemBase {
       new PIDController(ArmConstants.kP.get(), ArmConstants.kI.get(), ArmConstants.kD.get());
 
   @Getter private boolean positionControlActive = false;
-
-  public final SysIdRoutine sysid;
 
   private final Translation3d ROTATION_POINT = new Translation3d(-.26, 0.0, .273);
 
@@ -39,20 +36,6 @@ public class ArmSubsystem extends SubsystemBase {
     this.armIO = armIO;
     SmartDashboard.putData(this);
     double shooterAngle = 70;
-
-    sysid =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                null,
-                null,
-                null,
-                state -> Logger.recordOutput("ArmSubsystem/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism(
-                voltage -> {
-                  limitAndSetVolts(voltage.in(Volts));
-                },
-                null,
-                this));
   }
 
   private void updateControlConstants() {
@@ -69,15 +52,20 @@ public class ArmSubsystem extends SubsystemBase {
     ErrorChecker.checkError(armIOInputs);
 
     if (positionControlActive) {
-      //      if (pidController.getSetpoint() < 0.05 && armIOInputs.positionRad < 0.35) {
-      //        positionControlActive = false;
-      //      }
+      if (pidController.getSetpoint() < 0.05
+          && armIOInputs.positionRad < 0.05
+          && Math.abs(armIOInputs.velocityRadPerSec) < 0.05) {
+        positionControlActive = false;
+      }
 
       double pidVolts = pidController.calculate(armIOInputs.positionRad);
-      //      double ffVolts = feedforward.calculate(armIOInputs.positionRad,
-      // Math.signum(pidVolts));
       double holdVolts = angleToHoldVolts.get(armIOInputs.positionRad);
-      double frictionVolts = ArmConstants.kS.get() * Math.signum(pidVolts);
+      double frictionVolts =
+          InterpolationMaps.angleToKS.get(armIOInputs.positionRad) * Math.signum(pidVolts);
+
+      if (pidController.atSetpoint()) {
+        frictionVolts = 0;
+      }
 
       double volts = pidVolts + frictionVolts;
 
