@@ -28,14 +28,12 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.*;
 import frc.robot.commands.auto.AutoCommandBuilder;
-import frc.robot.commands.auto.AutoConstants;
 import frc.robot.commands.climber.ManualClimberCommand;
 import frc.robot.commands.climber.ResetClimberBasic;
 import frc.robot.subsystems.arm.*;
@@ -54,10 +52,9 @@ import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.vision.*;
 import frc.robot.util.*;
-import java.util.Set;
+import java.util.Optional;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 import org.littletonrobotics.junction.networktables.LoggedDashboardString;
 import org.photonvision.simulation.VisionSystemSim;
 
@@ -366,16 +363,7 @@ public class RobotContainer {
 
     secondController
         .start()
-        .onTrue(
-            Commands.runOnce(
-                () ->
-                    drive.setAutoStartPose(
-                        AllianceFlipUtil.apply(
-                            new Pose2d(
-                                FieldConstants.Speaker.centerSpeakerOpening
-                                    .getTranslation()
-                                    .plus(new Translation2d(1.5, 0)),
-                                new Rotation2d(0))))));
+        .onTrue(AdjustPositionCommands.setRotation(drive, () -> new Rotation2d(0)));
     secondController
         .back()
         .toggleOnTrue(
@@ -487,26 +475,43 @@ public class RobotContainer {
                 }));
   }
 
+  private static final Pose2d[] startingPoses = {
+    new Pose2d(1.35, FieldConstants.Speaker.centerSpeakerOpening.getY(), Rotation2d.fromDegrees(0)),
+    new Pose2d(0.72, 6.67, Rotation2d.fromDegrees(60)),
+    new Pose2d(0.72, 4.44, Rotation2d.fromDegrees(-60)),
+  };
+
+  private Optional<Pose2d> convertPoseIdToPose(int id) {
+    try {
+      return Optional.of(AllianceFlipUtil.apply(startingPoses[id]));
+    } catch (Exception e) {
+      return Optional.empty();
+    }
+  }
+
   private void configureAutoChooser() {
-    var noteId = new LoggedDashboardNumber("note id", 1);
-    autoChooser.addOption(
-        "drive and pickup note n test",
-        new DeferredCommand(
-            () ->
-                autoCommandBuilder.driveAndPickupNoteAuto(
-                    AutoConstants.AUTO_NOTES[(int) noteId.get()],
-                    AutoConstants.NotePickupLocations.X),
-            Set.of(drive, intake)));
-    autoChooser.addOption(
-        "pickup note n test",
-        new DeferredCommand(
-            () ->
-                autoCommandBuilder.pickupNoteAtTranslation(
-                    AutoConstants.AUTO_NOTES[(int) noteId.get()]),
-            Set.of(drive, intake)));
-    final var configString = new LoggedDashboardString("auto config string", "b.102");
+    final var configString = new LoggedDashboardString("auto config string", ".102b");
     autoChooser.addOption(
         "test configured auto", autoCommandBuilder.autoFromConfigString(configString::get));
+
+    // -999 is an indicator that it is unchanged
+    final var angle =
+        new LoggedTunableNumber(
+            "starting angle deg (0 is intake away from ds, and + is counterclockwise for blue and clockwise for red)", -999);
+    final var startingPoseId = new LoggedTunableNumber("starting pose id", -999);
+
+    new Trigger(() -> angle.hasChanged(0))
+        .onTrue(
+            AdjustPositionCommands.setRotation(
+                drive, () -> AllianceFlipUtil.apply(Rotation2d.fromDegrees(angle.get()))));
+    new Trigger(() -> startingPoseId.hasChanged(0))
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  final var pose = convertPoseIdToPose((int) startingPoseId.get());
+                  pose.ifPresent(drive::setAutoStartPose);
+                }));
+
     autoChooser.addOption("test note pickup", autoCommandBuilder.pickupNoteVisibleNote());
     // Set up SysId routines
     autoChooser.addOption(

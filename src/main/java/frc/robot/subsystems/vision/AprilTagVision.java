@@ -151,6 +151,11 @@ public class AprilTagVision extends SubsystemBase {
    * @return The standard deviation of the theta coordinate
    */
   private double calculateThetaStdDev(PoseEstimate poseEstimates, int tagPosesSize) {
+    if (DISABLE_VISION_THETA) {
+      // very big number means the angle is basically ignored
+      return 1e100;
+    }
+
     return thetaStdDevCoefficient
         * Math.pow(poseEstimates.averageTagDistance(), 2.0)
         / tagPosesSize;

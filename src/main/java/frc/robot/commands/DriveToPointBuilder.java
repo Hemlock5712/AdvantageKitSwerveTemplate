@@ -38,14 +38,29 @@ public class DriveToPointBuilder {
         targetPose, DriveConstants.pathPlannerConstraints, endVelocity, 0.0);
   }
 
+  public static Command driveToNoFlip(Pose2d targetPose) {
+    return driveToNoFlip(targetPose, 0);
+  }
+
+  public static Command driveToNoFlip(Pose2d targetPose, double endVelocity) {
+    return AutoBuilder.pathfindToPose(
+        targetPose, DriveConstants.pathPlannerConstraints, endVelocity, 0.0);
+  }
+
   public static Command align(
-      Drive drive, Pose2d targetPose, double distanceTolerance, double angleToleranceRad) {
+      Drive drive,
+      Pose2d targetPose,
+      double distanceTolerance,
+      double angleToleranceRad,
+      boolean flip) {
+    final var flippedTargetPose = flip ? AllianceFlipUtil.apply(targetPose) : targetPose;
     return Commands.runEnd(
             () -> {
               final var pos = drive.getPose();
 
-              final var translationOffset = targetPose.getTranslation().minus(pos.getTranslation());
-              final var rotationOffset = targetPose.getRotation().minus(drive.getRotation());
+              final var translationOffset =
+                  flippedTargetPose.getTranslation().minus(pos.getTranslation());
+              final var rotationOffset = flippedTargetPose.getRotation().minus(drive.getRotation());
 
               var omega = drive.getThetaController().calculate(0, rotationOffset.getRadians());
               final var speedX =
@@ -67,16 +82,17 @@ public class DriveToPointBuilder {
         .until(
             () -> {
               final var pos = drive.getPose();
-              return pos.getTranslation().getDistance(targetPose.getTranslation())
+              return pos.getTranslation().getDistance(flippedTargetPose.getTranslation())
                       < distanceTolerance
-                  && Math.abs(pos.getRotation().minus(targetPose.getRotation()).getRadians())
+                  && Math.abs(pos.getRotation().minus(flippedTargetPose.getRotation()).getRadians())
                       < angleToleranceRad;
             });
   }
 
-  public static Command driveToAndAlign(
+  public static Command driveToAndAlignNoFlip(
       Drive drive, Pose2d targetPose, double distanceTolerance, double angleTolerance) {
-    return driveTo(targetPose).andThen(align(drive, targetPose, distanceTolerance, angleTolerance));
+    return driveToNoFlip(targetPose)
+        .andThen(align(drive, targetPose, distanceTolerance, angleTolerance, false));
   }
 
   public Command waitUntilNearPose(Pose2d targetPose, double distanceThreshold) {

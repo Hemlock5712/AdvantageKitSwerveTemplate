@@ -3,7 +3,6 @@ package frc.robot.util;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.commands.auto.AutoConstants;
-
 import java.util.*;
 
 public class AutoConfigParser {
@@ -30,6 +29,12 @@ public class AutoConfigParser {
     shootingPoseMap.put('g', AutoConstants.ShootingTranslations.G);
   }
 
+  /**
+   * this method flips the positions based on the driverstation state when it is called
+   *
+   * @param config the config string
+   * @return a list of AutoParts. is empty if the string is invalid
+   */
   public static Optional<List<AutoPart>> parseAutoConfig(String config) {
     try {
       final ArrayList<AutoPart> output = new ArrayList<>();
@@ -38,17 +43,23 @@ public class AutoConfigParser {
         if (part.length() < 2) {
           return Optional.empty();
         }
-        final var shootingPose = Optional.ofNullable(shootingPoseMap.get(part.charAt(0)));
-        final var pickupPose = Optional.ofNullable(pickupPoseMap.get(part.charAt(1)));
+        final var shootingPose =
+            Optional.ofNullable(shootingPoseMap.get(part.charAt(part.length() - 1)));
+        final var pickupPose = Optional.ofNullable(pickupPoseMap.get(part.charAt(0)));
         if (shootingPose.isEmpty()) {
           return Optional.empty();
         }
         final var autoParts =
-            part.substring(2)
+            part.substring(1, part.length() - 1)
                 .chars()
                 .map(Character::getNumericValue)
                 .mapToObj(i -> AutoConstants.AUTO_NOTES[i])
-                .map(note -> new AutoPart(note, shootingPose.get(), pickupPose));
+                .map(
+                    note ->
+                        new AutoPart(
+                            AllianceFlipUtil.apply(note),
+                            AllianceFlipUtil.apply(shootingPose.get()),
+                            pickupPose.map(AllianceFlipUtil::apply)));
 
         output.addAll(autoParts.toList());
       }

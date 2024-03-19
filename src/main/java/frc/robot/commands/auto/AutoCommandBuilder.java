@@ -17,6 +17,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.vision.NoteVisionSubsystem;
+import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.AutoConfigParser;
 import frc.robot.util.FieldConstants;
 import frc.robot.util.ShooterStateHelpers;
@@ -25,7 +26,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
-
 import org.littletonrobotics.junction.Logger;
 
 public class AutoCommandBuilder {
@@ -76,7 +76,8 @@ public class AutoCommandBuilder {
 
   public Command pickupNoteAtTranslation(Translation2d note) {
     return Commands.runOnce(
-            () -> noteVision.setVirtualAutoNote(note, AutoConstants.DISTANCE_TO_TRUST_CAMERA), noteVision)
+            () -> noteVision.setVirtualAutoNote(note, AutoConstants.DISTANCE_TO_TRUST_CAMERA),
+            noteVision)
         .andThen(
             pickupSuppliedNote(
                 () -> {
@@ -101,16 +102,17 @@ public class AutoCommandBuilder {
 
   public Command driveAndPickupNoteAuto(Translation2d note, Pose2d pickupLocation) {
     final Command driveToPickup =
-        DriveToPointBuilder.driveTo(pickupLocation, 4)
+        DriveToPointBuilder.driveToNoFlip(pickupLocation, 4)
             .until(
                 () ->
                     drive.getPose().getTranslation().getDistance(pickupLocation.getTranslation())
                             < AutoConstants.DRIVE_TO_PICKUP_INTERRUPT_DISTANCE
-                        && getVisionNoteByTranslation(note, AutoConstants.AutoNoteOffsetThresholds.WHILE_ROUTING)
+                        && getVisionNoteByTranslation(
+                                note, AutoConstants.AutoNoteOffsetThresholds.WHILE_ROUTING)
                             .isPresent());
     return driveToPickup
         .andThen(
-            Commands.runOnce(() -> Logger.recordOutput("auto/changeTIme", Logger.getTimestamp())))
+            Commands.runOnce(() -> Logger.recordOutput("auto/changeTime", Logger.getTimestamp())))
         .andThen(pickupNoteAtTranslation(note));
   }
 
@@ -121,19 +123,23 @@ public class AutoCommandBuilder {
             : driveAndPickupNoteAuto(autoPart.note(), autoPart.notePickupPose().get());
 
     return pickupCommand
-        .andThen(readyShooter())
+        .asProxy()
+        .andThen(readyShooter().asProxy())
         .andThen(
-            DriveToPointBuilder.driveToAndAlign(
-                drive,
-                new Pose2d(
-                    autoPart.shootingTranslation(),
-                    autoPart
-                        .shootingTranslation()
-                        .minus(FieldConstants.Speaker.centerSpeakerOpening.getTranslation())
-                        .getAngle()),
-                AutoConstants.SHOOTING_DISTANCE_OFFSET_TOLERANCE,
-                AutoConstants.SHOOTING_ANGLE_OFFSET_TOLERANCE))
-        .andThen(autoShoot());
+            DriveToPointBuilder.driveToAndAlignNoFlip(
+                    drive,
+                    new Pose2d(
+                        autoPart.shootingTranslation(),
+                        autoPart
+                            .shootingTranslation()
+                            .minus(
+                                AllianceFlipUtil.apply(
+                                    FieldConstants.Speaker.centerSpeakerOpening.getTranslation()))
+                            .getAngle()),
+                    AutoConstants.SHOOTING_DISTANCE_OFFSET_TOLERANCE,
+                    AutoConstants.SHOOTING_ANGLE_OFFSET_TOLERANCE)
+                .asProxy())
+        .andThen(autoShoot().asProxy());
   }
 
   public Command autoFromConfigString(Supplier<String> configStringSupplier) {
@@ -142,18 +148,26 @@ public class AutoCommandBuilder {
 
   public Command autoFromConfig(
       Supplier<Optional<List<AutoConfigParser.AutoPart>>> configSupplier) {
-    return new DeferredCommand(
-        () -> {
-          final var config = configSupplier.get();
-          if (config.isEmpty()) {
-            return Commands.none();
-          }
+    return initialFullShot()
+        .asProxy()
+        .andThen(
+            new DeferredCommand(
+                () -> {
+                  final var config = configSupplier.get();
+                  if (config.isEmpty()) {
+                    return Commands.none();
+                  }
 
-          final var commands = config.get().stream().map(this::autoFromConfigPart);
+                  final var commands =
+                      config.get().stream().map(this::autoFromConfigPart).toArray(Command[]::new);
 
-          return Commands.sequence(commands.toArray(Command[]::new));
-        },
-        Set.of(drive, intake, shooter));
+                  return Commands.sequence(commands).asProxy();
+                },
+                Set.of()));
+  }
+
+  public Command initialFullShot() {
+    return readyShooter().andThen(autoShoot());
   }
 
   /** assumes the shooter is at the correct speed and the arm is in the correct position */

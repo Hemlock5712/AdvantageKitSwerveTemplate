@@ -148,6 +148,12 @@ public class Drive extends SubsystemBase {
                 this));
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
     thetaController.setTolerance(Units.degreesToRadians(5));
+
+    /*
+     the sim vision starts at 45 deg for some reason,
+     this ensures everything is lined up because I think we will ignore the vision rotation
+    */
+    setAutoStartPose(new Pose2d(8, 5, Rotation2d.fromDegrees(45)));
   }
 
   @Override
