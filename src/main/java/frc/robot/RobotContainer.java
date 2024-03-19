@@ -337,16 +337,8 @@ public class RobotContainer {
       configureUniversalControls(controller);
     }
 
-    //    final CommandXboxController debugController = new CommandXboxController(2);
-    //
-    //    arm.setDefaultCommand(
-    //        Commands.run(
-    //            () ->
-    //                arm.setManualVoltage(
-    //                    2
-    //                        * (debugController.getRightTriggerAxis()
-    //                            - debugController.getLeftTriggerAxis())),
-    //            arm));
+    //    LoggedDashboardNumber armVolts = new LoggedDashboardNumber("arm volts", 0);
+    //    arm.setDefaultCommand(arm.run(() -> arm.setManualVoltage(armVolts.get())));
   }
 
   private void configureUniversalControls(CommandXboxController controller) {
