@@ -34,6 +34,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.*;
 import frc.robot.commands.auto.AutoCommandBuilder;
+import frc.robot.commands.auto.AutoConstants;
 import frc.robot.commands.climber.ManualClimberCommand;
 import frc.robot.commands.climber.ResetClimberBasic;
 import frc.robot.subsystems.arm.*;
@@ -52,8 +53,6 @@ import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.vision.*;
 import frc.robot.util.*;
-import java.util.Optional;
-import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedDashboardString;
 import org.photonvision.simulation.VisionSystemSim;
@@ -231,20 +230,6 @@ public class RobotContainer {
 
     setupLimelightFlashing();
 
-    Commands.run(() -> Logger.recordOutput("global notes", noteVision.getNotesInGlobalSpace()))
-        .ignoringDisable(true)
-        .schedule();
-
-    Commands.run(
-            () -> {
-              var note =
-                  noteVision.getNoteByPosition(
-                      FieldConstants.StagingLocations.spikeTranslations[2], 0.5);
-              Logger.recordOutput("note by spike 2", note.orElseGet(Translation2d::new));
-            })
-        .ignoringDisable(true)
-        .schedule();
-
     drive.setPose(new Pose2d(1, 1, new Rotation2d(1, 1)));
     autoCommandBuilder =
         new AutoCommandBuilder(
@@ -254,6 +239,8 @@ public class RobotContainer {
     configureAutoChooser();
     configureButtonBindings();
     configureNamedCommands();
+
+    Dashboard.logField(drive::getPose, noteVision::getNotesInGlobalSpace).schedule();
   }
 
   private void setupLimelightFlashing() {
@@ -310,15 +297,8 @@ public class RobotContainer {
                         var closestNote = noteVision.getCurrentNote();
 
                         if (closestNote.isEmpty()) {
-                          Logger.recordOutput("closest note for orienation", new Translation2d());
                           return drive.getRotation();
                         }
-
-                        Logger.recordOutput("closest note for orienation", closestNote.get());
-                        Logger.recordOutput(
-                            "closest note for orienation global",
-                            NoteVisionSubsystem.projectRelativeNotePoseOntoRobotPose(
-                                closestNote.get(), drive.getPose()));
 
                         return closestNote.get().getAngle().plus(drive.getRotation());
                       });
@@ -475,20 +455,6 @@ public class RobotContainer {
                 }));
   }
 
-  private static final Pose2d[] startingPoses = {
-    new Pose2d(1.35, FieldConstants.Speaker.centerSpeakerOpening.getY(), Rotation2d.fromDegrees(0)),
-    new Pose2d(0.72, 6.67, Rotation2d.fromDegrees(60)),
-    new Pose2d(0.72, 4.44, Rotation2d.fromDegrees(-60)),
-  };
-
-  private Optional<Pose2d> convertPoseIdToPose(int id) {
-    try {
-      return Optional.of(AllianceFlipUtil.apply(startingPoses[id]));
-    } catch (Exception e) {
-      return Optional.empty();
-    }
-  }
-
   private void configureAutoChooser() {
     final var configString = new LoggedDashboardString("auto config string", ".102b");
     autoChooser.addOption(
@@ -497,7 +463,8 @@ public class RobotContainer {
     // -999 is an indicator that it is unchanged
     final var angle =
         new LoggedTunableNumber(
-            "starting angle deg (0 is intake away from ds, and + is counterclockwise for blue and clockwise for red)", -999);
+            "starting angle deg (0 is intake away from ds, and + is counterclockwise for blue and clockwise for red)",
+            -999);
     final var startingPoseId = new LoggedTunableNumber("starting pose id", -999);
 
     new Trigger(() -> angle.hasChanged(0))
@@ -507,10 +474,12 @@ public class RobotContainer {
     new Trigger(() -> startingPoseId.hasChanged(0))
         .onTrue(
             Commands.runOnce(
-                () -> {
-                  final var pose = convertPoseIdToPose((int) startingPoseId.get());
-                  pose.ifPresent(drive::setAutoStartPose);
-                }));
+                    () -> {
+                      final var pose =
+                          AutoConstants.convertPoseIdToPose((int) startingPoseId.get());
+                      pose.ifPresent(drive::setAutoStartPose);
+                    })
+                .ignoringDisable(true));
 
     autoChooser.addOption("test note pickup", autoCommandBuilder.pickupNoteVisibleNote());
     // Set up SysId routines

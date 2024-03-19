@@ -87,10 +87,6 @@ public class AutoCommandBuilder {
                     trackedNote =
                         getVisionNoteByTranslation(
                             note, AutoConstants.AutoNoteOffsetThresholds.WHILE_ATTEMPTING_PICKUP);
-                    trackedNote.ifPresent(
-                        translation2d ->
-                            Logger.recordOutput(
-                                "auto/tracked note while pickuping", translation2d));
                   }
 
                   return trackedNote.map(
@@ -110,10 +106,7 @@ public class AutoCommandBuilder {
                         && getVisionNoteByTranslation(
                                 note, AutoConstants.AutoNoteOffsetThresholds.WHILE_ROUTING)
                             .isPresent());
-    return driveToPickup
-        .andThen(
-            Commands.runOnce(() -> Logger.recordOutput("auto/changeTime", Logger.getTimestamp())))
-        .andThen(pickupNoteAtTranslation(note));
+    return driveToPickup.andThen(pickupNoteAtTranslation(note));
   }
 
   public Command autoFromConfigPart(AutoConfigParser.AutoPart autoPart) {

@@ -84,22 +84,6 @@ public class NoteVisionSubsystem extends SubsystemBase {
 
     notesInOdometrySpace = currentNotes.toArray(TimestampedNote[]::new);
 
-    Logger.recordOutput(
-        "NoteVisionSubsystem/old robot pose",
-        noVisionPoseLog.getPoseAtTime(noteVisionIOInputs.timeStampSeconds));
-    Logger.recordOutput(
-        "NoteVisionSubsystem/cur robot pose", currentRobotPoseNoVisionSupplier.get());
-
-    Logger.recordOutput("NoteVisionSubsystem/note poses", getNotesInRelativeSpace());
-    Logger.recordOutput(
-        "NoteVisionSubsystem/note poses odometry in camera",
-        oldNotesInCamera.stream().map(note -> note.pose).toArray(Translation2d[]::new));
-    Logger.recordOutput(
-        "NoteVisionSubsystem/note poses odometry out of camera",
-        oldNotesOutOfCamera.stream().map(note -> note.pose).toArray(Translation2d[]::new));
-    Logger.recordOutput(
-        "NoteVisionSubsystem/note poses odometry space", newNotes.toArray(new Translation2d[0]));
-
     updateAutoNote();
   }
 
@@ -255,7 +239,6 @@ public class NoteVisionSubsystem extends SubsystemBase {
     return notes;
   }
 
-  @AutoLogOutput
   public Translation2d[] getNotesInRelativeSpace() {
     return Arrays.stream(notesInOdometrySpace)
         .map(
@@ -287,6 +270,7 @@ public class NoteVisionSubsystem extends SubsystemBase {
     return closest;
   }
 
+  @AutoLogOutput
   public Translation2d[] getNotesInGlobalSpace() {
     Translation2d[] notes = getNotesInRelativeSpace();
     for (int i = 0; i < notes.length; i++) {
@@ -340,11 +324,12 @@ public class NoteVisionSubsystem extends SubsystemBase {
 
   private void updateAutoNote() {
     if (virtualAutoNote.isEmpty()) {
-      Logger.recordOutput("virtual auto note", new Pose2d());
+      Logger.recordOutput("auto/virtual auto note", new Pose2d());
       return;
     }
 
-    Logger.recordOutput("virtual auto note", new Pose2d(virtualAutoNote.get(), new Rotation2d()));
+    Logger.recordOutput(
+        "auto/virtual auto note", new Pose2d(virtualAutoNote.get(), new Rotation2d()));
 
     final var relativeAutoNote =
         deprojectProjectedNoteFromRobotPose(

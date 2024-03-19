@@ -4,7 +4,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.FieldConstants;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class AutoConstants {
@@ -42,5 +44,19 @@ public class AutoConstants {
             new Translation2d(6.3, FieldConstants.fieldWidth / 2), Rotation2d.fromDegrees(0));
     public static final Pose2d Z =
         new Pose2d(new Translation2d(6.3, 1.7), Rotation2d.fromDegrees(10));
+  }
+
+  private static final Pose2d[] startingPoses = {
+    new Pose2d(1.35, FieldConstants.Speaker.centerSpeakerOpening.getY(), Rotation2d.fromDegrees(0)),
+    new Pose2d(0.72, 6.67, Rotation2d.fromDegrees(60)),
+    new Pose2d(0.72, 4.44, Rotation2d.fromDegrees(-60)),
+  };
+
+  public static Optional<Pose2d> convertPoseIdToPose(int id) {
+    try {
+      return Optional.of(AllianceFlipUtil.apply(startingPoses[id]));
+    } catch (Exception e) {
+      return Optional.empty();
+    }
   }
 }
