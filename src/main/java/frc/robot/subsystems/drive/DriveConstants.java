@@ -1,5 +1,6 @@
 package frc.robot.subsystems.drive;
 
+import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -13,6 +14,9 @@ import frc.robot.Constants;
 
 /** All Constants Measured in Meters and Radians (m/s, m/s^2, rad/s, rad/s^2) */
 public final class DriveConstants {
+  public static final PathConstraints pathPlannerConstraints =
+      new PathConstraints(4.0, 3.0, Units.degreesToRadians(200), Units.degreesToRadians(200));
+
   public static DrivetrainConfig drivetrainConfig =
       switch (Constants.getRobot()) {
         default ->

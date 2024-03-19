@@ -29,6 +29,9 @@ public class FieldConstants {
   public static Translation2d ampCenter =
       new Translation2d(Units.inchesToMeters(72.455), Units.inchesToMeters(322.996));
 
+  public static Pose2d ampScoringPose =
+      new Pose2d(ampCenter.getX(), 7.75, Rotation2d.fromDegrees(-90));
+
   public static Translation2d ampLobbingTarget = ampCenter.plus(new Translation2d(0, -1));
 
   static {
