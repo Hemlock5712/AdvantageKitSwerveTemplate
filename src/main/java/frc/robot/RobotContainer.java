@@ -114,12 +114,6 @@ public class RobotContainer {
             new AprilTagVision(
                 new AprilTagVisionIOLimelight("limelight"),
                 new AprilTagVisionIOLimelight("limelight-two"));
-        noteVision =
-            new NoteVisionSubsystem(
-                new NoteVisionIOPhotonVision("lefty"),
-                drive.getPoseLogForNoteDetection(),
-                drive::getDrive,
-                drive::getPose);
         beamBreak = new BeamBreak(new BeamBreakIOReal());
         shooter =
             new ShooterSubsystem(
@@ -141,6 +135,13 @@ public class RobotContainer {
                 //                    ClimberConstants.RIGHT_MOTOR_ID,
                 // ClimberConstants.RIGHT_LIMIT_SWITCH_DIO_PORT),
                 "right");
+        noteVision =
+                new NoteVisionSubsystem(
+                        new NoteVisionIOPhotonVision("lefty"),
+                        drive.getPoseLogForNoteDetection(),
+                        drive::getDrive,
+                        drive::getPose,
+                        arm::getPositionRad);
       }
       case SIM -> {
         // Sim robot, instantiate physics sim IO implementations
@@ -168,13 +169,6 @@ public class RobotContainer {
 
         aprilTagVision = new AprilTagVision(simApriltagVisionIO);
         final var noteVisionIO = new NoteVisionIOSim(noteVisionSimSystem);
-        noteVision =
-            new NoteVisionSubsystem(
-                noteVisionIO, drive.getPoseLogForNoteDetection(), drive::getDrive, drive::getPose);
-
-        new Trigger(DriverStation::isAutonomousEnabled)
-            .onTrue(Commands.runOnce(noteVisionIO::resetNotePoses));
-
         shooter = new ShooterSubsystem(new ShooterIOSim(), new ShooterIOSim());
         intake = new Intake(new IntakeIO() {});
         arm = new ArmSubsystem(new ArmIOSim());
@@ -188,6 +182,13 @@ public class RobotContainer {
                     intake::getVoltage,
                     shooter::getTargetVelocityRadPerSec,
                     noteVisionIO::removeNote));
+        noteVision =
+                new NoteVisionSubsystem(
+                        noteVisionIO, drive.getPoseLogForNoteDetection(), drive::getDrive, drive::getPose, arm::getPositionRad);
+
+        new Trigger(DriverStation::isAutonomousEnabled)
+                .onTrue(Commands.runOnce(noteVisionIO::resetNotePoses));
+
       }
       default -> {
         // Replayed robot, disable IO implementations
@@ -200,18 +201,19 @@ public class RobotContainer {
                 new ModuleIO() {});
         // flywheel = new Flywheel(new FlywheelIO() {});
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
-        noteVision =
-            new NoteVisionSubsystem(
-                new NoteVisionIO() {},
-                drive.getPoseLogForNoteDetection(),
-                drive::getDrive,
-                drive::getPose);
         shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
         arm = new ArmSubsystem(new ArmIO() {});
         leftClimber = new ClimberSubsystem(new ClimberIO() {}, "left");
         rightClimber = new ClimberSubsystem(new ClimberIO() {}, "right");
         beamBreak = new BeamBreak(new BeamBreakIO() {});
+        noteVision =
+                new NoteVisionSubsystem(
+                        new NoteVisionIO() {},
+                        drive.getPoseLogForNoteDetection(),
+                        drive::getDrive,
+                        drive::getPose,
+                        arm::getPositionRad);
       }
     }
 

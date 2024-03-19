@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -23,6 +24,7 @@ public class NoteVisionSubsystem extends SubsystemBase {
   private final PoseLog noVisionPoseLog;
   private final Supplier<Pose2d> currentRobotPoseNoVisionSupplier;
   private final Supplier<Pose2d> currentRobotVisionFieldPoseSupplier;
+  private final DoubleSupplier armPositionSupplierRad;
   private double lastTimestamp = 0;
 
   /** Position of the simulated note for auto in field space */
@@ -33,14 +35,17 @@ public class NoteVisionSubsystem extends SubsystemBase {
   public record TimestampedNote(Translation2d pose, double timestamp) {}
 
   public NoteVisionSubsystem(
-      NoteVisionIO noteVisionIO,
-      PoseLog noVisionPoseLog,
-      Supplier<Pose2d> currentRobotPoseNoVisionSupplier,
-      Supplier<Pose2d> currentRobotVisionFieldPoseSupplier) {
+          NoteVisionIO noteVisionIO,
+          PoseLog noVisionPoseLog,
+          Supplier<Pose2d> currentRobotPoseNoVisionSupplier,
+          Supplier<Pose2d> currentRobotVisionFieldPoseSupplier,
+          DoubleSupplier armPositionSupplierRad
+  ) {
     this.noteVisionIO = noteVisionIO;
     this.noVisionPoseLog = noVisionPoseLog;
     this.currentRobotPoseNoVisionSupplier = currentRobotPoseNoVisionSupplier;
     this.currentRobotVisionFieldPoseSupplier = currentRobotVisionFieldPoseSupplier;
+    this.armPositionSupplierRad = armPositionSupplierRad;
   }
 
   @Override
@@ -48,11 +53,16 @@ public class NoteVisionSubsystem extends SubsystemBase {
     noteVisionIO.updateInputs(noteVisionIOInputs);
     Logger.processInputs("NoteVision", noteVisionIOInputs);
 
-    //    if (lastTimestamp == noteVisionIOInputs.timeStampSeconds) {
-    //      return;
-    //    } else {
-    //      lastTimestamp = noteVisionIOInputs.timeStampSeconds;
-    //    }
+    if (armPositionSupplierRad.getAsDouble() > NoteVisionConstants.MAX_ARM_POS_RAD) {
+      lastTimestamp = noteVisionIOInputs.timeStampSeconds;
+      return;
+    }
+
+        if (lastTimestamp == noteVisionIOInputs.timeStampSeconds) {
+          return;
+        } else {
+          lastTimestamp = noteVisionIOInputs.timeStampSeconds;
+        }
 
     var oldNotes = notesInOdometrySpace;
     var newNotes =
