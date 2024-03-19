@@ -19,7 +19,7 @@ public class ShooterStateHelpers {
   }
 
   public boolean armReadyToShoot() {
-    return arm.atSetpoint() && arm.isPositionControlActive() && arm.getSetpointRad() > 0.1;
+    return arm.atSetpoint() || !arm.isPositionControlActive();
   }
 
   public boolean shooterReady() {

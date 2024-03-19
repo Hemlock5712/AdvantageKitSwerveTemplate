@@ -6,6 +6,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import java.io.IOException;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Contains various field dimensions and useful reference points. Dimensions are in meters, and sets
@@ -30,6 +31,12 @@ public class FieldConstants {
 
   public static Pose2d ampScoringPose =
       new Pose2d(ampCenter.getX(), 7.75, Rotation2d.fromDegrees(-90));
+
+  public static Translation2d ampLobbingTarget = ampCenter.plus(new Translation2d(0, -1));
+
+  static {
+    Logger.recordOutput("amp lob pos", ampLobbingTarget);
+  }
 
   /** Staging locations for each note */
   public static final class StagingLocations {

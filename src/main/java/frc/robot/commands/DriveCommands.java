@@ -28,7 +28,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveController;
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
@@ -62,12 +64,13 @@ public class DriveCommands {
           Rotation2d linearDirection =
               new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
           double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
-          if (driveMode.isHeadingControlled()) {
-            final var targetAngle = driveMode.getHeadingAngle();
+          final Optional<Supplier<Rotation2d>> headingSupplier = driveMode.getHeadingSupplier();
+          if (headingSupplier.isPresent()) {
             omega =
                 Drive.getThetaController()
                     .calculate(
-                        drive.getPose().getRotation().getRadians(), targetAngle.get().getRadians());
+                        drive.getPose().getRotation().getRadians(),
+                        headingSupplier.get().get().getRadians());
             if (Drive.getThetaController().atGoal()) {
               omega = 0;
             }
