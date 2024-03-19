@@ -23,14 +23,19 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.*;
+import frc.robot.commands.auto.AutoCommandBuilder;
+import frc.robot.commands.auto.AutoConstants;
 import frc.robot.commands.climber.ManualClimberCommand;
 import frc.robot.commands.climber.ResetClimberBasic;
 import frc.robot.subsystems.arm.*;
@@ -49,8 +54,11 @@ import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.vision.*;
 import frc.robot.util.*;
+import java.util.Set;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
+import org.littletonrobotics.junction.networktables.LoggedDashboardString;
 import org.photonvision.simulation.VisionSystemSim;
 
 /**
@@ -84,6 +92,7 @@ public class RobotContainer {
   private final ShooterStateHelpers shooterStateHelpers;
   private final DriveToPointBuilder driveToPointBuilder;
   private final Command idleShooterVolts;
+  private final AutoCommandBuilder autoCommandBuilder;
 
   //   private final LoggedTunableNumber flywheelSpeedInput =
   //       new LoggedTunableNumber("Flywheel Speed", 1500.0);
@@ -113,7 +122,8 @@ public class RobotContainer {
             new NoteVisionSubsystem(
                 new NoteVisionIOPhotonVision("lefty"),
                 drive.getPoseLogForNoteDetection(),
-                drive::getDrive);
+                drive::getDrive,
+                drive::getPose);
         beamBreak = new BeamBreak(new BeamBreakIOReal());
         shooter =
             new ShooterSubsystem(
@@ -164,7 +174,7 @@ public class RobotContainer {
         final var noteVisionIO = new NoteVisionIOSim(noteVisionSimSystem);
         noteVision =
             new NoteVisionSubsystem(
-                noteVisionIO, drive.getPoseLogForNoteDetection(), drive::getDrive);
+                noteVisionIO, drive.getPoseLogForNoteDetection(), drive::getDrive, drive::getPose);
 
         new Trigger(DriverStation::isAutonomousEnabled)
             .onTrue(Commands.runOnce(noteVisionIO::resetNotePoses));
@@ -196,7 +206,10 @@ public class RobotContainer {
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
         noteVision =
             new NoteVisionSubsystem(
-                new NoteVisionIO() {}, drive.getPoseLogForNoteDetection(), drive::getDrive);
+                new NoteVisionIO() {},
+                drive.getPoseLogForNoteDetection(),
+                drive::getDrive,
+                drive::getPose);
         shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
         arm = new ArmSubsystem(new ArmIO() {});
@@ -211,12 +224,6 @@ public class RobotContainer {
     idleShooterVolts =
         Commands.runOnce(() -> shooter.runVolts(ShooterConstants.IDLE_VOLTS.get()), shooter);
 
-    configureNamedCommands();
-
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-
-    configureAutoChooser();
-
     resetClimbersCommand =
         ResetClimberBasic.on(leftClimber).alongWith(ResetClimberBasic.on(rightClimber));
 
@@ -227,16 +234,29 @@ public class RobotContainer {
 
     setupLimelightFlashing();
 
-    configureButtonBindings();
+    Commands.run(() -> Logger.recordOutput("global notes", noteVision.getNotesInGlobalSpace()))
+        .ignoringDisable(true)
+        .schedule();
 
     Commands.run(
-            () ->
-                Logger.recordOutput(
-                    "global notes", noteVision.getNotesInGlobalSpace(drive.getPose())))
+            () -> {
+              var note =
+                  noteVision.getNoteByPosition(
+                      FieldConstants.StagingLocations.spikeTranslations[2], 0.5);
+              Logger.recordOutput("note by spike 2", note.orElseGet(Translation2d::new));
+            })
         .ignoringDisable(true)
         .schedule();
 
     drive.setPose(new Pose2d(1, 1, new Rotation2d(1, 1)));
+    autoCommandBuilder =
+        new AutoCommandBuilder(
+            drive, noteVision, shooter, intake, arm, beamBreak::detectNote, shooterStateHelpers);
+
+    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+    configureAutoChooser();
+    configureButtonBindings();
+    configureNamedCommands();
   }
 
   private void setupLimelightFlashing() {
@@ -260,30 +280,15 @@ public class RobotContainer {
                     () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()),
                     shooter)));
 
-    NamedCommands.registerCommand(
-        "pickup note", new PickUpNoteCommand(drive, intake, noteVision, beamBreak::detectNote));
+    NamedCommands.registerCommand("pickup note", autoCommandBuilder.pickupNoteVisibleNote());
 
-    NamedCommands.registerCommand("shoot auto", autoShoot());
-  }
-
-  /** assumes the shooter is at the correct speed and the arm is in the correct position */
-  private Command autoShoot() {
-    return shooterStateHelpers
-        .waitUntilCanShootAuto()
-        .andThen(
-            Commands.runOnce(() -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()), intake))
-        .andThen(Commands.waitUntil(() -> !beamBreak.detectNote()).withTimeout(1))
-        .andThen(Commands.waitSeconds(.3))
-        .andThen(idleShooterVolts)
-        .andThen(Commands.runOnce(() -> intake.setVoltage(0), intake))
-        .andThen(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
+    NamedCommands.registerCommand("shoot auto", autoCommandBuilder.autoShoot());
   }
 
   /**
    * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
+   * instantiating a {@link GenericHID} or one of its subclasses ({@link Joystick} or {@link
+   * XboxController}), and then passing it to a {@link JoystickButton}.
    */
   private void configureButtonBindings() {
     final ControllerLogic controllerLogic = new ControllerLogic(driverController, secondController);
@@ -297,9 +302,7 @@ public class RobotContainer {
             () -> -driverController.getLeftX()));
 
     driveMode.setDriveMode(DriveModeType.SPEAKER);
-    driverController
-        .x()
-        .whileTrue(new PickUpNoteCommand(drive, intake, noteVision, beamBreak::detectNote));
+    driverController.x().whileTrue(autoCommandBuilder.pickupNoteVisibleNote());
     driverController
         .y()
         .toggleOnTrue(
@@ -485,9 +488,26 @@ public class RobotContainer {
   }
 
   private void configureAutoChooser() {
+    var noteId = new LoggedDashboardNumber("note id", 1);
     autoChooser.addOption(
-        "test note pickup",
-        new PickUpNoteCommand(drive, intake, noteVision, beamBreak::detectNote));
+        "drive and pickup note n test",
+        new DeferredCommand(
+            () ->
+                autoCommandBuilder.driveAndPickupNoteAuto(
+                    AutoConstants.AUTO_NOTES[(int) noteId.get()],
+                    AutoConstants.NotePickupLocations.X),
+            Set.of(drive, intake)));
+    autoChooser.addOption(
+        "pickup note n test",
+        new DeferredCommand(
+            () ->
+                autoCommandBuilder.pickupNoteAtTranslation(
+                    AutoConstants.AUTO_NOTES[(int) noteId.get()]),
+            Set.of(drive, intake)));
+    final var configString = new LoggedDashboardString("auto config string", "b.102");
+    autoChooser.addOption(
+        "test configured auto", autoCommandBuilder.autoFromConfigString(configString::get));
+    autoChooser.addOption("test note pickup", autoCommandBuilder.pickupNoteVisibleNote());
     // Set up SysId routines
     autoChooser.addOption(
         "Drive SysId (Quasistatic Forward)",

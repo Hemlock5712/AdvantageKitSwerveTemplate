@@ -6,9 +6,11 @@ package frc.robot.commands;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.arm.ArmSubsystem;
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.util.AllianceFlipUtil;
@@ -28,8 +30,53 @@ public class DriveToPointBuilder {
   }
 
   public static Command driveTo(Pose2d targetPose) {
+    return driveTo(targetPose, 0);
+  }
+
+  public static Command driveTo(Pose2d targetPose, double endVelocity) {
     return AutoBuilder.pathfindToPoseFlipped(
-        targetPose, DriveConstants.pathPlannerConstraints, 0, 0.0);
+        targetPose, DriveConstants.pathPlannerConstraints, endVelocity, 0.0);
+  }
+
+  public static Command align(
+      Drive drive, Pose2d targetPose, double distanceTolerance, double angleToleranceRad) {
+    return Commands.runEnd(
+            () -> {
+              final var pos = drive.getPose();
+
+              final var translationOffset = targetPose.getTranslation().minus(pos.getTranslation());
+              final var rotationOffset = targetPose.getRotation().minus(drive.getRotation());
+
+              var omega = drive.getThetaController().calculate(0, rotationOffset.getRadians());
+              final var speedX =
+                  DriveConstants.PPtranslationConstants.kP * translationOffset.getX();
+              final var speedY =
+                  DriveConstants.PPtranslationConstants.kP * translationOffset.getY();
+
+              if (drive.getThetaController().atGoal()) {
+                omega = 0;
+              }
+
+              final var chassisSpeeds =
+                  ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, omega, pos.getRotation());
+
+              drive.runVelocity(chassisSpeeds);
+            },
+            drive::stop,
+            drive)
+        .until(
+            () -> {
+              final var pos = drive.getPose();
+              return pos.getTranslation().getDistance(targetPose.getTranslation())
+                      < distanceTolerance
+                  && Math.abs(pos.getRotation().minus(targetPose.getRotation()).getRadians())
+                      < angleToleranceRad;
+            });
+  }
+
+  public static Command driveToAndAlign(
+      Drive drive, Pose2d targetPose, double distanceTolerance, double angleTolerance) {
+    return driveTo(targetPose).andThen(align(drive, targetPose, distanceTolerance, angleTolerance));
   }
 
   public Command waitUntilNearPose(Pose2d targetPose, double distanceThreshold) {

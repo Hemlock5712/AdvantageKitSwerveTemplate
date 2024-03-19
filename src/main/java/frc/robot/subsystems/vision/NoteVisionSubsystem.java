@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -21,17 +22,25 @@ public class NoteVisionSubsystem extends SubsystemBase {
 
   private final PoseLog noVisionPoseLog;
   private final Supplier<Pose2d> currentRobotPoseNoVisionSupplier;
+  private final Supplier<Pose2d> currentRobotVisionFieldPoseSupplier;
   private double lastTimestamp = 0;
+
+  /** Position of the simulated note for auto in field space */
+  @Getter private Optional<Translation2d> virtualAutoNote = Optional.empty();
+
+  private double virtualNoteDistanceToRemove;
 
   public record TimestampedNote(Translation2d pose, double timestamp) {}
 
   public NoteVisionSubsystem(
       NoteVisionIO noteVisionIO,
       PoseLog noVisionPoseLog,
-      Supplier<Pose2d> currentRobotPoseNoVisionSupplier) {
+      Supplier<Pose2d> currentRobotPoseNoVisionSupplier,
+      Supplier<Pose2d> currentRobotVisionFieldPoseSupplier) {
     this.noteVisionIO = noteVisionIO;
     this.noVisionPoseLog = noVisionPoseLog;
     this.currentRobotPoseNoVisionSupplier = currentRobotPoseNoVisionSupplier;
+    this.currentRobotVisionFieldPoseSupplier = currentRobotVisionFieldPoseSupplier;
   }
 
   @Override
@@ -90,6 +99,8 @@ public class NoteVisionSubsystem extends SubsystemBase {
         oldNotesOutOfCamera.stream().map(note -> note.pose).toArray(Translation2d[]::new));
     Logger.recordOutput(
         "NoteVisionSubsystem/note poses odometry space", newNotes.toArray(new Translation2d[0]));
+
+    updateAutoNote();
   }
 
   private static void filterOldUnseenNotes(
@@ -121,9 +132,17 @@ public class NoteVisionSubsystem extends SubsystemBase {
   }
 
   private static boolean canCameraSeeNote(Pose2d cameraPose, Translation2d note) {
+    return canCameraSeeNote(
+        cameraPose,
+        note,
+        NoteVisionConstants.MAX_CAMERA_DISTANCE,
+        NoteVisionConstants.MIN_CAMERA_DISTANCE);
+  }
+
+  private static boolean canCameraSeeNote(
+      Pose2d cameraPose, Translation2d note, double maxRange, double minRange) {
     double distance = note.getDistance(cameraPose.getTranslation());
-    if (distance > NoteVisionConstants.MAX_CAMERA_DISTANCE
-        || distance < NoteVisionConstants.MIN_CAMERA_DISTANCE) {
+    if (distance > maxRange || distance < minRange) {
       return false;
     }
     Rotation2d angle = deprojectProjectedNoteFromRobotPose(note, cameraPose).getAngle();
@@ -268,16 +287,79 @@ public class NoteVisionSubsystem extends SubsystemBase {
     return closest;
   }
 
-  public Translation2d[] getNotesInGlobalSpace(Pose2d robotPose) {
+  public Translation2d[] getNotesInGlobalSpace() {
     Translation2d[] notes = getNotesInRelativeSpace();
     for (int i = 0; i < notes.length; i++) {
-      notes[i] = projectRelativeNotePoseOntoRobotPose(notes[i], robotPose);
+      notes[i] =
+          projectRelativeNotePoseOntoRobotPose(notes[i], currentRobotVisionFieldPoseSupplier.get());
     }
 
     return notes;
   }
 
+  public Optional<Translation2d> getNoteByPosition(
+      Translation2d targetGlobalTranslation, double threshold) {
+    final var globalNotes = getNotesInGlobalSpace();
+    Optional<Translation2d> closestNote = Optional.empty();
+    for (var note : globalNotes) {
+      final double currentDistance = note.getDistance(targetGlobalTranslation);
+      if (currentDistance < threshold) {
+        if (closestNote.isPresent()) {
+          if (closestNote.get().getDistance(targetGlobalTranslation) > currentDistance) {
+            closestNote = Optional.of(note);
+          }
+        } else {
+          closestNote = Optional.of(note);
+        }
+      }
+    }
+
+    return closestNote;
+  }
+
   public Optional<Translation2d> getCurrentNote() {
     return NoteVisionSubsystem.getClosestNote(getNotesInRelativeSpace());
+  }
+
+  /**
+   * Set the note to simulate for auto. Please require this subsystem in the command that calls
+   * this.
+   *
+   * @param globalNote the field relative position of target note
+   * @param distanceToRemove the subsystem will remove this note once the distance between the note
+   *     and a camera is less than this param
+   */
+  public void setVirtualAutoNote(Translation2d globalNote, double distanceToRemove) {
+    virtualAutoNote = Optional.of(globalNote);
+    virtualNoteDistanceToRemove = distanceToRemove;
+  }
+
+  public void clearAutoNote() {
+    virtualAutoNote = Optional.empty();
+  }
+
+  private void updateAutoNote() {
+    if (virtualAutoNote.isEmpty()) {
+      Logger.recordOutput("virtual auto note", new Pose2d());
+      return;
+    }
+
+    Logger.recordOutput("virtual auto note", new Pose2d(virtualAutoNote.get(), new Rotation2d()));
+
+    final var relativeAutoNote =
+        deprojectProjectedNoteFromRobotPose(
+            virtualAutoNote.get(), currentRobotVisionFieldPoseSupplier.get());
+
+    if (canCameraSeeNote(
+        new Pose2d(
+            NoteVisionConstants.CAMERA_POS.getTranslation().toTranslation2d(),
+            NoteVisionConstants.CAMERA_POS.getRotation().toRotation2d()),
+        relativeAutoNote,
+        virtualNoteDistanceToRemove,
+        NoteVisionConstants.MIN_CAMERA_DISTANCE)) {
+      {
+        virtualAutoNote = Optional.empty();
+      }
+    }
   }
 }

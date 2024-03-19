@@ -2,10 +2,11 @@ package frc.robot.subsystems.vision;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
-import frc.robot.util.AllianceFlipUtil;
-import frc.robot.util.FieldConstants;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import frc.robot.commands.auto.AutoConstants;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.PhotonCamera;
 import org.photonvision.estimation.TargetModel;
@@ -32,17 +33,12 @@ public class NoteVisionIOSim implements NoteVisionIO {
   }
 
   public void resetNotePoses() {
-    notePoses = new Pose3d[8];
-    for (int i = 0; i < 3; i++) {
-      var translation =
-          AllianceFlipUtil.apply(FieldConstants.StagingLocations.spikeTranslations[i]);
-      notePoses[i] = new Pose3d(translation.getX(), translation.getY(), 0, new Rotation3d());
-    }
-
-    for (int i = 0; i < 5; i++) {
-      var translation = FieldConstants.StagingLocations.centerlineTranslations[i];
-      notePoses[i + 3] = new Pose3d(translation.getX(), translation.getY(), 0, new Rotation3d());
-    }
+    notePoses =
+        Arrays.stream(AutoConstants.AUTO_NOTES)
+            .map(
+                translation ->
+                    new Pose3d(translation.getX(), translation.getY(), 0, new Rotation3d()))
+            .toArray(Pose3d[]::new);
     updateNoteTargets();
   }
 
