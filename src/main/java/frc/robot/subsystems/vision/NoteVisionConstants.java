@@ -18,7 +18,7 @@ public class NoteVisionConstants {
   public static final double MIN_CAMERA_DISTANCE = 0.7;
   public static final double MAX_CAMERA_DISTANCE = 5;
 
-  public static final double OUT_OF_CAMERA_EXPIRATION = 5;
+  public static final double OUT_OF_CAMERA_EXPIRATION = 2;
   public static final double IN_CAMERA_EXPIRATION = 0.1;
   public static final double MAX_ARM_POS_RAD = Units.degreesToRadians(3);
 }

@@ -41,7 +41,7 @@ public class PickUpNoteCommand extends Command {
     var currentNote = relativeNoteSupplier.get();
 
     if (currentNote.isEmpty()) {
-      drive.stop();
+      drive.runVelocity(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, 1, new Rotation2d()));
       intake.stop();
       return;
     }

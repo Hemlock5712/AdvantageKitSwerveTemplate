@@ -62,11 +62,21 @@ public class AutoCommandBuilder {
     return new PickUpNoteCommand(drive, intake, relativeNoteSupplier, hasNote);
   }
 
+  public Command fallbackPickup() {
+    return pickupSuppliedNote(
+        () ->
+            noteVision.getClosestNoteFiltered(
+                note ->
+                    AllianceFlipUtil.apply(note).getX()
+                        < FieldConstants.StagingLocations.centerlineX
+                            + AutoConstants.AutoNoteOffsetThresholds.FALLBACK_MAX_PAST_CENTER));
+  }
+
   private Optional<Translation2d> getVisionNoteByTranslation(Translation2d note, double threshold) {
     Logger.recordOutput("auto/targetNote", new Pose2d(note, new Rotation2d()));
     final var output = noteVision.getNoteByPosition(note, threshold);
     if (output.isPresent()) {
-      Logger.recordOutput("auto/foundNote", new Pose2d(note, Rotation2d.fromDegrees(45)));
+      Logger.recordOutput("auto/foundNote", new Pose2d(output.get(), Rotation2d.fromDegrees(45)));
     } else {
       Logger.recordOutput(
           "auto/foundNote", new Pose2d(new Translation2d(), Rotation2d.fromDegrees(45)));
@@ -74,7 +84,7 @@ public class AutoCommandBuilder {
     return output;
   }
 
-  public Command pickupNoteAtTranslation(Translation2d note) {
+  public Command pickupNoteAtTranslation(Translation2d note, double timeout) {
     return Commands.runOnce(
             () -> noteVision.setVirtualAutoNote(note, AutoConstants.DISTANCE_TO_TRUST_CAMERA),
             noteVision)
@@ -93,10 +103,12 @@ public class AutoCommandBuilder {
                       translation2d ->
                           NoteVisionSubsystem.deprojectProjectedNoteFromRobotPose(
                               translation2d, drive.getPose()));
-                }));
+                }))
+        .withTimeout(timeout);
   }
 
-  public Command driveAndPickupNoteAuto(Translation2d note, Pose2d pickupLocation) {
+  public Command driveAndPickupNoteAuto(
+      Translation2d note, Pose2d pickupLocation, double pickupTimeout) {
     final Command driveToPickup =
         DriveToPointBuilder.driveToNoFlip(pickupLocation, 4)
             .until(
@@ -106,14 +118,16 @@ public class AutoCommandBuilder {
                         && getVisionNoteByTranslation(
                                 note, AutoConstants.AutoNoteOffsetThresholds.WHILE_ROUTING)
                             .isPresent());
-    return driveToPickup.andThen(pickupNoteAtTranslation(note));
+    return driveToPickup.andThen(pickupNoteAtTranslation(note, pickupTimeout));
   }
 
   public Command autoFromConfigPart(AutoConfigParser.AutoPart autoPart) {
     final Command pickupCommand =
-        autoPart.notePickupPose().isEmpty()
-            ? pickupNoteAtTranslation(autoPart.note())
-            : driveAndPickupNoteAuto(autoPart.note(), autoPart.notePickupPose().get());
+        (autoPart.notePickupPose().isEmpty()
+                ? pickupNoteAtTranslation(autoPart.note(), AutoConstants.PICKUP_TIMEOUT)
+                : driveAndPickupNoteAuto(
+                    autoPart.note(), autoPart.notePickupPose().get(), AutoConstants.PICKUP_TIMEOUT))
+            .andThen(fallbackPickup().onlyIf(() -> !hasNote.getAsBoolean()));
 
     return pickupCommand
         .asProxy()

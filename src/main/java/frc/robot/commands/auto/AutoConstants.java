@@ -23,7 +23,10 @@ public class AutoConstants {
   public static class AutoNoteOffsetThresholds {
     public static final double WHILE_ROUTING = 0.5;
     public static final double WHILE_ATTEMPTING_PICKUP = 1;
+    public static final double FALLBACK_MAX_PAST_CENTER = 1;
   }
+
+  public static final double PICKUP_TIMEOUT = 3;
 
   public static class ShootingTranslations {
     public static final Translation2d A = new Translation2d(1, 6.7);

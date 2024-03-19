@@ -37,7 +37,7 @@ public class NoteVisionIOSim implements NoteVisionIO {
             .map(AllianceFlipUtil::apply)
             .map(
                 translation ->
-                    new Pose3d(translation.getX(), translation.getY(), 0, new Rotation3d()))
+                    new Pose3d(translation.getX() - 1, translation.getY(), 0, new Rotation3d()))
             .toArray(Pose3d[]::new);
     updateNoteTargets();
   }

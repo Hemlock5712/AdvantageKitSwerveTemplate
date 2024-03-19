@@ -136,12 +136,12 @@ public class RobotContainer {
                 // ClimberConstants.RIGHT_LIMIT_SWITCH_DIO_PORT),
                 "right");
         noteVision =
-                new NoteVisionSubsystem(
-                        new NoteVisionIOPhotonVision("lefty"),
-                        drive.getPoseLogForNoteDetection(),
-                        drive::getDrive,
-                        drive::getPose,
-                        arm::getPositionRad);
+            new NoteVisionSubsystem(
+                new NoteVisionIOPhotonVision("lefty"),
+                drive.getPoseLogForNoteDetection(),
+                drive::getDrive,
+                drive::getPose,
+                arm::getPositionRad);
       }
       case SIM -> {
         // Sim robot, instantiate physics sim IO implementations
@@ -183,12 +183,15 @@ public class RobotContainer {
                     shooter::getTargetVelocityRadPerSec,
                     noteVisionIO::removeNote));
         noteVision =
-                new NoteVisionSubsystem(
-                        noteVisionIO, drive.getPoseLogForNoteDetection(), drive::getDrive, drive::getPose, arm::getPositionRad);
+            new NoteVisionSubsystem(
+                noteVisionIO,
+                drive.getPoseLogForNoteDetection(),
+                drive::getDrive,
+                drive::getPose,
+                arm::getPositionRad);
 
         new Trigger(DriverStation::isAutonomousEnabled)
-                .onTrue(Commands.runOnce(noteVisionIO::resetNotePoses));
-
+            .onTrue(Commands.runOnce(noteVisionIO::resetNotePoses));
       }
       default -> {
         // Replayed robot, disable IO implementations
@@ -208,12 +211,12 @@ public class RobotContainer {
         rightClimber = new ClimberSubsystem(new ClimberIO() {}, "right");
         beamBreak = new BeamBreak(new BeamBreakIO() {});
         noteVision =
-                new NoteVisionSubsystem(
-                        new NoteVisionIO() {},
-                        drive.getPoseLogForNoteDetection(),
-                        drive::getDrive,
-                        drive::getPose,
-                        arm::getPositionRad);
+            new NoteVisionSubsystem(
+                new NoteVisionIO() {},
+                drive.getPoseLogForNoteDetection(),
+                drive::getDrive,
+                drive::getPose,
+                arm::getPositionRad);
       }
     }
 

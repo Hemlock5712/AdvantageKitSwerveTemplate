@@ -3,12 +3,14 @@ package frc.robot.subsystems.vision;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.util.PoseLog;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -35,12 +37,11 @@ public class NoteVisionSubsystem extends SubsystemBase {
   public record TimestampedNote(Translation2d pose, double timestamp) {}
 
   public NoteVisionSubsystem(
-          NoteVisionIO noteVisionIO,
-          PoseLog noVisionPoseLog,
-          Supplier<Pose2d> currentRobotPoseNoVisionSupplier,
-          Supplier<Pose2d> currentRobotVisionFieldPoseSupplier,
-          DoubleSupplier armPositionSupplierRad
-  ) {
+      NoteVisionIO noteVisionIO,
+      PoseLog noVisionPoseLog,
+      Supplier<Pose2d> currentRobotPoseNoVisionSupplier,
+      Supplier<Pose2d> currentRobotVisionFieldPoseSupplier,
+      DoubleSupplier armPositionSupplierRad) {
     this.noteVisionIO = noteVisionIO;
     this.noVisionPoseLog = noVisionPoseLog;
     this.currentRobotPoseNoVisionSupplier = currentRobotPoseNoVisionSupplier;
@@ -58,11 +59,12 @@ public class NoteVisionSubsystem extends SubsystemBase {
       return;
     }
 
-        if (lastTimestamp == noteVisionIOInputs.timeStampSeconds) {
-          return;
-        } else {
-          lastTimestamp = noteVisionIOInputs.timeStampSeconds;
-        }
+    if (lastTimestamp == noteVisionIOInputs.timeStampSeconds
+        && Constants.getMode() != Constants.Mode.SIM) {
+      return;
+    } else {
+      lastTimestamp = noteVisionIOInputs.timeStampSeconds;
+    }
 
     var oldNotes = notesInOdometrySpace;
     var newNotes =
@@ -309,6 +311,20 @@ public class NoteVisionSubsystem extends SubsystemBase {
     }
 
     return closestNote;
+  }
+
+  /**
+   * @param globalNoteFilter a predicate that is fed a note in global space
+   * @return A **robot relative** note that has passed the filter
+   */
+  public Optional<Translation2d> getClosestNoteFiltered(Predicate<Translation2d> globalNoteFilter) {
+    return Arrays.stream(getNotesInGlobalSpace())
+        .filter(globalNoteFilter)
+        .map(
+            globalNote ->
+                deprojectProjectedNoteFromRobotPose(
+                    globalNote, currentRobotVisionFieldPoseSupplier.get()))
+        .reduce((noteA, noteB) -> noteA.getNorm() < noteB.getNorm() ? noteA : noteB);
   }
 
   public Optional<Translation2d> getCurrentNote() {
