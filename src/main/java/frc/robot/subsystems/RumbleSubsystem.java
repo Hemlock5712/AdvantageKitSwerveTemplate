@@ -36,7 +36,7 @@ public class RumbleSubsystem extends SubsystemBase {
 
   public void rumbleAtTimeLeft(double secondsLeft) {
     new TimeTrigger(secondsLeft)
-            .onTrue(rumbleForTime(TIME_WARNING_DURATION, TIME_WARNING_STRENGTH));
+        .onTrue(rumbleForTime(TIME_WARNING_DURATION, TIME_WARNING_STRENGTH));
   }
 
   public void setRumbleTimes(double... times) {
