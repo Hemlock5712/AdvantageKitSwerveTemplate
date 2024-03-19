@@ -22,7 +22,6 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -33,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.*;
 import frc.robot.commands.climber.ManualClimberCommand;
 import frc.robot.commands.climber.ResetClimberBasic;
+import frc.robot.subsystems.RumbleSubsystem;
 import frc.robot.subsystems.arm.*;
 import frc.robot.subsystems.beamBreak.BeamBreak;
 import frc.robot.subsystems.beamBreak.BeamBreakIO;
@@ -80,6 +80,8 @@ public class RobotContainer {
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandXboxController secondController = new CommandXboxController(1);
+  private final RumbleSubsystem rumbleSubsystem =
+      new RumbleSubsystem(driverController.getHID(), secondController.getHID());
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -240,6 +242,8 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    rumbleSubsystem.setRumbleTimes(40, 10);
+
     final ControllerLogic controllerLogic = new ControllerLogic(driverController, secondController);
 
     drive.setDefaultCommand(
@@ -342,32 +346,6 @@ public class RobotContainer {
   }
 
   private void configureUniversalControls(CommandXboxController controller) {
-    new Trigger(() -> DriverStation.getMatchTime() < 30)
-        .onTrue(
-            Commands.runOnce(
-                    () -> {
-                      controller.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.5);
-                    })
-                .andThen(Commands.waitSeconds(1))
-                .andThen(
-                    Commands.runOnce(
-                        () -> {
-                          controller.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0);
-                        })));
-
-    new Trigger(() -> DriverStation.getMatchTime() < 15)
-        .onTrue(
-            Commands.runOnce(
-                    () -> {
-                      controller.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.5);
-                    })
-                .andThen(Commands.waitSeconds(1))
-                .andThen(
-                    Commands.runOnce(
-                        () -> {
-                          controller.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0);
-                        })));
-
     controller
         .povDown()
         .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
