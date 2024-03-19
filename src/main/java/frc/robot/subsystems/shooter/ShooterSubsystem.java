@@ -1,10 +1,7 @@
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.Volts;
-
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.util.ErrorChecker;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -17,7 +14,6 @@ public class ShooterSubsystem extends SubsystemBase {
   private final ShooterIOInputsAutoLogged bottomInputs = new ShooterIOInputsAutoLogged();
   private final SimpleMotorFeedforward topFeedForward;
   private final SimpleMotorFeedforward bottomFeedForward;
-  public final SysIdRoutine sysid;
   @AutoLogOutput @Getter private double targetVelocityRadPerSec;
 
   public ShooterSubsystem(ShooterIO topIO, ShooterIO bottomIO) {
@@ -33,20 +29,6 @@ public class ShooterSubsystem extends SubsystemBase {
             ShooterConstants.CURRENT_TUNE.bottom().ks(),
             ShooterConstants.CURRENT_TUNE.bottom().kv());
     bottomIO.configurePID(ShooterConstants.FlywheelModelConstants.Bottom.kP.get(), 0, 0);
-
-    sysid =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                null,
-                null,
-                null,
-                state -> Logger.recordOutput("ShooterSubsystem/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism(
-                voltage -> {
-                  runVolts(voltage.in(Volts));
-                },
-                null,
-                this));
 
     targetVelocityRadPerSec = 0.0;
   }

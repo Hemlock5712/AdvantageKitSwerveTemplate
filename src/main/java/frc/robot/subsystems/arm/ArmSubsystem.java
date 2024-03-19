@@ -1,6 +1,5 @@
 package frc.robot.subsystems.arm;
 
-import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.util.interpolation.InterpolationMaps.angleToHoldVolts;
 
 import edu.wpi.first.math.MathUtil;
@@ -10,7 +9,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.util.ErrorChecker;
 import frc.robot.util.interpolation.InterpolationMaps;
 import lombok.Getter;
@@ -25,8 +23,6 @@ public class ArmSubsystem extends SubsystemBase {
 
   @Getter private boolean positionControlActive = false;
 
-  public final SysIdRoutine sysid;
-
   private final Translation3d ROTATION_POINT = new Translation3d(-.26, 0.0, .273);
 
   @AutoLogOutput
@@ -40,20 +36,6 @@ public class ArmSubsystem extends SubsystemBase {
     this.armIO = armIO;
     SmartDashboard.putData(this);
     double shooterAngle = 70;
-
-    sysid =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                null,
-                null,
-                null,
-                state -> Logger.recordOutput("ArmSubsystem/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism(
-                voltage -> {
-                  limitAndSetVolts(voltage.in(Volts));
-                },
-                null,
-                this));
   }
 
   private void updateControlConstants() {

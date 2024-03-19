@@ -22,7 +22,6 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,10 +29,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.*;
 import frc.robot.commands.climber.ManualClimberCommand;
 import frc.robot.commands.climber.ResetClimberBasic;
+import frc.robot.subsystems.RumbleSubsystem;
 import frc.robot.subsystems.arm.*;
 import frc.robot.subsystems.beamBreak.BeamBreak;
 import frc.robot.subsystems.beamBreak.BeamBreakIO;
@@ -81,6 +80,8 @@ public class RobotContainer {
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandXboxController secondController = new CommandXboxController(1);
+  private final RumbleSubsystem rumbleSubsystem =
+      new RumbleSubsystem(driverController.getHID(), secondController.getHID());
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -241,6 +242,8 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    rumbleSubsystem.setRumbleTimes(40, 10);
+
     final ControllerLogic controllerLogic = new ControllerLogic(driverController, secondController);
 
     drive.setDefaultCommand(
@@ -343,32 +346,6 @@ public class RobotContainer {
   }
 
   private void configureUniversalControls(CommandXboxController controller) {
-    new Trigger(() -> DriverStation.getMatchTime() < 30)
-        .onTrue(
-            Commands.runOnce(
-                    () -> {
-                      controller.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.5);
-                    })
-                .andThen(Commands.waitSeconds(1))
-                .andThen(
-                    Commands.runOnce(
-                        () -> {
-                          controller.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0);
-                        })));
-
-    new Trigger(() -> DriverStation.getMatchTime() < 15)
-        .onTrue(
-            Commands.runOnce(
-                    () -> {
-                      controller.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.5);
-                    })
-                .andThen(Commands.waitSeconds(1))
-                .andThen(
-                    Commands.runOnce(
-                        () -> {
-                          controller.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0);
-                        })));
-
     controller
         .povDown()
         .onTrue(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
@@ -418,46 +395,12 @@ public class RobotContainer {
   }
 
   private void configureAutoChooser() {
-    // Set up SysId routines
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    final SysIdBuilder sysIdBuilder = new SysIdBuilder(autoChooser);
 
-    autoChooser.addOption(
-        "Intake sysid quasistatic forward",
-        intake.sysid.quasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Intake sysid quasistatic reverse",
-        intake.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Intake sysid dynamic forward", intake.sysid.dynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Intake sysid dynamic reverse", intake.sysid.dynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Shooter sysid quasistatic forward",
-        shooter.sysid.quasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Shooter sysid quasistatic reverse",
-        shooter.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Shooter sysid dynamic forward", shooter.sysid.dynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Shooter sysid dynamic reverse", shooter.sysid.dynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Arm sysid quasistatic forward", arm.sysid.quasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Arm sysid quasistatic reverse", arm.sysid.quasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Arm sysid dynamic forward", arm.sysid.dynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Arm sysid dynamic reverse", arm.sysid.dynamic(SysIdRoutine.Direction.kReverse));
+    sysIdBuilder.createSysId(drive, drive::runCharacterizationVolts);
+    sysIdBuilder.createSysId(intake, intake::setVoltage);
+    sysIdBuilder.createSysId(arm, arm::setManualVoltage);
+    sysIdBuilder.createSysId(shooter, shooter::runVolts);
   }
 
   /**
