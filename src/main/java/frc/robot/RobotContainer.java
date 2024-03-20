@@ -21,14 +21,19 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.*;
+import frc.robot.commands.auto.AutoCommandBuilder;
+import frc.robot.commands.auto.AutoConstants;
 import frc.robot.commands.climber.ManualClimberCommand;
 import frc.robot.commands.climber.ResetClimberBasic;
 import frc.robot.subsystems.RumbleSubsystem;
@@ -36,9 +41,8 @@ import frc.robot.subsystems.arm.*;
 import frc.robot.subsystems.beamBreak.BeamBreak;
 import frc.robot.subsystems.beamBreak.BeamBreakIO;
 import frc.robot.subsystems.beamBreak.BeamBreakIOReal;
-import frc.robot.subsystems.climber.ClimberConstants;
+import frc.robot.subsystems.beamBreak.BeamBreakIOSim;
 import frc.robot.subsystems.climber.ClimberIO;
-import frc.robot.subsystems.climber.ClimberIOSparkMax;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.drive.DriveController;
@@ -46,16 +50,12 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
-import frc.robot.subsystems.shooter.ShooterConstants;
-import frc.robot.subsystems.shooter.ShooterIO;
-import frc.robot.subsystems.shooter.ShooterIOSparkMax;
-import frc.robot.subsystems.shooter.ShooterSubsystem;
-import frc.robot.subsystems.vision.AprilTagVision;
-import frc.robot.subsystems.vision.AprilTagVisionIO;
-import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
-import frc.robot.subsystems.vision.AprilTagVisionIOPhotonVisionSIM;
+import frc.robot.subsystems.shooter.*;
+import frc.robot.subsystems.vision.*;
 import frc.robot.util.*;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.networktables.LoggedDashboardString;
+import org.photonvision.simulation.VisionSystemSim;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -67,6 +67,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final AprilTagVision aprilTagVision;
+  private final NoteVisionSubsystem noteVision;
   private static final DriveController driveMode = new DriveController();
   private final ShooterSubsystem shooter;
 
@@ -89,6 +90,7 @@ public class RobotContainer {
   private final ShooterStateHelpers shooterStateHelpers;
   private final DriveToPointBuilder driveToPointBuilder;
   private final Command idleShooterVolts;
+  private final AutoCommandBuilder autoCommandBuilder;
 
   //   private final LoggedTunableNumber flywheelSpeedInput =
   //       new LoggedTunableNumber("Flywheel Speed", 1500.0);
@@ -123,14 +125,25 @@ public class RobotContainer {
         arm = new ArmSubsystem(new ArmIOSparkMax());
         leftClimber =
             new ClimberSubsystem(
-                new ClimberIOSparkMax(
-                    ClimberConstants.LEFT_MOTOR_ID, ClimberConstants.LEFT_LIMIT_SWITCH_DIO_PORT),
+                new ClimberIO() {},
+                //                new ClimberIOSparkMax(
+                //                    ClimberConstants.LEFT_MOTOR_ID,
+                // ClimberConstants.LEFT_LIMIT_SWITCH_DIO_PORT),
                 "left");
         rightClimber =
             new ClimberSubsystem(
-                new ClimberIOSparkMax(
-                    ClimberConstants.RIGHT_MOTOR_ID, ClimberConstants.RIGHT_LIMIT_SWITCH_DIO_PORT),
+                new ClimberIO() {},
+                //                new ClimberIOSparkMax(
+                //                    ClimberConstants.RIGHT_MOTOR_ID,
+                // ClimberConstants.RIGHT_LIMIT_SWITCH_DIO_PORT),
                 "right");
+        noteVision =
+            new NoteVisionSubsystem(
+                new NoteVisionIOPhotonVision("lefty"),
+                drive.getPoseLogForNoteDetection(),
+                drive::getDrive,
+                drive::getPose,
+                arm::getPositionRad);
       }
       case SIM -> {
         // Sim robot, instantiate physics sim IO implementations
@@ -142,19 +155,45 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim());
         // flywheel = new Flywheel(new FlywheelIOSim());
-        aprilTagVision =
-            new AprilTagVision(
-                new AprilTagVisionIOPhotonVisionSIM(
-                    "photonCamera1",
-                    new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
-                    drive::getDrive));
-        // flywheel = new Flywheel(new FlywheelIOSim());
-        shooter = new ShooterSubsystem(new ShooterIO() {}, new ShooterIO() {});
+        var simApriltagVisionIO =
+            new AprilTagVisionIOPhotonVisionSIM(
+                "photonCamera1",
+                new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
+                drive::getDrive);
+
+        VisionSystemSim noteVisionSimSystem = new VisionSystemSim("notes");
+        Commands.run(
+                () -> {
+                  noteVisionSimSystem.update(drive.getDrive());
+                })
+            .ignoringDisable(true)
+            .schedule();
+
+        aprilTagVision = new AprilTagVision(simApriltagVisionIO);
+        final var noteVisionIO = new NoteVisionIOSim(noteVisionSimSystem);
+        shooter = new ShooterSubsystem(new ShooterIOSim(), new ShooterIOSim());
         intake = new Intake(new IntakeIO() {});
         arm = new ArmSubsystem(new ArmIOSim());
         leftClimber = new ClimberSubsystem(new ClimberIO() {}, "left");
         rightClimber = new ClimberSubsystem(new ClimberIO() {}, "right");
-        beamBreak = new BeamBreak(new BeamBreakIO() {});
+        beamBreak =
+            new BeamBreak(
+                new BeamBreakIOSim(
+                    drive::getDrive,
+                    noteVisionIO::getNoteLocations,
+                    intake::getVoltage,
+                    shooter::getTargetVelocityRadPerSec,
+                    noteVisionIO::removeNote));
+        noteVision =
+            new NoteVisionSubsystem(
+                noteVisionIO,
+                drive.getPoseLogForNoteDetection(),
+                drive::getDrive,
+                drive::getPose,
+                arm::getPositionRad);
+
+        new Trigger(DriverStation::isAutonomousEnabled)
+            .onTrue(Commands.runOnce(noteVisionIO::resetNotePoses));
       }
       default -> {
         // Replayed robot, disable IO implementations
@@ -173,6 +212,13 @@ public class RobotContainer {
         leftClimber = new ClimberSubsystem(new ClimberIO() {}, "left");
         rightClimber = new ClimberSubsystem(new ClimberIO() {}, "right");
         beamBreak = new BeamBreak(new BeamBreakIO() {});
+        noteVision =
+            new NoteVisionSubsystem(
+                new NoteVisionIO() {},
+                drive.getPoseLogForNoteDetection(),
+                drive::getDrive,
+                drive::getPose,
+                arm::getPositionRad);
       }
     }
 
@@ -180,12 +226,6 @@ public class RobotContainer {
     driveToPointBuilder = new DriveToPointBuilder(drive::getPose, arm, shooter);
     idleShooterVolts =
         Commands.runOnce(() -> shooter.runVolts(ShooterConstants.IDLE_VOLTS.get()), shooter);
-
-    configureNamedCommands();
-
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-
-    configureAutoChooser();
 
     resetClimbersCommand =
         ResetClimberBasic.on(leftClimber).alongWith(ResetClimberBasic.on(rightClimber));
@@ -197,7 +237,17 @@ public class RobotContainer {
 
     setupLimelightFlashing();
 
+    drive.setPose(new Pose2d(1, 1, new Rotation2d(1, 1)));
+    autoCommandBuilder =
+        new AutoCommandBuilder(
+            drive, noteVision, shooter, intake, arm, beamBreak::detectNote, shooterStateHelpers);
+
+    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+    configureAutoChooser();
     configureButtonBindings();
+    configureNamedCommands();
+
+    Dashboard.logField(drive::getPose, noteVision::getNotesInGlobalSpace).schedule();
   }
 
   private void setupLimelightFlashing() {
@@ -221,27 +271,15 @@ public class RobotContainer {
                     () -> shooter.runVelocity(ShooterConstants.SPEAKER_VELOCITY_RAD_PER_SEC.get()),
                     shooter)));
 
-    NamedCommands.registerCommand("shoot auto", autoShoot());
-  }
+    NamedCommands.registerCommand("pickup note", autoCommandBuilder.pickupNoteVisibleNote());
 
-  /** assumes the shooter is at the correct speed and the arm is in the correct position */
-  private Command autoShoot() {
-    return shooterStateHelpers
-        .waitUntilCanShootAuto()
-        .andThen(
-            Commands.runOnce(() -> intake.setVoltage(IntakeConstants.INTAKE_VOLTAGE.get()), intake))
-        .andThen(Commands.waitUntil(() -> !beamBreak.detectNote()).withTimeout(1))
-        .andThen(Commands.waitSeconds(.3))
-        .andThen(idleShooterVolts)
-        .andThen(Commands.runOnce(() -> intake.setVoltage(0), intake))
-        .andThen(ArmCommands.autoArmToPosition(arm, ArmConstants.Positions.INTAKE_POS_RAD::get));
+    NamedCommands.registerCommand("shoot auto", autoCommandBuilder.autoShoot());
   }
 
   /**
    * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
+   * instantiating a {@link GenericHID} or one of its subclasses ({@link Joystick} or {@link
+   * XboxController}), and then passing it to a {@link JoystickButton}.
    */
   private void configureButtonBindings() {
     rumbleSubsystem.setRumbleTimes(40, 10);
@@ -256,17 +294,27 @@ public class RobotContainer {
             () -> -driverController.getRightX(),
             () -> -driverController.getLeftX()));
 
+    driverController.x().whileTrue(autoCommandBuilder.pickupNoteVisibleNote());
     driverController
         .y()
-        .whileTrue(
-            DriveToPointBuilder.driveTo(FieldConstants.ampScoringPose)
-                .alongWith(
-                    driveToPointBuilder.raiseArmAndReadyShooterNearPose(
-                        FieldConstants.ampScoringPose,
-                        1,
-                        ArmConstants.Positions.AMP_POS_RAD::get,
-                        ShooterConstants.AMP_VELOCITY_RAD_PER_SEC::get)));
-    driverController.x().whileTrue(DriveToPointBuilder.driveTo(FieldConstants.ampScoringPose));
+        .toggleOnTrue(
+            Commands.startEnd(
+                () -> {
+                  driveMode.setHeadingSupplier(
+                      () -> {
+                        var closestNote = noteVision.getCurrentNote();
+
+                        if (closestNote.isEmpty()) {
+                          return drive.getRotation();
+                        }
+
+                        return closestNote.get().getAngle().plus(drive.getRotation());
+                      });
+                },
+                driveMode::disableHeadingControl));
+    //    driverController
+    //        .x()
+    //        .whileTrue(new PathFinderAndFollow(PathPlannerPath.fromPathFile("LineUpAmp")));
     new Trigger(() -> Math.abs(driverController.getLeftX()) > .1)
         .onTrue(Commands.runOnce(driveMode::disableHeadingControl));
 
@@ -303,16 +351,7 @@ public class RobotContainer {
 
     secondController
         .start()
-        .onTrue(
-            Commands.runOnce(
-                () ->
-                    drive.setAutoStartPose(
-                        AllianceFlipUtil.apply(
-                            new Pose2d(
-                                FieldConstants.Speaker.centerSpeakerOpening
-                                    .getTranslation()
-                                    .plus(new Translation2d(1.5, 0)),
-                                new Rotation2d(0))))));
+        .onTrue(AdjustPositionCommands.setRotation(drive, () -> new Rotation2d(0)));
     secondController
         .back()
         .toggleOnTrue(
@@ -400,6 +439,33 @@ public class RobotContainer {
   }
 
   private void configureAutoChooser() {
+    final var configString = new LoggedDashboardString("auto config string", ".102b");
+    autoChooser.addOption(
+        "test configured auto", autoCommandBuilder.autoFromConfigString(configString::get));
+
+    // -999 is an indicator that it is unchanged
+    final var angle =
+        new LoggedTunableNumber(
+            "starting angle deg (0 is intake away from ds, and + is counterclockwise for blue and clockwise for red)",
+            -999);
+    final var startingPoseId = new LoggedTunableNumber("starting pose id", -999);
+
+    new Trigger(() -> angle.hasChanged(0))
+        .onTrue(
+            AdjustPositionCommands.setRotation(
+                drive, () -> AllianceFlipUtil.apply(Rotation2d.fromDegrees(angle.get()))));
+    new Trigger(() -> startingPoseId.hasChanged(0))
+        .onTrue(
+            Commands.runOnce(
+                    () -> {
+                      final var pose =
+                          AutoConstants.convertPoseIdToPose((int) startingPoseId.get());
+                      pose.ifPresent(drive::setAutoStartPose);
+                    })
+                .ignoringDisable(true));
+
+    autoChooser.addOption("test note pickup", autoCommandBuilder.pickupNoteVisibleNote());
+
     final SysIdBuilder sysIdBuilder = new SysIdBuilder(autoChooser);
 
     sysIdBuilder.createSysId(drive, drive::runCharacterizationVolts);

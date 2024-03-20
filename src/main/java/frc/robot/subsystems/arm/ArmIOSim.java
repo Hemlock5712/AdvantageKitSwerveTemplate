@@ -12,10 +12,10 @@ public class ArmIOSim implements ArmIO {
       new SingleJointedArmSim(
           gearbox,
           ArmConstants.MOTOR_TO_ARM_RATIO,
-          SingleJointedArmSim.estimateMOI(.7, 12.5),
+          SingleJointedArmSim.estimateMOI(.7, 5),
           .7,
-          0,
-          1,
+          ArmConstants.MIN_RAD,
+          ArmConstants.MAX_RAD,
           true,
           0);
 

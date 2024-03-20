@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.78,
-      "y": 4.46
+      "x": 1.4,
+      "y": 5.54
     },
-    "rotation": -60.0
+    "rotation": 0
   },
   "command": {
     "type": "sequential",
@@ -24,19 +24,6 @@
           }
         },
         {
-          "type": "race",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "source most far note"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "pickup note"
@@ -51,7 +38,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "source 3 part"
+            "pathName": "return to speaker middle"
           }
         },
         {
@@ -63,7 +50,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "source 2nd most far note"
+            "pathName": "rotate to amp note"
           }
         },
         {
@@ -81,7 +68,37 @@
         {
           "type": "path",
           "data": {
-            "pathName": "source 3 part"
+            "pathName": "return to speaker middle"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot auto"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "rotate to source note"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "pickup note"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ready shooter"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "return to speaker middle"
           }
         },
         {

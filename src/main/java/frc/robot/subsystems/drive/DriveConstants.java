@@ -11,9 +11,23 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
+import frc.robot.util.LoggedTunableNumber;
+import frc.robot.util.TunableNumberWrapper;
+import java.lang.invoke.MethodHandles;
 
 /** All Constants Measured in Meters and Radians (m/s, m/s^2, rad/s, rad/s^2) */
 public final class DriveConstants {
+  private static final TunableNumberWrapper tunableTable =
+      new TunableNumberWrapper(MethodHandles.lookup().lookupClass());
+
+  public static final LoggedTunableNumber NOTE_PICKUP_MAX_SPEED =
+      tunableTable.makeField("note pickup max speed", 3);
+  public static final LoggedTunableNumber NOTE_PICKUP_MIN_SPEED =
+      tunableTable.makeField("note pickup min speed", 1);
+  public static final LoggedTunableNumber NOTE_PICKUP_DISTANCE_TO_SPEED_MULT =
+      tunableTable.makeField("note distance to speed mult", 1.5);
+  public static final LoggedTunableNumber NOTE_PICKUP_MAX_TURN_SPEED =
+      tunableTable.makeField("note pickup max turn speed", 5);
   public static final PathConstraints pathPlannerConstraints =
       new PathConstraints(4.0, 3.0, Units.degreesToRadians(200), Units.degreesToRadians(200));
 
@@ -61,6 +75,8 @@ public final class DriveConstants {
         default -> 0.01;
       };
 
+  public static final boolean DISABLE_VISION_THETA = false; // true means we only use the gyro angle
+
   public static final int gyroID = 13;
 
   // Turn to "" for no canbus name
@@ -95,11 +111,11 @@ public final class DriveConstants {
             new ModuleConstants(Mk4iReductions.L1.reduction, Mk4iReductions.TURN.reduction);
       };
 
-  public static HeadingControllerConstants headingControllerConstants =
-      switch (Constants.getRobot()) {
-        case COMPBOT -> new HeadingControllerConstants(1.0, 0.0);
-        case SIMBOT -> new HeadingControllerConstants(3.0, 0.0);
-      };
+  public static class HeadingControllerConstants {
+    public static final LoggedTunableNumber kP = tunableTable.makeField("headingController/kp", 5);
+    public static final LoggedTunableNumber kD =
+        tunableTable.makeField("headingController/kd", 0.4);
+  }
 
   public static final PIDConstants PPtranslationConstants =
       switch (Constants.getRobot()) {
@@ -134,8 +150,6 @@ public final class DriveConstants {
       boolean turnMotorInverted) {}
 
   public record ModuleConstants(double driveReduction, double turnReduction) {}
-
-  public record HeadingControllerConstants(double Kp, double Kd) {}
 
   private enum Mk4iReductions {
     L1((50.0 / 14.0) * (19.0 / 25.0) * (45.0 / 15.0)),
