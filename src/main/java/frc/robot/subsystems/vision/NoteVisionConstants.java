@@ -8,7 +8,7 @@ import edu.wpi.first.math.util.Units;
 public class NoteVisionConstants {
   public static final Transform3d CAMERA_POS =
       new Transform3d(
-          new Translation3d(0.4, 0, 0.45), new Rotation3d(0, Units.degreesToRadians(30), 0));
+          new Translation3d(0.4, 0, 0.45), new Rotation3d(0, Units.degreesToRadians(20), 0));
 
   public static final double LIFECAM_3000_HFOV = 55;
   public static final double LIFECAM_3000_VFOV = 35;

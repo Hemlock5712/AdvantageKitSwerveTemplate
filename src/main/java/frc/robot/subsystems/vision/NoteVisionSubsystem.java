@@ -3,7 +3,6 @@ package frc.robot.subsystems.vision;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 import frc.robot.util.PoseLog;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,8 +58,7 @@ public class NoteVisionSubsystem extends SubsystemBase {
       return;
     }
 
-    if (lastTimestamp == noteVisionIOInputs.timeStampSeconds
-        && Constants.getMode() != Constants.Mode.SIM) {
+    if (lastTimestamp == noteVisionIOInputs.timeStampSeconds) {
       return;
     } else {
       lastTimestamp = noteVisionIOInputs.timeStampSeconds;

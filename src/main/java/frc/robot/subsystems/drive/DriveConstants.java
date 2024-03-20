@@ -75,7 +75,7 @@ public final class DriveConstants {
         default -> 0.01;
       };
 
-  public static final boolean DISABLE_VISION_THETA = true; // true means we only use the gyro angle
+  public static final boolean DISABLE_VISION_THETA = false; // true means we only use the gyro angle
 
   public static final int gyroID = 13;
 

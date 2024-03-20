@@ -65,9 +65,9 @@ public class NoteVisionIOSim implements NoteVisionIO {
 
     for (int i = 0; i < targets.size(); i++) {
       inputs.noteYaws[i] =
-          -Units.degreesToRadians(targets.get(i).getYaw() + 5 * (2 * Math.random() - 1));
+          -Units.degreesToRadians(targets.get(i).getYaw() + 0.5 * (2 * Math.random() - 1));
       inputs.notePitches[i] =
-          -Units.degreesToRadians(targets.get(i).getPitch() + 5 * (2 * Math.random() - 1));
+          -Units.degreesToRadians(targets.get(i).getPitch() + 0.5 * (2 * Math.random() - 1));
     }
   }
 
