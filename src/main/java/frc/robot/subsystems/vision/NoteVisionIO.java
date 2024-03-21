@@ -15,6 +15,7 @@ public interface NoteVisionIO {
     public double[] notePitches = {};
     public double[] noteYaws = {};
     public double timeStampSeconds = 0;
+    public String name = "";
   }
 
   default void updateInputs(NoteVisionIOInputs inputs) {}

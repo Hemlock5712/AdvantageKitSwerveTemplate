@@ -53,6 +53,7 @@ import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.vision.*;
 import frc.robot.util.*;
+import java.util.Arrays;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedDashboardString;
 import org.photonvision.simulation.VisionSystemSim;
@@ -139,7 +140,9 @@ public class RobotContainer {
                 "right");
         noteVision =
             new NoteVisionSubsystem(
-                new NoteVisionIOPhotonVision("lefty"),
+                Arrays.stream(NoteVisionConstants.CAMERA_CONFIGS)
+                    .map(NoteVisionConstants.CameraConfig::makePhotonVision)
+                    .toArray(NoteVisionIO[]::new),
                 drive.getPoseLogForNoteDetection(),
                 drive::getDrive,
                 drive::getPose,
@@ -170,7 +173,10 @@ public class RobotContainer {
             .schedule();
 
         aprilTagVision = new AprilTagVision(simApriltagVisionIO);
-        final var noteVisionIO = new NoteVisionIOSim(noteVisionSimSystem);
+        final NoteVisionIOSim[] noteVisionIOs =
+            Arrays.stream(NoteVisionConstants.CAMERA_CONFIGS)
+                .map(config -> new NoteVisionIOSim(noteVisionSimSystem, config))
+                .toArray(NoteVisionIOSim[]::new);
         shooter = new ShooterSubsystem(new ShooterIOSim(), new ShooterIOSim());
         intake = new Intake(new IntakeIO() {});
         arm = new ArmSubsystem(new ArmIOSim());
@@ -180,20 +186,20 @@ public class RobotContainer {
             new BeamBreak(
                 new BeamBreakIOSim(
                     drive::getDrive,
-                    noteVisionIO::getNoteLocations,
+                    noteVisionIOs[0]::getNoteLocations,
                     intake::getVoltage,
                     shooter::getTargetVelocityRadPerSec,
-                    noteVisionIO::removeNote));
+                    noteVisionIOs[0]::removeNote));
         noteVision =
             new NoteVisionSubsystem(
-                noteVisionIO,
+                noteVisionIOs,
                 drive.getPoseLogForNoteDetection(),
                 drive::getDrive,
                 drive::getPose,
                 arm::getPositionRad);
 
         new Trigger(DriverStation::isAutonomousEnabled)
-            .onTrue(Commands.runOnce(noteVisionIO::resetNotePoses));
+            .onTrue(Commands.runOnce(noteVisionIOs[0]::resetNotePoses));
       }
       default -> {
         // Replayed robot, disable IO implementations
@@ -214,7 +220,9 @@ public class RobotContainer {
         beamBreak = new BeamBreak(new BeamBreakIO() {});
         noteVision =
             new NoteVisionSubsystem(
-                new NoteVisionIO() {},
+                Arrays.stream(NoteVisionConstants.CAMERA_CONFIGS)
+                    .map(config -> new NoteVisionIO() {})
+                    .toArray(NoteVisionIO[]::new),
                 drive.getPoseLogForNoteDetection(),
                 drive::getDrive,
                 drive::getPose,

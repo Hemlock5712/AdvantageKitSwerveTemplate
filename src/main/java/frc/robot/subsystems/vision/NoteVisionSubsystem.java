@@ -11,14 +11,22 @@ import java.util.Optional;
 import java.util.function.DoubleSupplier;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import lombok.Data;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class NoteVisionSubsystem extends SubsystemBase {
-  private final NoteVisionIO noteVisionIO;
-  private final NoteVisionIOInputsAutoLogged noteVisionIOInputs =
-      new NoteVisionIOInputsAutoLogged();
+  @Data
+  private static class NoteVisionIOAndInputs {
+    private final NoteVisionIO io;
+    private final NoteVisionIOInputsAutoLogged inputs;
+    private double lastTimestamp;
+  }
+
+  private final NoteVisionIOAndInputs[] noteVisionIOsAndInputs;
+
+  private final double[] lastTimestamps;
 
   private TimestampedNote[] notesInOdometrySpace = {};
 
@@ -26,7 +34,6 @@ public class NoteVisionSubsystem extends SubsystemBase {
   private final Supplier<Pose2d> currentRobotPoseNoVisionSupplier;
   private final Supplier<Pose2d> currentRobotVisionFieldPoseSupplier;
   private final DoubleSupplier armPositionSupplierRad;
-  private double lastTimestamp = 0;
 
   /** Position of the simulated note for auto in field space */
   @Getter private Optional<Translation2d> virtualAutoNote = Optional.empty();
@@ -36,12 +43,16 @@ public class NoteVisionSubsystem extends SubsystemBase {
   public record TimestampedNote(Translation2d pose, double timestamp) {}
 
   public NoteVisionSubsystem(
-      NoteVisionIO noteVisionIO,
+      NoteVisionIO[] noteVisionIOs,
       PoseLog noVisionPoseLog,
       Supplier<Pose2d> currentRobotPoseNoVisionSupplier,
       Supplier<Pose2d> currentRobotVisionFieldPoseSupplier,
       DoubleSupplier armPositionSupplierRad) {
-    this.noteVisionIO = noteVisionIO;
+    this.noteVisionIOsAndInputs =
+        Arrays.stream(noteVisionIOs)
+            .map(io -> new NoteVisionIOAndInputs(io, new NoteVisionIOInputsAutoLogged()))
+            .toArray(NoteVisionIOAndInputs[]::new);
+    this.lastTimestamps = new double[noteVisionIOs.length];
     this.noVisionPoseLog = noVisionPoseLog;
     this.currentRobotPoseNoVisionSupplier = currentRobotPoseNoVisionSupplier;
     this.currentRobotVisionFieldPoseSupplier = currentRobotVisionFieldPoseSupplier;
@@ -50,63 +61,70 @@ public class NoteVisionSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    noteVisionIO.updateInputs(noteVisionIOInputs);
-    Logger.processInputs("NoteVision", noteVisionIOInputs);
-
-    if (armPositionSupplierRad.getAsDouble() > NoteVisionConstants.MAX_ARM_POS_RAD) {
-      lastTimestamp = noteVisionIOInputs.timeStampSeconds;
-      return;
+    for (var noteVisionIOAndInputs : noteVisionIOsAndInputs) {
+      noteVisionIOAndInputs.io.updateInputs(noteVisionIOAndInputs.inputs);
+      Logger.processInputs(
+          "NoteVision/" + noteVisionIOAndInputs.inputs.name, noteVisionIOAndInputs.inputs);
     }
 
-    if (lastTimestamp == noteVisionIOInputs.timeStampSeconds) {
-      return;
-    } else {
-      lastTimestamp = noteVisionIOInputs.timeStampSeconds;
+    expireNotes();
+
+    for (int i = 0; i < noteVisionIOsAndInputs.length; i++) {
+      if (noteVisionIOsAndInputs[i].inputs.timeStampSeconds
+          == noteVisionIOsAndInputs[i].lastTimestamp) {
+        continue;
+      } else {
+        noteVisionIOsAndInputs[i].lastTimestamp = noteVisionIOsAndInputs[i].inputs.timeStampSeconds;
+      }
+
+      if (armPositionSupplierRad.getAsDouble() > NoteVisionConstants.MAX_ARM_POS_RAD) {
+        noteVisionIOsAndInputs[i].lastTimestamp = noteVisionIOsAndInputs[i].inputs.timeStampSeconds;
+        continue;
+      }
+
+      var oldNotes = notesInOdometrySpace;
+      var newNotes =
+          calculateNotesInOdometrySpace(
+              noteVisionIOsAndInputs[i].inputs,
+              NoteVisionConstants.CAMERA_CONFIGS[i].cameraPose(),
+              noVisionPoseLog.getPoseAtTime(noteVisionIOsAndInputs[i].inputs.timeStampSeconds));
+
+      ArrayList<TimestampedNote> oldNotesInCamera = new ArrayList<>();
+      ArrayList<TimestampedNote> oldNotesOutOfCamera = new ArrayList<>();
+
+      splitOldNotesInCameraView(
+          noVisionPoseLog.getPoseAtTime(noteVisionIOsAndInputs[i].inputs.timeStampSeconds),
+          new Pose2d(
+              NoteVisionConstants.CAMERA_CONFIGS[i].cameraPose().getTranslation().toTranslation2d(),
+              NoteVisionConstants.CAMERA_CONFIGS[i].cameraPose().getRotation().toRotation2d()),
+          oldNotes,
+          oldNotesInCamera,
+          oldNotesOutOfCamera);
+
+      var currentNotes =
+          updateNotes(
+              oldNotesInCamera,
+              groupNotes(newNotes),
+              noteVisionIOsAndInputs[i].inputs.timeStampSeconds);
+
+      currentNotes.addAll(oldNotesOutOfCamera);
+
+      groupNoteRecords(currentNotes);
+
+      notesInOdometrySpace = currentNotes.toArray(TimestampedNote[]::new);
     }
-
-    var oldNotes = notesInOdometrySpace;
-    var newNotes =
-        calculateNotesInOdometrySpace(
-            noteVisionIOInputs,
-            NoteVisionConstants.CAMERA_POS,
-            noVisionPoseLog.getPoseAtTime(noteVisionIOInputs.timeStampSeconds));
-
-    ArrayList<TimestampedNote> oldNotesInCamera = new ArrayList<>();
-    ArrayList<TimestampedNote> oldNotesOutOfCamera = new ArrayList<>();
-
-    splitOldNotesInCameraView(
-        noVisionPoseLog.getPoseAtTime(noteVisionIOInputs.timeStampSeconds),
-        new Pose2d(
-            NoteVisionConstants.CAMERA_POS.getTranslation().toTranslation2d(),
-            NoteVisionConstants.CAMERA_POS.getRotation().toRotation2d()),
-        oldNotes,
-        oldNotesInCamera,
-        oldNotesOutOfCamera);
-
-    var currentNotes =
-        updateNotes(oldNotesInCamera, groupNotes(newNotes), noteVisionIOInputs.timeStampSeconds);
-
-    filterOldUnseenNotes(oldNotesOutOfCamera, noteVisionIOInputs.timeStampSeconds);
-
-    currentNotes.addAll(oldNotesOutOfCamera);
-
-    groupNoteRecords(currentNotes);
-
-    notesInOdometrySpace = currentNotes.toArray(TimestampedNote[]::new);
 
     updateAutoNote();
   }
 
-  private static void filterOldUnseenNotes(
-      ArrayList<TimestampedNote> oldNotesOutOfCamera, double currentTime) {
-    for (int i = 0; i < oldNotesOutOfCamera.size(); ) {
-      if (oldNotesOutOfCamera.get(i).timestamp
-          < currentTime - NoteVisionConstants.OUT_OF_CAMERA_EXPIRATION) {
-        oldNotesOutOfCamera.remove(i);
-      } else {
-        i++;
-      }
-    }
+  private void expireNotes() {
+    notesInOdometrySpace =
+        Arrays.stream(notesInOdometrySpace)
+            .filter(
+                note ->
+                    note.timestamp
+                        > Logger.getTimestamp() / 1e6 - NoteVisionConstants.NOTE_EXPIRATION)
+            .toArray(TimestampedNote[]::new);
   }
 
   private static void splitOldNotesInCameraView(
@@ -185,7 +203,7 @@ public class NoteVisionSubsystem extends SubsystemBase {
     return new TimestampedNote(a.pose.plus(b.pose).div(2), Math.max(a.timestamp, b.timestamp));
   }
 
-  private static void groupNoteRecords(List<TimestampedNote> notes) {
+  private static void groupNoteRecords(ArrayList<TimestampedNote> notes) {
     outer:
     for (int i = 0; i < notes.size() - 1; ) {
       for (int j = i + 1; j < notes.size(); j++) {
@@ -359,15 +377,17 @@ public class NoteVisionSubsystem extends SubsystemBase {
         deprojectProjectedNoteFromRobotPose(
             virtualAutoNote.get(), currentRobotVisionFieldPoseSupplier.get());
 
-    if (canCameraSeeNote(
-        new Pose2d(
-            NoteVisionConstants.CAMERA_POS.getTranslation().toTranslation2d(),
-            NoteVisionConstants.CAMERA_POS.getRotation().toRotation2d()),
-        relativeAutoNote,
-        virtualNoteDistanceToRemove,
-        NoteVisionConstants.MIN_CAMERA_DISTANCE)) {
-      {
-        virtualAutoNote = Optional.empty();
+    for (int i = 0; i < noteVisionIOsAndInputs.length; i++) {
+      if (canCameraSeeNote(
+          new Pose2d(
+              NoteVisionConstants.CAMERA_CONFIGS[i].cameraPose().getTranslation().toTranslation2d(),
+              NoteVisionConstants.CAMERA_CONFIGS[i].cameraPose().getRotation().toRotation2d()),
+          relativeAutoNote,
+          virtualNoteDistanceToRemove,
+          NoteVisionConstants.MIN_CAMERA_DISTANCE)) {
+        {
+          virtualAutoNote = Optional.empty();
+        }
       }
     }
   }

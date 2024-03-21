@@ -17,18 +17,22 @@ import org.photonvision.simulation.VisionTargetSim;
 public class NoteVisionIOSim implements NoteVisionIO {
   private final VisionSystemSim visionSim;
   private final TargetModel targetModel = new TargetModel(0.2, 0.2, 0.05);
-  private final PhotonCamera camera = new PhotonCamera("center note camera");
+  private final PhotonCamera camera;
   private Pose3d[] notePoses = new Pose3d[8];
+  private final NoteVisionConstants.CameraConfig config;
 
-  public NoteVisionIOSim(VisionSystemSim visionSim) {
+  public NoteVisionIOSim(VisionSystemSim visionSim, NoteVisionConstants.CameraConfig config) {
     this.visionSim = visionSim;
+    this.config = config;
     resetNotePoses();
+
+    camera = new PhotonCamera(config.name());
 
     final var cameraProps = new SimCameraProperties();
     cameraProps.setAvgLatencyMs(10);
     cameraProps.setFPS(30);
     cameraProps.setCalibration(1200, 960, Rotation2d.fromDegrees(70));
-    visionSim.addCamera(new PhotonCameraSim(camera, cameraProps), NoteVisionConstants.CAMERA_POS);
+    visionSim.addCamera(new PhotonCameraSim(camera, cameraProps), config.cameraPose());
   }
 
   public void resetNotePoses() {
@@ -55,6 +59,8 @@ public class NoteVisionIOSim implements NoteVisionIO {
 
   @Override
   public void updateInputs(NoteVisionIOInputs inputs) {
+    inputs.name = camera.getName();
+
     var result = camera.getLatestResult();
 
     var targets = result.getTargets();
