@@ -346,4 +346,8 @@ public class Drive extends SubsystemBase {
   public static ProfiledPIDController getThetaController() {
     return thetaController;
   }
+
+  public static void setThetaControllerGoal(double goal) {
+    thetaController.setGoal(goal);
+  }
 }

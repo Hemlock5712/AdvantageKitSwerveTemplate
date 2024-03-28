@@ -61,7 +61,6 @@ public class RobotContainer {
   private final Drive drive;
   private final Flywheel flywheel;
   private AprilTagVision aprilTagVision;
-  private static DriveController driveMode = new DriveController();
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -162,8 +161,7 @@ public class RobotContainer {
 
     // Configure the button bindings
     aprilTagVision.setDataInterfaces(drive::addVisionData);
-    driveMode.setPoseSupplier(drive::getPose);
-    driveMode.disableHeadingControl();
+    DriveController.getInstance().disableHeadingControl();
     configureButtonBindings();
   }
 
@@ -177,19 +175,21 @@ public class RobotContainer {
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
-            driveMode,
             () -> -controller.getLeftY(),
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
-    controller.leftBumper().whileTrue(Commands.runOnce(() -> driveMode.toggleDriveMode()));
+    controller
+        .leftBumper()
+        .whileTrue(Commands.runOnce(() -> DriveController.getInstance().toggleDriveMode()));
 
-    controller.a().whileTrue(new PathFinderAndFollow(driveMode.getDriveModeType()));
+    controller.a().whileTrue(new PathFinderAndFollow());
 
     controller
         .b()
         .whileTrue(
             Commands.startEnd(
-                () -> driveMode.enableHeadingControl(), () -> driveMode.disableHeadingControl()));
+                () -> DriveController.getInstance().enableHeadingControl(),
+                () -> DriveController.getInstance().disableHeadingControl()));
 
     controller
         .y()
