@@ -55,14 +55,6 @@ public class Drive extends SubsystemBase {
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private final SysIdRoutine sysId;
 
-  private static ProfiledPIDController thetaController =
-      new ProfiledPIDController(
-          headingControllerConstants.Kp(),
-          0,
-          headingControllerConstants.Kd(),
-          new TrapezoidProfile.Constraints(
-              drivetrainConfig.maxAngularVelocity(), drivetrainConfig.maxAngularAcceleration()));
-
   private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
   private Rotation2d rawGyroRotation = new Rotation2d();
   private SwerveModulePosition[] lastModulePositions = // For delta tracking
@@ -142,8 +134,6 @@ public class Drive extends SubsystemBase {
                 },
                 null,
                 this));
-    thetaController.enableContinuousInput(-Math.PI, Math.PI);
-    thetaController.setTolerance(Units.degreesToRadians(1.5));
   }
 
   @Override
@@ -341,13 +331,5 @@ public class Drive extends SubsystemBase {
         visionUpdate ->
             addVisionMeasurement(
                 visionUpdate.pose(), visionUpdate.timestamp(), visionUpdate.stdDevs()));
-  }
-
-  public static ProfiledPIDController getThetaController() {
-    return thetaController;
-  }
-
-  public static void setThetaControllerGoal(double goal) {
-    thetaController.setGoal(goal);
   }
 }
