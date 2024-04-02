@@ -16,17 +16,21 @@ package frc.robot.commands;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveController;
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
 public class DriveCommands {
@@ -37,12 +41,23 @@ public class DriveCommands {
   /**
    * Field relative drive command using two joysticks (controlling linear and angular velocities).
    */
-  public static Command joystickDrive(
+  public static final Command joystickDrive(
       Drive drive,
-      DriveController driveMode,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
+
+    ProfiledPIDController aimController =
+        new ProfiledPIDController(
+            headingControllerConstants.Kp(),
+            0,
+            headingControllerConstants.Kd(),
+            new TrapezoidProfile.Constraints(
+                drivetrainConfig.maxAngularVelocity(), drivetrainConfig.maxAngularAcceleration()),
+            Constants.loopPeriodMs);
+    aimController.reset(drive.getRotation().getRadians());
+    aimController.enableContinuousInput(-Math.PI, Math.PI);
+
     return Commands.run(
         () -> {
           // Apply deadband
@@ -52,21 +67,14 @@ public class DriveCommands {
           Rotation2d linearDirection =
               new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
           double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
-          if (driveMode.isHeadingControlled()) {
-            final var targetAngle = driveMode.getHeadingAngle();
-            omega =
-                Drive.getThetaController()
-                    .calculate(
-                        drive.getPose().getRotation().getRadians(), targetAngle.get().getRadians());
-            if (Drive.getThetaController().atGoal()) {
-              omega = 0;
-            }
-            omega = Math.copySign(Math.min(1, Math.abs(omega)), omega);
-          }
 
           // Square values
           linearMagnitude = linearMagnitude * linearMagnitude;
           omega = Math.copySign(omega * omega, omega);
+
+          if (DriveController.getInstance().isHeadingControlled()) {
+            linearMagnitude = Math.min(linearMagnitude, 0.75);
+          }
 
           // Calcaulate new linear velocity
           Translation2d linearVelocity =
@@ -74,18 +82,38 @@ public class DriveCommands {
                   .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
                   .getTranslation();
 
-          // Convert to field relative speeds & send command
+          // Get robot relative vel
           boolean isFlipped =
               DriverStation.getAlliance().isPresent()
                   && DriverStation.getAlliance().get() == Alliance.Red;
-          drive.runVelocity(
+          Optional<Rotation2d> targetGyroAngle = Optional.empty();
+          Rotation2d measuredGyroAngle = drive.getRotation();
+          double feedForwardRadialVelocity = 0.0;
+
+          double robotRelativeXVel = linearVelocity.getX() * drivetrainConfig.maxLinearVelocity();
+          double robotRelativeYVel = linearVelocity.getY() * drivetrainConfig.maxLinearVelocity();
+
+          // Speaker Mode
+          if (DriveController.getInstance().isHeadingControlled()) {
+            measuredGyroAngle = drive.getPose().getRotation();
+            DriveController.getInstance().calculateHeading(drive.getPose());
+            targetGyroAngle = Optional.of(DriveController.getInstance().getHeadingAngle());
+          }
+          ChassisSpeeds chassisSpeeds =
               ChassisSpeeds.fromFieldRelativeSpeeds(
-                  linearVelocity.getX() * drivetrainConfig.maxLinearVelocity(),
-                  linearVelocity.getY() * drivetrainConfig.maxLinearVelocity(),
-                  omega * drivetrainConfig.maxAngularVelocity(),
+                  robotRelativeXVel,
+                  robotRelativeYVel,
+                  DriveController.getInstance().isHeadingControlled() && targetGyroAngle.isPresent()
+                      ? feedForwardRadialVelocity
+                          + aimController.calculate(
+                              measuredGyroAngle.getRadians(), targetGyroAngle.get().getRadians())
+                      : omega * drivetrainConfig.maxAngularVelocity(),
                   isFlipped
                       ? drive.getRotation().plus(new Rotation2d(Math.PI))
-                      : drive.getRotation()));
+                      : drive.getRotation());
+
+          // Convert to field relative speeds & send command
+          drive.runVelocity(chassisSpeeds);
         },
         drive);
   }
