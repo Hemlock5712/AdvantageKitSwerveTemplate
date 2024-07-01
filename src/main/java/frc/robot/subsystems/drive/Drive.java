@@ -238,7 +238,11 @@ public class Drive extends SubsystemBase {
                       ? this.getRotation().plus(new Rotation2d(Math.PI))
                       : this.getRotation());
 
-          // Convert to field relative speeds & send command
+          Translation2d translationSpeeds =
+              calulateToGamepieceNorm(
+                  getPose().getTranslation(), new Translation2d(0, 0), chassisSpeeds);
+          chassisSpeeds.vxMetersPerSecond = translationSpeeds.getX();
+          chassisSpeeds.vyMetersPerSecond = translationSpeeds.getY();
           this.runVelocity(chassisSpeeds);
         },
         this);
@@ -380,5 +384,35 @@ public class Drive extends SubsystemBase {
         visionUpdate ->
             addVisionMeasurement(
                 visionUpdate.pose(), visionUpdate.timestamp(), visionUpdate.stdDevs()));
+  }
+
+  public static double dot(Translation2d a, Translation2d b) {
+    return a.getX() * b.getX() + a.getY() * b.getY();
+  }
+
+  public Translation2d calulateToGamepieceNorm(
+      Translation2d robotPose, Translation2d gamepiece, ChassisSpeeds chassisSpeeds) {
+    double MAX_PERP = 20; // Max Perpendicular distance allowed
+    double MAX_ROBOT_NOTE =
+        20; // Max distance allowed from robot to note will be smaller in real life
+    double kP = 0.25;
+
+    Translation2d r_n = robotPose.minus(gamepiece);
+    Translation2d velocity =
+        new Translation2d(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
+    double proj_factor =
+        ((r_n.getX() * velocity.getX()) + (r_n.getY() * velocity.getY()))
+            / ((velocity.getX() * velocity.getX()) + (velocity.getY() * velocity.getY()));
+    Translation2d proj_R_n = velocity.times(proj_factor);
+    Translation2d perp_R_n = r_n.minus(proj_R_n);
+    double perp_Distance = perp_R_n.getNorm();
+    if (perp_Distance < MAX_PERP && perp_Distance < MAX_ROBOT_NOTE) {
+      Translation2d assist_vel = perp_R_n.times(kP);
+      Translation2d new_velocity = velocity.plus(assist_vel);
+      Translation2d norm_Valocity = new_velocity.div(new_velocity.getNorm());
+      return norm_Valocity.times(velocity.getNorm());
+    } else {
+      return new Translation2d(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
+    }
   }
 }
