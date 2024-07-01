@@ -239,8 +239,7 @@ public class Drive extends SubsystemBase {
                       : this.getRotation());
 
           Translation2d translationSpeeds =
-              calulateToGamepieceNorm(
-                  getPose().getTranslation(), new Translation2d(0, 0), chassisSpeeds);
+              this.calulateToGamepieceNorm(new Translation2d(0, 0), chassisSpeeds);
           chassisSpeeds.vxMetersPerSecond = translationSpeeds.getX();
           chassisSpeeds.vyMetersPerSecond = translationSpeeds.getY();
           this.runVelocity(chassisSpeeds);
@@ -391,13 +390,13 @@ public class Drive extends SubsystemBase {
   }
 
   public Translation2d calulateToGamepieceNorm(
-      Translation2d robotPose, Translation2d gamepiece, ChassisSpeeds chassisSpeeds) {
-    double MAX_PERP = 20; // Max Perpendicular distance allowed
+      Translation2d gamepiece, ChassisSpeeds chassisSpeeds) {
+    double MAX_PERP = 2; // Max Perpendicular distance allowed
     double MAX_ROBOT_NOTE =
-        20; // Max distance allowed from robot to note will be smaller in real life
-    double kP = 0.25;
+        3; // Max distance allowed from robot to note will be smaller in real life
+    double kP = 0.5;
 
-    Translation2d r_n = robotPose.minus(gamepiece);
+    Translation2d r_n = gamepiece.minus(getPose().getTranslation());
     Translation2d velocity =
         new Translation2d(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
     double proj_factor =
@@ -410,8 +409,12 @@ public class Drive extends SubsystemBase {
       Translation2d assist_vel = perp_R_n.times(kP);
       Translation2d new_velocity = velocity.plus(assist_vel);
       Translation2d norm_Valocity = new_velocity.div(new_velocity.getNorm());
+      Logger.recordOutput("Custom", norm_Valocity.times(velocity.getNorm()));
       return norm_Valocity.times(velocity.getNorm());
     } else {
+      Logger.recordOutput(
+          "Normal",
+          new Translation2d(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond));
       return new Translation2d(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
     }
   }
