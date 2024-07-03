@@ -244,7 +244,6 @@ public class Drive extends SubsystemBase {
                       ? this.getRotation().plus(new Rotation2d(Math.PI))
                       : this.getRotation());
 
-
           this.runVelocity(chassisSpeeds);
         },
         this);
@@ -394,8 +393,8 @@ public class Drive extends SubsystemBase {
       Translation2d robotPose, Translation2d gamepiece, Translation2d velocity) {
     double MAX_PERP = 20; // Max Perpendicular distance allowed
     double MAX_ROBOT_NOTE =
-        20; // Max distance allowed from robot to note will be smaller in real life
-    double kP = 0.25;
+        3; // Max distance allowed from robot to note will be smaller in real life
+    double kP = 0.5;
 
     Translation2d r_n = robotPose.minus(gamepiece);
     double proj_factor =
@@ -408,6 +407,7 @@ public class Drive extends SubsystemBase {
       Translation2d assist_vel = perp_R_n.times(kP);
       Translation2d new_velocity = velocity.plus(assist_vel);
       Translation2d norm_Valocity = new_velocity.div(new_velocity.getNorm());
+      Logger.recordOutput("Custom", norm_Valocity.times(velocity.getNorm()));
       return norm_Valocity.times(velocity.getNorm());
     } else {
       return velocity;
