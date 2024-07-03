@@ -229,11 +229,11 @@ public class Drive extends SubsystemBase {
           double robotRelativeXVel = linearVelocity.getX() * drivetrainConfig.maxLinearVelocity();
           double robotRelativeYVel = linearVelocity.getY() * drivetrainConfig.maxLinearVelocity();
 
-          
-
           Translation2d translationSpeeds =
               calulateToGamepieceNorm(
-                  getPose().getTranslation(), new Translation2d(0, 0), new Translation2d(robotRelativeXVel, robotRelativeYVel));
+                  getPose().getTranslation(),
+                  new Translation2d(3, 7),
+                  new Translation2d(robotRelativeXVel, robotRelativeYVel));
 
           ChassisSpeeds chassisSpeeds =
               ChassisSpeeds.fromFieldRelativeSpeeds(
@@ -387,28 +387,53 @@ public class Drive extends SubsystemBase {
                 visionUpdate.pose(), visionUpdate.timestamp(), visionUpdate.stdDevs()));
   }
 
-  
+  private double normRotations(double rotations) {
+    return MathUtil.inputModulus(rotations, 0.0, 1.0);
+  }
 
   public Translation2d calulateToGamepieceNorm(
       Translation2d robotPose, Translation2d gamepiece, Translation2d velocity) {
-    double MAX_PERP = 20; // Max Perpendicular distance allowed
     double MAX_ROBOT_NOTE =
-        3; // Max distance allowed from robot to note will be smaller in real life
-    double kP = 0.5;
+        4; // Max distance allowed from robot to note will be smaller in real life
+    double kP = 5.0;
+    if (velocity.getNorm() == 0) {
+      return velocity;
+    }
 
-    Translation2d r_n = robotPose.minus(gamepiece);
+    Translation2d r_n = gamepiece.minus(robotPose);
     double proj_factor =
         ((r_n.getX() * velocity.getX()) + (r_n.getY() * velocity.getY()))
             / ((velocity.getX() * velocity.getX()) + (velocity.getY() * velocity.getY()));
     Translation2d proj_R_n = velocity.times(proj_factor);
     Translation2d perp_R_n = r_n.minus(proj_R_n);
-    double perp_Distance = perp_R_n.getNorm();
-    if (MathUtil.inputModulus(perp_R_n.getAngle().getRotations() - velocity.getAngle().getRotations(),0.0,1.0) < 30 && perp_Distance < MAX_ROBOT_NOTE ) {
+
+    Logger.recordOutput(
+        "Custom 3",
+        (MathUtil.inputModulus(
+            r_n.getAngle().getRotations() - velocity.getAngle().getRotations(), -0.5, 0.5)));
+
+    Logger.recordOutput("Custom 4", gamepiece);
+
+    Logger.recordOutput(
+        "Custom 2",
+        new Translation2d(robotPose.getX() + velocity.getX(), robotPose.getY() + velocity.getY()));
+
+    if (Math.abs(
+                MathUtil.inputModulus(
+                    r_n.getAngle().getRotations() - velocity.getAngle().getRotations(), -0.5, 0.5))
+            < 0.1
+        && r_n.getNorm() < MAX_ROBOT_NOTE) {
       Translation2d assist_vel = perp_R_n.times(kP);
       Translation2d new_velocity = velocity.plus(assist_vel);
       Translation2d norm_Valocity = new_velocity.div(new_velocity.getNorm());
-      Logger.recordOutput("Custom", norm_Valocity.times(velocity.getNorm()));
-      return norm_Valocity.times(velocity.getNorm());
+      Translation2d final_Valocity = norm_Valocity.times(velocity.getNorm());
+
+      Logger.recordOutput(
+          "Custom",
+          new Translation2d(
+              robotPose.getX() + final_Valocity.getX(), robotPose.getY() + final_Valocity.getY()));
+
+      return final_Valocity;
     } else {
       return velocity;
     }
