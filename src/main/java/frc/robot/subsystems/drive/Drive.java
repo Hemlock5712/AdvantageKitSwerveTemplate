@@ -59,13 +59,6 @@ public class Drive extends SubsystemBase {
 
   private static final double DEADBAND = 0.1;
 
-  private final double MAX_FORWARD_ACC = 10.0;
-  private final double MAX_SKID_ACC = 10.0;
-  private final double MAX_VEL = 4.0;
-
-  private double prevXVel = 0.0;
-  private double prevYVel = 0.0;
-
   private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
   private Rotation2d rawGyroRotation = new Rotation2d();
   private SwerveModulePosition[] lastModulePositions = // For delta tracking
@@ -251,33 +244,6 @@ public class Drive extends SubsystemBase {
         this);
   }
 
-  private SwerveModuleState[] accLimit(SwerveModuleState[] swerveModuleStates){
-    for (int i = 0; i < 4; i++) {
-       double currentVelocity = modules[i].getVelocityMetersPerSec();
-       double wantedVelocity = swerveModuleStates[i].speedMetersPerSecond;
-       double wantedAcc = (wantedVelocity-currentVelocity) / 0.02;
-      wantedAcc = forwardLimit(wantedAcc, currentVelocity);
-      //wantedAcc = skidLimit(wantedAcc);
-      swerveModuleStates[i].speedMetersPerSecond = currentVelocity + wantedAcc * 0.02;
-    }
-    return swerveModuleStates;
-  }
-
-  private double forwardLimit(double wantedAcc, double currentVelocity){
-    double maxForwardAcc = MAX_FORWARD_ACC * (1 - (currentVelocity / MAX_VEL));
-    if(Math.abs(maxForwardAcc) < MAX_FORWARD_ACC){
-      return maxForwardAcc;
-    }
-    return MAX_FORWARD_ACC;
-  }
-
-  private double skidLimit(double wantedAcc){
-    if(Math.abs(wantedAcc) < MAX_SKID_ACC){
-      return wantedAcc;
-    }
-    return MAX_SKID_ACC;
-  }
-
   /**
    * Runs the drive at the desired velocity.
    *
@@ -287,10 +253,8 @@ public class Drive extends SubsystemBase {
     // Calculate module setpoints
     ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
     SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
-    accLimit(setpointStates);
     SwerveDriveKinematics.desaturateWheelSpeeds(
         setpointStates, drivetrainConfig.maxLinearVelocity());
-
     // Send setpoints to modules
     SwerveModuleState[] optimizedSetpointStates = new SwerveModuleState[4];
     for (int i = 0; i < 4; i++) {

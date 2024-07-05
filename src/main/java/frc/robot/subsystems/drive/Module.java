@@ -117,12 +117,43 @@ public class Module {
     }
   }
 
+  private SwerveModuleState forwardLimit(SwerveModuleState optimizedState) {
+    double currentVelocity = this.getVelocityMetersPerSec();
+    double wantedVelocity = optimizedState.speedMetersPerSecond;
+
+    // Calculate desired acceleration (assuming 0.02 is your time interval)
+    double moduleWantedAcc = (wantedVelocity - currentVelocity) / 0.02;
+
+    // Calculate maximum forward acceleration based on current velocity
+    double moduleMaxAcc =
+        drivetrainConfig.maxLinearAcceleration()
+            * (1 - currentVelocity / drivetrainConfig.maxLinearVelocity());
+
+    // Apply acceleration limit only when increasing speed in the same direction
+    boolean isAccelerating;
+
+    if (currentVelocity > 0 && wantedVelocity > 0) {
+      isAccelerating = currentVelocity < wantedVelocity;
+    } else if (currentVelocity < 0 && wantedVelocity < 0) {
+      isAccelerating = currentVelocity > wantedVelocity;
+    } else {
+      isAccelerating = Math.abs(currentVelocity) < Math.abs(wantedVelocity);
+    }
+    double appliedAcceleration =
+        Math.min(Math.abs(moduleWantedAcc), moduleMaxAcc) * Math.signum(moduleWantedAcc);
+
+    // Apply acceleration limit
+    if (isAccelerating && Math.abs(moduleWantedAcc) > moduleMaxAcc) {
+      optimizedState.speedMetersPerSecond = currentVelocity + appliedAcceleration * 0.02;
+    }
+    return optimizedState;
+  }
+
   /** Runs the module with the specified setpoint state. Returns the optimized state. */
   public SwerveModuleState runSetpoint(SwerveModuleState state) {
     // Optimize state based on current angle
     // Controllers run in "periodic" when the setpoint is not null
-    var optimizedState = SwerveModuleState.optimize(state, getAngle());
-
+    var optimizedState = forwardLimit(SwerveModuleState.optimize(state, getAngle()));
     // Update setpoints, controllers run in "periodic"
     angleSetpoint = optimizedState.angle;
     speedSetpoint = optimizedState.speedMetersPerSecond;
