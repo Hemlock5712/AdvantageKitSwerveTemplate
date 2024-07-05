@@ -117,8 +117,10 @@ public class Module {
     }
   }
 
-  private SwerveModuleState forwardLimit(SwerveModuleState optimizedState) {
+  private void forwardLimit(SwerveModuleState optimizedState) {
+    // Current drive velocity
     double currentVelocity = this.getVelocityMetersPerSec();
+    // Desired drive velocity
     double wantedVelocity = optimizedState.speedMetersPerSecond;
 
     // Calculate desired acceleration (assuming 0.02 is your time interval)
@@ -126,19 +128,19 @@ public class Module {
 
     // Calculate maximum forward acceleration based on current velocity
     double moduleMaxAcc =
-        drivetrainConfig.maxLinearAcceleration()
-            * (1 - currentVelocity / drivetrainConfig.maxLinearVelocity());
+        10.0 * (1 - Math.abs(currentVelocity) / drivetrainConfig.maxLinearVelocity());
 
     // Apply acceleration limit only when increasing speed in the same direction
-    boolean isAccelerating;
+    boolean isAccelerating = false;
 
     if (currentVelocity > 0 && wantedVelocity > 0) {
       isAccelerating = currentVelocity < wantedVelocity;
     } else if (currentVelocity < 0 && wantedVelocity < 0) {
       isAccelerating = currentVelocity > wantedVelocity;
-    } else {
-      isAccelerating = Math.abs(currentVelocity) < Math.abs(wantedVelocity);
     }
+    // else {
+    //   isAccelerating = Math.abs(currentVelocity) < Math.abs(wantedVelocity);
+    // }
     double appliedAcceleration =
         Math.min(Math.abs(moduleWantedAcc), moduleMaxAcc) * Math.signum(moduleWantedAcc);
 
@@ -146,14 +148,14 @@ public class Module {
     if (isAccelerating && Math.abs(moduleWantedAcc) > moduleMaxAcc) {
       optimizedState.speedMetersPerSecond = currentVelocity + appliedAcceleration * 0.02;
     }
-    return optimizedState;
   }
 
   /** Runs the module with the specified setpoint state. Returns the optimized state. */
   public SwerveModuleState runSetpoint(SwerveModuleState state) {
     // Optimize state based on current angle
     // Controllers run in "periodic" when the setpoint is not null
-    var optimizedState = forwardLimit(SwerveModuleState.optimize(state, getAngle()));
+    var optimizedState = SwerveModuleState.optimize(state, getAngle());
+    forwardLimit(optimizedState);
     // Update setpoints, controllers run in "periodic"
     angleSetpoint = optimizedState.angle;
     speedSetpoint = optimizedState.speedMetersPerSecond;
