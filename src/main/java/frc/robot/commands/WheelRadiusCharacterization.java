@@ -15,13 +15,15 @@ import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 /**
- * This class represents a command for characterizing the wheel radius of a swerve drive robot.
- * It calculates the effective wheel radius based on the gyro delta, drive base radius, and wheel position delta.
- * The command runs the robot at a constant velocity and measures the change in wheel positions and gyro yaw.
- * It then calculates the average wheel position change and uses it to determine the effective wheel radius.
+ * This class represents a command for characterizing the wheel radius of a swerve drive robot. It
+ * calculates the effective wheel radius based on the gyro delta, drive base radius, and wheel
+ * position delta. The command runs the robot at a constant velocity and measures the change in
+ * wheel positions and gyro yaw. It then calculates the average wheel position change and uses it to
+ * determine the effective wheel radius.
  */
 public class WheelRadiusCharacterization extends Command {
-  // Wheel Radius (meters) = Gyro Delta (radians) * Drive Base Radius (meters) / Wheel Position Delta (radians)
+  // Wheel Radius (meters) = Gyro Delta (radians) * Drive Base Radius (meters) / Wheel Position
+  // Delta (radians)
   @AutoLogOutput private double gyroDelta = 0.0;
   @AutoLogOutput private double wheelPosDelta = 0.0;
   @AutoLogOutput private double currentEffectiveWheelRadius = 0.0;
@@ -63,9 +65,11 @@ public class WheelRadiusCharacterization extends Command {
     }
     System.out.println(averageWheelPosition);
     // Check division by zero (if the robot doesn't move, the wheel positions will not change)
-    currentEffectiveWheelRadius = (averageWheelPosition == 0.0) ?
-    0.0 :
-    (accumGyroYawRads * drivetrainConfig.driveBaseRadius()) / (averageWheelPosition / 4.0);
+    currentEffectiveWheelRadius =
+        (averageWheelPosition == 0.0)
+            ? 0.0
+            : (accumGyroYawRads * drivetrainConfig.driveBaseRadius())
+                / (averageWheelPosition / 4.0);
   }
 
   @Override
