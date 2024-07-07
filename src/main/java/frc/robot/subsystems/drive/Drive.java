@@ -369,14 +369,14 @@ public class Drive extends SubsystemBase {
   }
 
   public void setWheelsToCircle() {
+    Rotation2d[] turnAngles =
+        Arrays.stream(DriveConstants.moduleTranslations)
+            .map(translation -> translation.getAngle().plus(new Rotation2d(Math.PI / 2.0)))
+            .toArray(Rotation2d[]::new);
     SwerveModuleState[] desiredStates =
-        new SwerveModuleState[] {
-          new SwerveModuleState(0, Rotation2d.fromDegrees(-45)),
-          new SwerveModuleState(0, Rotation2d.fromDegrees(45)),
-          new SwerveModuleState(0, Rotation2d.fromDegrees(45)),
-          new SwerveModuleState(0, Rotation2d.fromDegrees(-45))
-        };
-
+        Arrays.stream(turnAngles)
+            .map(angle -> new SwerveModuleState(0, angle))
+            .toArray(SwerveModuleState[]::new);
     setModuleStates(desiredStates);
   }
 }
