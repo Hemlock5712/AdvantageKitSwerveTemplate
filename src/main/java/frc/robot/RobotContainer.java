@@ -22,8 +22,11 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.CompositeCommand;
+import frc.robot.commands.FeedForwardCharacterization;
+import frc.robot.commands.WheelRadiusCharacterization;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -113,8 +116,21 @@ public class RobotContainer {
     // Configure the button bindings
     aprilTagVision.setDataInterfaces(drive::addVisionData);
     compositeCommand = new CompositeCommand(drive, flywheel);
-
+    configureAutos();
     configureButtonBindings();
+  }
+
+  private void configureAutos() {
+    autoChooser.addOption(
+        "Drive FF Characterization",
+        new FeedForwardCharacterization(
+            drive, drive::runCharacterizationVolts, drive::getCharacterizationVelocity));
+
+    autoChooser.addOption(
+        "Wheel Radius Characterization",
+        Commands.run(drive::setWheelsToCircle)
+            .withTimeout(2)
+            .andThen(new WheelRadiusCharacterization(drive)));
   }
 
   /**

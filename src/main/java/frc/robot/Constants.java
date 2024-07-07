@@ -25,7 +25,7 @@ import frc.robot.util.Alert;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static final int loopPeriodMs = 20;
+  public static final double loopPeriodSecs = 0.02;
   private static RobotType robotType = RobotType.SIMBOT;
   public static final boolean tuningMode = true;
   public static final boolean characterizationMode = false;

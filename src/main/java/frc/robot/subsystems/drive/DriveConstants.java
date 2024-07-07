@@ -165,9 +165,9 @@ public final class DriveConstants {
       double ffKs,
       double ffKv,
       double driveKp,
-      double drivekD,
+      double driveKd,
       double turnKp,
-      double turnkD,
+      double turnKd,
       double driveReduction,
       double turnReduction) {}
 
