@@ -42,6 +42,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.VisionHelpers.TimestampedVisionUpdate;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -236,7 +237,7 @@ public class Drive extends SubsystemBase {
           Translation2d translationSpeeds =
               calulateToGamepieceNorm(
                   getPose().getTranslation(),
-                  new Translation2d(3, 7),
+                  AllianceFlipUtil.apply(new Translation2d(3, 7)),
                   new Translation2d(robotRelativeXVel, robotRelativeYVel));
 
           ChassisSpeeds chassisSpeeds =
@@ -421,13 +422,16 @@ public class Drive extends SubsystemBase {
         "Custom 2",
         new Translation2d(robotPose.getX() + velocity.getX(), robotPose.getY() + velocity.getY()));
 
-    if (Math.abs(
-                MathUtil.inputModulus(
-                    robotToNote.getAngle().getRotations() - velocity.getAngle().getRotations(),
-                    -0.5,
-                    0.5))
-            < 0.1
-        && robotToNote.getNorm() < MAX_ROBOT_NOTE) {
+    double angleToGamePiece =
+        Math.abs(
+            MathUtil.inputModulus(
+                robotToNote.getAngle().getRotations() - velocity.getAngle().getRotations(),
+                -0.5,
+                0.5));
+
+    if ((AllianceFlipUtil.shouldFlip() && angleToGamePiece < 0.4)
+        || (!AllianceFlipUtil.shouldFlip() && angleToGamePiece < 0.1)
+            && robotToNote.getNorm() < MAX_ROBOT_NOTE) {
       Translation2d assistVelocity = perpRobotToNote.times(GP_ASSIST_kP);
       Translation2d newVelocity = velocity.plus(assistVelocity);
       Translation2d normVelocity = newVelocity.div(newVelocity.getNorm());
