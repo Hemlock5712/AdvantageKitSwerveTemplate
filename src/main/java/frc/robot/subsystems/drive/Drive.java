@@ -398,30 +398,20 @@ public class Drive extends SubsystemBase {
 
   public Translation2d calulateToGamepieceNorm(
       Translation2d robotPose, Translation2d gamepiece, Translation2d velocity) {
+
+    Translation2d assistVelocity = new Translation2d();
     if (velocity.getNorm() == 0) {
       return velocity;
     }
 
+    Logger.recordOutput("GamepieceLocation", gamepiece);
+
+      Logger.recordOutput(
+          "VelocityPlacedonRobot",
+          new Translation2d(
+              robotPose.getX() + velocity.getX(), robotPose.getY() + velocity.getY()));
+
     Translation2d robotToNote = gamepiece.minus(robotPose);
-    double projFactor =
-        ((robotToNote.getX() * velocity.getX()) + (robotToNote.getY() * velocity.getY()))
-            / ((velocity.getX() * velocity.getX()) + (velocity.getY() * velocity.getY()));
-    Translation2d projRobotToNote = velocity.times(projFactor);
-    Translation2d perpRobotToNote = robotToNote.minus(projRobotToNote);
-
-    Logger.recordOutput(
-        "Custom 3",
-        (MathUtil.inputModulus(
-            robotToNote.getAngle().getRotations() - velocity.getAngle().getRotations(),
-            -0.5,
-            0.5)));
-
-    Logger.recordOutput("Custom 4", gamepiece);
-
-    Logger.recordOutput(
-        "Custom 2",
-        new Translation2d(robotPose.getX() + velocity.getX(), robotPose.getY() + velocity.getY()));
-
     double angleToGamePiece =
         Math.abs(
             MathUtil.inputModulus(
@@ -429,18 +419,31 @@ public class Drive extends SubsystemBase {
                 -0.5,
                 0.5));
 
-    if ((AllianceFlipUtil.shouldFlip() && angleToGamePiece < 0.4)
-        || (!AllianceFlipUtil.shouldFlip() && angleToGamePiece < 0.1)
-            && robotToNote.getNorm() < MAX_ROBOT_NOTE) {
-      Translation2d assistVelocity = perpRobotToNote.times(GP_ASSIST_kP);
-      Translation2d newVelocity = velocity.plus(assistVelocity);
+    if (((AllianceFlipUtil.shouldFlip() && angleToGamePiece > 0.4)
+            || (!AllianceFlipUtil.shouldFlip() && angleToGamePiece < 0.1))
+        && robotToNote.getNorm() < MAX_ROBOT_NOTE) {
+
+      double projFactor =
+          ((robotToNote.getX() * velocity.getX()) + (robotToNote.getY() * velocity.getY()))
+              / ((velocity.getX() * velocity.getX()) + (velocity.getY() * velocity.getY()));
+      Translation2d projRobotToNote = velocity.times(projFactor);
+      Translation2d perpRobotToNote = robotToNote.minus(projRobotToNote);
+
+      if (AllianceFlipUtil.shouldFlip()) {
+        assistVelocity = perpRobotToNote.times(GP_ASSIST_kP).unaryMinus();
+
+      } else {
+        assistVelocity = perpRobotToNote.times(GP_ASSIST_kP);
+      }
+      Translation2d newVelocity = (velocity.plus(assistVelocity));
       Translation2d normVelocity = newVelocity.div(newVelocity.getNorm());
       Translation2d finalVelocity = normVelocity.times(velocity.getNorm());
 
       Logger.recordOutput(
-          "Custom",
+          "AssistVelocity",
           new Translation2d(
-              robotPose.getX() + finalVelocity.getX(), robotPose.getY() + finalVelocity.getY()));
+              (robotPose.getX() + finalVelocity.getX()),
+              (robotPose.getY() + finalVelocity.getY())));
 
       return finalVelocity;
     } else {
