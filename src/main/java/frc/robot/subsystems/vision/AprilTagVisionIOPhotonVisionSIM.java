@@ -66,7 +66,9 @@ public class AprilTagVisionIOPhotonVisionSIM implements AprilTagVisionIO {
     // camera.
     var cameraProp = new SimCameraProperties();
     cameraProp.setCalibration(960, 720, Rotation2d.fromDegrees(90));
-    cameraProp.setCalibError(0.35, 0.10);
+    // cameraProp.setCalibError(0.35, 0.10);
+    // Set to 0 to remove robot jittering
+    cameraProp.setCalibError(0.0, 0.0);
     cameraProp.setFPS(15);
     cameraProp.setAvgLatencyMs(50);
     cameraProp.setLatencyStdDevMs(15);

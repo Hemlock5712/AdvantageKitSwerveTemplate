@@ -2,6 +2,7 @@ package frc.robot.subsystems.gamepiece;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -32,11 +33,13 @@ public class GamePieceVisionIOPhotonVisionSIM implements GamePieceVisionIO {
     this.poseSupplier = poseSupplier;
     camera = new PhotonCamera(identifier);
     visionSim = new VisionSystemSim("gamePieceVision");
+    visionSim.update(poseSupplier.get());
     var cameraProp = new SimCameraProperties();
     cameraSim = new PhotonCameraSim(camera, cameraProp);
-    cameraSim.enableRawStream(true);
-    cameraSim.enableProcessedStream(true);
-    cameraSim.enableDrawWireframe(true);
+    visionSim.addCamera(cameraSim, robotToCamera);
+    cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
+    cameraSim.setMaxSightRange(10);
+    cameraSim.setMinTargetAreaPixels(1.0);
     Translation2d[] centerGamePieces = FieldConstants.StagingLocations.centerlineTranslations;
     for (Translation2d centerGamePiece : centerGamePieces) {
       Pose3d targetPose =
@@ -45,12 +48,13 @@ public class GamePieceVisionIOPhotonVisionSIM implements GamePieceVisionIO {
               centerGamePiece.getY(),
               Units.inchesToMeters(1),
               new Rotation3d());
-      TargetModel targetModel = new TargetModel(drawGamePieceVision(7, 5, 10, 10));
+      TargetModel targetModel =
+          new TargetModel(
+              drawGamePieceVision(Units.inchesToMeters(7), Units.inchesToMeters(5), 10, 10));
       // The given target model at the given pose
       VisionTargetSim visionTarget = new VisionTargetSim(targetPose, targetModel);
       visionSim.addVisionTargets(visionTarget);
     }
-    visionSim.addCamera(cameraSim, robotToCamera);
   }
 
   @Override

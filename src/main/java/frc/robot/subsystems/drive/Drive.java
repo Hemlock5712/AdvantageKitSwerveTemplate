@@ -86,9 +86,6 @@ public class Drive extends SubsystemBase {
           new Matrix<>(
               VecBuilder.fill(xyStdDevCoefficient, xyStdDevCoefficient, thetaStdDevCoefficient)));
 
-  private SwerveDrivePoseEstimator odometryDrive =
-      new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
-
   public Drive(
       GyroIO gyroIO,
       ModuleIO flModuleIO,
@@ -108,7 +105,7 @@ public class Drive extends SubsystemBase {
     // Configure AutoBuilder for PathPlanner
     AutoBuilder.configureHolonomic(
         this::getPose,
-        this::setAutoStartPose,
+        this::setPose,
         () -> kinematics.toChassisSpeeds(getModuleStates()),
         this::runVelocity,
         new HolonomicPathFollowerConfig(
@@ -204,7 +201,6 @@ public class Drive extends SubsystemBase {
 
       // Apply update
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
-      odometryDrive.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
     }
   }
 
@@ -342,12 +338,6 @@ public class Drive extends SubsystemBase {
     return poseEstimator.getEstimatedPosition();
   }
 
-  /** Returns the current odometry pose. */
-  @AutoLogOutput(key = "Odometry/Drive")
-  public Pose2d getDrive() {
-    return odometryDrive.getEstimatedPosition();
-  }
-
   /** Returns the current poseEstimator rotation. */
   public Rotation2d getRotation() {
     return getPose().getRotation();
@@ -365,16 +355,6 @@ public class Drive extends SubsystemBase {
    */
   public void setPose(Pose2d pose) {
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
-  }
-
-  /**
-   * Resets the current odometry and poseEstimator pose.
-   *
-   * @param pose The pose to reset to.
-   */
-  public void setAutoStartPose(Pose2d pose) {
-    poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
-    odometryDrive.resetPosition(rawGyroRotation, getModulePositions(), pose);
   }
 
   /**

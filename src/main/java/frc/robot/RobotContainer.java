@@ -93,18 +93,20 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim());
         flywheel = new Flywheel(new FlywheelIOSim());
+
         aprilTagVision =
             new AprilTagVision(
                 new AprilTagVisionIOPhotonVisionSIM(
                     "photonCamera1",
                     new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
-                    drive::getDrive));
+                    drive::getPose));
+
         gamePieceVision =
             new GamePieceVision(
                 new GamePieceVisionIOPhotonVisionSIM(
                     "gamePieceCamera1",
-                    new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
-                    drive::getDrive));
+                    new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0.0, 0)),
+                    drive::getPose));
         break;
 
       default:
