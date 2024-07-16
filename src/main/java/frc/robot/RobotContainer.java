@@ -34,6 +34,9 @@ import frc.robot.subsystems.flywheel.Flywheel;
 import frc.robot.subsystems.flywheel.FlywheelIO;
 import frc.robot.subsystems.flywheel.FlywheelIOSim;
 import frc.robot.subsystems.flywheel.FlywheelIOTalonFX;
+import frc.robot.subsystems.gamepiece.GamePieceVision;
+import frc.robot.subsystems.gamepiece.GamePieceVisionIO;
+import frc.robot.subsystems.gamepiece.GamePieceVisionIOPhotonVisionSIM;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
@@ -51,6 +54,7 @@ public class RobotContainer {
   private final Drive drive;
   private final Flywheel flywheel;
   private final AprilTagVision aprilTagVision;
+  private final GamePieceVision gamePieceVision;
   private final CompositeCommand compositeCommand;
 
   // Controller
@@ -72,7 +76,11 @@ public class RobotContainer {
                 new ModuleIOTalonFX(moduleConfigs[2]),
                 new ModuleIOTalonFX(moduleConfigs[3]));
         flywheel = new Flywheel(new FlywheelIOTalonFX());
-        aprilTagVision = new AprilTagVision(new AprilTagVisionIOLimelight("limelight"));
+        aprilTagVision =
+            new AprilTagVision(
+                new AprilTagVisionIOLimelight(
+                    "limelight", drive::getRotation, drive::gyroRateDegrees));
+        gamePieceVision = new GamePieceVision(new GamePieceVisionIO() {});
         break;
 
       case SIM:
@@ -91,6 +99,12 @@ public class RobotContainer {
                     "photonCamera1",
                     new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
                     drive::getDrive));
+        gamePieceVision =
+            new GamePieceVision(
+                new GamePieceVisionIOPhotonVisionSIM(
+                    "gamePieceCamera1",
+                    new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
+                    drive::getDrive));
         break;
 
       default:
@@ -104,12 +118,11 @@ public class RobotContainer {
                 new ModuleIO() {});
         flywheel = new Flywheel(new FlywheelIO() {});
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
-
+        gamePieceVision = new GamePieceVision(new GamePieceVisionIO() {});
         break;
     }
 
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-
     // Configure the button bindings
     aprilTagVision.setDataInterfaces(drive::addVisionData);
     compositeCommand = new CompositeCommand(drive, flywheel);

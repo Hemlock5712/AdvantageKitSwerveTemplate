@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.util.FieldConstants;
-import frc.robot.util.VisionHelpers.PoseEstimate;
+import frc.robot.util.LimelightHelpers.PoseEstimate;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -117,8 +117,12 @@ public class AprilTagVisionIOPhotonVisionSIM implements AprilTagVisionIO {
                 .getDistance(poseEstimation.getTranslation().toTranslation2d());
       }
       averageTagDistance /= tagIDs.length;
-      poseEstimates.add(
-          new PoseEstimate(poseEstimation, timestamp, averageTagDistance, tagIDs.length));
+      PoseEstimate poseEstimate = new PoseEstimate();
+      poseEstimate.pose = poseEstimation.toPose2d();
+      poseEstimate.timestampSeconds = timestamp;
+      poseEstimate.tagCount = tagIDs.length;
+      poseEstimate.avgTagDist = averageTagDistance;
+      poseEstimates.add(poseEstimate);
     }
     inputs.poseEstimates = poseEstimates;
   }

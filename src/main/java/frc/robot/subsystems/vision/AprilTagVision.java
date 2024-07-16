@@ -10,17 +10,19 @@ package frc.robot.subsystems.vision;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.AprilTagVisionIO.AprilTagVisionIOInputs;
 import frc.robot.util.FieldConstants;
-import frc.robot.util.VisionHelpers.PoseEstimate;
+import frc.robot.util.LimelightHelpers.PoseEstimate;
 import frc.robot.util.VisionHelpers.TimestampedVisionUpdate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class AprilTagVision extends SubsystemBase {
@@ -50,6 +52,15 @@ public class AprilTagVision extends SubsystemBase {
     this.visionConsumer = visionConsumer;
   }
 
+  @AutoLogOutput(key = "/AprilTagVision/poseEstimateCount")
+  public int getPoseEstimationCount() {
+    int count = 0;
+    for (AprilTagVisionIOInputs input : inputs) {
+      count += input.poseEstimates.size();
+    }
+    return count;
+  }
+
   public AprilTagVision(AprilTagVisionIO... io) {
     System.out.println("[Init] Creating AprilTagVision");
     this.io = io;
@@ -69,10 +80,7 @@ public class AprilTagVision extends SubsystemBase {
 
   @Override
   public void periodic() {
-    long startTime = Logger.getRealTimestamp();
-    for (int i = 0;
-        (i < io.length) && ((Logger.getRealTimestamp() - startTime) < (targetProcessSecs * 1.0e6));
-        i++) {
+    for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
       Logger.processInputs(VISION_PATH + Integer.toString(i), inputs[i]);
     }
@@ -92,13 +100,17 @@ public class AprilTagVision extends SubsystemBase {
         if (shouldSkipPoseEstimate(poseEstimates)) {
           continue;
         }
-        double timestamp = poseEstimates.timestampSeconds();
-        Pose3d robotPose = poseEstimates.pose();
-        double xyStdDev = calculateXYStdDev(poseEstimates, (int) poseEstimates.tagCount());
-        double thetaStdDev = calculateThetaStdDev(poseEstimates, (int) poseEstimates.tagCount());
+        double timestamp = poseEstimates.timestampSeconds;
+        Pose2d robotPose = poseEstimates.pose;
+        double xyStdDev = calculateXYStdDev(poseEstimates, poseEstimates.tagCount);
+        double thetaStdDev = 9999999;
+        if (DriverStation.isDisabled()) {
+          thetaStdDev = calculateThetaStdDev(poseEstimates, poseEstimates.tagCount);
+        }
+        // double thetaStdDev = calculateThetaStdDev(poseEstimates, poseEstimates.tagCount());
         visionUpdates.add(
             new TimestampedVisionUpdate(
-                timestamp, robotPose.toPose2d(), VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
+                timestamp, robotPose, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
       }
     }
     return visionUpdates;
@@ -111,9 +123,9 @@ public class AprilTagVision extends SubsystemBase {
    * @return True if the pose estimate should be skipped, false otherwise
    */
   private boolean shouldSkipPoseEstimate(PoseEstimate poseEstimates) {
-    return poseEstimates.tagCount() < 1
-        || poseEstimates.pose() == null
-        || isOutsideFieldBorder(poseEstimates.pose());
+    return poseEstimates.tagCount < 1
+        || poseEstimates.pose == null
+        || isOutsideFieldBorder(poseEstimates.pose);
   }
 
   /**
@@ -122,13 +134,11 @@ public class AprilTagVision extends SubsystemBase {
    * @param robotPose The robot pose
    * @return True if the robot pose is outside the field border, false otherwise
    */
-  private boolean isOutsideFieldBorder(Pose3d robotPose) {
+  private boolean isOutsideFieldBorder(Pose2d robotPose) {
     return robotPose.getX() < -fieldBorderMargin
         || robotPose.getX() > FieldConstants.fieldLength + fieldBorderMargin
         || robotPose.getY() < -fieldBorderMargin
-        || robotPose.getY() > FieldConstants.fieldWidth + fieldBorderMargin
-        || robotPose.getZ() < -zMargin
-        || robotPose.getZ() > zMargin;
+        || robotPose.getY() > FieldConstants.fieldWidth + fieldBorderMargin;
   }
 
   /**
@@ -139,7 +149,7 @@ public class AprilTagVision extends SubsystemBase {
    * @return The standard deviation of the x and y coordinates
    */
   private double calculateXYStdDev(PoseEstimate poseEstimates, int tagPosesSize) {
-    return xyStdDevCoefficient * Math.pow(poseEstimates.averageTagDistance(), 2.0) / tagPosesSize;
+    return xyStdDevCoefficient * Math.pow(poseEstimates.avgTagDist, 2.0) / tagPosesSize;
   }
 
   /**
@@ -150,9 +160,7 @@ public class AprilTagVision extends SubsystemBase {
    * @return The standard deviation of the theta coordinate
    */
   private double calculateThetaStdDev(PoseEstimate poseEstimates, int tagPosesSize) {
-    return thetaStdDevCoefficient
-        * Math.pow(poseEstimates.averageTagDistance(), 2.0)
-        / tagPosesSize;
+    return thetaStdDevCoefficient * Math.pow(poseEstimates.avgTagDist, 2.0) / tagPosesSize;
   }
 
   /**
