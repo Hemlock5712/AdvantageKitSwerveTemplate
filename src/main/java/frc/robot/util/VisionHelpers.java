@@ -6,8 +6,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import java.util.ArrayList;
-import org.photonvision.targeting.TargetCorner;
 
 /**
  * The VisionHelpers class provides utility methods and record classes for vision-related
@@ -15,7 +13,7 @@ import org.photonvision.targeting.TargetCorner;
  */
 public class VisionHelpers {
 
-  public record GamePiece(ArrayList<TargetCorner> gamePiece) {}
+  public record GamePiece(double width, double hight) {}
 
   /**
    * Converts a Pose3d object to an array of doubles.

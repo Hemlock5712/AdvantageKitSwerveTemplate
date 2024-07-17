@@ -13,6 +13,7 @@ import frc.robot.util.VisionHelpers.GamePiece;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 import org.photonvision.PhotonCamera;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -64,12 +65,28 @@ public class GamePieceVisionIOPhotonVisionSIM implements GamePieceVisionIO {
     List<PhotonTrackedTarget> currentTargets = cameraSim.getCamera().getLatestResult().getTargets();
     for (PhotonTrackedTarget target : currentTargets) {
       var detectedCorners = target.getDetectedCorners();
-      
-      ArrayList<TargetCorner> targetCorners = new ArrayList<>();
+
+      double highestX = 0;
+      double highestY = 0;
+      double lowestX = 9999999;
+      double lowestY = 9999999;
       for (TargetCorner corner : detectedCorners) {
-        targetCorners.add(new TargetCorner(corner.x, corner.y));
+
+        if (corner.x > highestX) {
+          highestX = corner.x;
+        }
+        if (corner.y > highestY) {
+          highestY = corner.y;
+        }
+        if (corner.x < lowestX) {
+          lowestX = corner.x;
+        }
+        if (corner.y < lowestY) {
+          lowestY = corner.y;
+        }
       }
-      gamePieces.add(new GamePiece(targetCorners));
+
+      gamePieces.add(new GamePiece(highestX - lowestX, highestY - lowestY));
     }
     inputs.gamePieces = gamePieces;
   }
