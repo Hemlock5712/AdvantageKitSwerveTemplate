@@ -13,7 +13,6 @@ import frc.robot.util.VisionHelpers.GamePiece;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 import org.photonvision.PhotonCamera;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.PhotonCameraSim;
