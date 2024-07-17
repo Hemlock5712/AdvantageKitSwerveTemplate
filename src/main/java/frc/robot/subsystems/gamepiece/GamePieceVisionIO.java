@@ -36,6 +36,7 @@ public interface GamePieceVisionIO {
               corners.y);
         }
       }
+      gamePieces.clear();
     }
 
     @Override
@@ -57,6 +58,7 @@ public interface GamePieceVisionIO {
         }
         gamePieces.add(new GamePiece(corners));
       }
+      gamePieces.clear();
     }
   }
 

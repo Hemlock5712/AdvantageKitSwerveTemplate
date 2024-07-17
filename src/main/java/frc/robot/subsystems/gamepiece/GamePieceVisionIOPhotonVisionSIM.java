@@ -64,6 +64,7 @@ public class GamePieceVisionIOPhotonVisionSIM implements GamePieceVisionIO {
     List<PhotonTrackedTarget> currentTargets = cameraSim.getCamera().getLatestResult().getTargets();
     for (PhotonTrackedTarget target : currentTargets) {
       var detectedCorners = target.getDetectedCorners();
+      
       ArrayList<TargetCorner> targetCorners = new ArrayList<>();
       for (TargetCorner corner : detectedCorners) {
         targetCorners.add(new TargetCorner(corner.x, corner.y));
