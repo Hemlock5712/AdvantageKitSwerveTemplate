@@ -380,7 +380,6 @@ public class Drive extends SubsystemBase {
                 visionUpdate.pose(), visionUpdate.timestamp(), visionUpdate.stdDevs()));
   }
 
-
   private double normRotations(double rotations) {
     return MathUtil.inputModulus(rotations, 0.0, 1.0);
   }
@@ -394,13 +393,11 @@ public class Drive extends SubsystemBase {
       return velocity;
     }
 
-
     Logger.recordOutput("GamepieceLocation", gamepiece);
 
-      Logger.recordOutput(
-          "VelocityPlacedonRobot",
-          new Translation2d(
-              robotPose.getX() + velocity.getX(), robotPose.getY() + velocity.getY()));
+    Logger.recordOutput(
+        "VelocityPlacedonRobot",
+        new Translation2d(robotPose.getX() + velocity.getX(), robotPose.getY() + velocity.getY()));
 
     Translation2d robotToNote = gamepiece.minus(robotPose);
     double angleToGamePiece =
