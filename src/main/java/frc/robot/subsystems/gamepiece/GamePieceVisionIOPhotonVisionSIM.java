@@ -84,15 +84,14 @@ public class GamePieceVisionIOPhotonVisionSIM implements GamePieceVisionIO {
       Logger.recordOutput("gamepieceLoco", FieldConstants.StagingLocations.centerlineTranslations);
 
       double distancetoGamepiece =
-          .3556
-              / (Math.tan(
-                  Math.abs(closestYCorner.x - baseCorner.x)
-                      / 824.124974182)); // pixal to rad constant
+          (Units.inchesToMeters(14.0)
+                  / (Math.tan(Math.abs(closestYCorner.x - baseCorner.x) / 824.124974182)))
+              + 0.5; // pixal to rad constant
       // 0.5 height of camera
       double groundDistance =
           Math.cos(Rotation2d.fromDegrees(target.getPitch()).getRadians()) * distancetoGamepiece;
 
-      Logger.recordOutput("distance", groundDistance);
+      Logger.recordOutput("distance", closestYCorner.x - baseCorner.x);
 
       double x =
           (Math.cos(
