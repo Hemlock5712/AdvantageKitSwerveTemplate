@@ -385,8 +385,8 @@ public class Drive extends SubsystemBase {
     return MathUtil.inputModulus(rotations, 0.0, 1.0);
   }
 
-  public Translation2d calulateToGamepieceNorm(
-      Translation2d robotPose, Translation2d gamepiece, Translation2d velocity) {
+  public Translation2d calulateToGamepieceNorm(Translation2d gamepiece, Translation2d velocity) {
+    Translation2d robotPose = getPose().getTranslation();
 
     Translation2d assistVelocity = new Translation2d();
 
@@ -419,10 +419,10 @@ public class Drive extends SubsystemBase {
       Translation2d perpRobotToNote = robotToNote.minus(projRobotToNote);
 
       if (AllianceFlipUtil.shouldFlip()) {
-        assistVelocity = perpRobotToNote.times(GP_ASSIST_kP).unaryMinus();
+        assistVelocity = perpRobotToNote.times(GP_ASSIST_KP).unaryMinus();
 
       } else {
-        assistVelocity = perpRobotToNote.times(GP_ASSIST_kP);
+        assistVelocity = perpRobotToNote.times(GP_ASSIST_KP);
       }
       Translation2d newVelocity = (velocity.plus(assistVelocity));
       Translation2d normVelocity = newVelocity.div(newVelocity.getNorm());
