@@ -1,5 +1,6 @@
 package frc.robot.subsystems.gamepiece;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.util.VisionHelpers.GamePiece;
 import java.util.ArrayList;
 import org.littletonrobotics.junction.LogTable;
@@ -15,9 +16,8 @@ public interface GamePieceVisionIO {
       for (GamePiece gamePiece : gamePieces) {
         int gamePiecePosition = gamePieces.indexOf(gamePiece);
         table.put(
-            "Game Piece " + Integer.toString(gamePiecePosition) + "/width", gamePiece.width());
-        table.put(
-            "Game Piece " + Integer.toString(gamePiecePosition) + "/hight ", gamePiece.hight());
+            "Game Piece " + Integer.toString(gamePiecePosition) + "/translation",
+            gamePiece.translationOfGamepiece());
       }
       gamePieces.clear();
     }
@@ -26,9 +26,9 @@ public interface GamePieceVisionIO {
     public void fromLog(LogTable table) {
       int gamePieceCount = table.get("Game Piece", 0);
       for (int i = 0; i < gamePieceCount; i++) {
-        double x = table.get("Game Piece " + Integer.toString(i) + "/width ", 0.0);
-        double y = table.get("Game Piece " + Integer.toString(i) + "/hight ", 0.0);
-        gamePieces.add(new GamePiece(x, y));
+        Translation2d translation =
+            table.get("Game Piece " + Integer.toString(i) + "/translation", new Translation2d());
+        gamePieces.add(new GamePiece(translation));
       }
       gamePieces.clear();
     }

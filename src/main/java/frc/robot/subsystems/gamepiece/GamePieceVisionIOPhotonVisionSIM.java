@@ -13,6 +13,7 @@ import frc.robot.util.VisionHelpers.GamePiece;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 import org.photonvision.PhotonCamera;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -65,27 +66,50 @@ public class GamePieceVisionIOPhotonVisionSIM implements GamePieceVisionIO {
     for (PhotonTrackedTarget target : currentTargets) {
       var detectedCorners = target.getMinAreaRectCorners();
 
-      double highestX = -9999999;
-      double highestY = -9999999;
-      double lowestX = 9999999;
-      double lowestY = 9999999;
+      TargetCorner baseCorner = detectedCorners.get(0);
+      detectedCorners.remove(0);
+      TargetCorner closestXCorner = new TargetCorner(999999, 999999);
+      TargetCorner closestYCorner = new TargetCorner(999999, 999999);
+
       for (TargetCorner corner : detectedCorners) {
 
-        if (corner.x > highestX) {
-          highestX = corner.x;
+        if (Math.abs(baseCorner.x - corner.x) < Math.abs(baseCorner.x - closestXCorner.x)) {
+          closestXCorner = corner;
         }
-        if (corner.y > highestY) {
-          highestY = corner.y;
-        }
-        if (corner.x < lowestX) {
-          lowestX = corner.x;
-        }
-        if (corner.y < lowestY) {
-          lowestY = corner.y;
+        if (Math.abs(baseCorner.y - corner.y) < Math.abs(baseCorner.y - closestYCorner.y)) {
+          closestYCorner = corner;
         }
       }
 
-      gamePieces.add(new GamePiece(highestX - lowestX, highestY - lowestY));
+      Logger.recordOutput("gamepieceLoco", FieldConstants.StagingLocations.centerlineTranslations);
+
+      double distancetoGamepiece =
+          .3556
+              / (Math.tan(
+                  Math.abs(closestYCorner.x - baseCorner.x)
+                      / 824.124974182)); // pixal to rad constant
+      // 0.5 height of camera
+      double groundDistance =
+          Math.cos(Rotation2d.fromDegrees(target.getPitch()).getRadians()) * distancetoGamepiece;
+
+      Logger.recordOutput("distance", groundDistance);
+
+      double x =
+          (Math.cos(
+                      (-Rotation2d.fromDegrees(target.getYaw()).getRadians())
+                          + poseSupplier.get().getRotation().getRadians())
+                  * groundDistance)
+              + poseSupplier.get().getX();
+      double y =
+          (Math.sin(
+                      (-Rotation2d.fromDegrees(target.getYaw()).getRadians())
+                          + poseSupplier.get().getRotation().getRadians())
+                  * groundDistance)
+              + poseSupplier.get().getY();
+
+      Logger.recordOutput("loco", new Translation2d(x, y));
+
+      gamePieces.add(new GamePiece(new Translation2d(x, y)));
     }
     inputs.gamePieces = gamePieces;
   }
