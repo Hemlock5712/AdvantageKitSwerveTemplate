@@ -36,6 +36,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -62,10 +63,12 @@ public class Drive extends SubsystemBase {
 
   private static final double MAX_ROBOT_NOTE =
       4; // Max distance allowed from robot to note will be smaller in real life
-  private static final double GP_ASSIST_kP = 5.0;
+  private static final double GP_ASSIST_KP = 1.0;
 
   private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
   private Rotation2d rawGyroRotation = new Rotation2d();
+  private double yawVelocityRadPerSec = 0.0;
+
   private SwerveModulePosition[] lastModulePositions = // For delta tracking
       new SwerveModulePosition[] {
         new SwerveModulePosition(),
@@ -82,9 +85,6 @@ public class Drive extends SubsystemBase {
           stateStdDevs,
           new Matrix<>(
               VecBuilder.fill(xyStdDevCoefficient, xyStdDevCoefficient, thetaStdDevCoefficient)));
-
-  private SwerveDrivePoseEstimator odometryDrive =
-      new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
   public Drive(
       GyroIO gyroIO,
@@ -105,7 +105,7 @@ public class Drive extends SubsystemBase {
     // Configure AutoBuilder for PathPlanner
     AutoBuilder.configureHolonomic(
         this::getPose,
-        this::setAutoStartPose,
+        this::setPose,
         () -> kinematics.toChassisSpeeds(getModuleStates()),
         this::runVelocity,
         new HolonomicPathFollowerConfig(
@@ -192,6 +192,7 @@ public class Drive extends SubsystemBase {
       if (gyroInputs.connected) {
         // Use the real gyro angle
         rawGyroRotation = gyroInputs.odometryYawPositions[i];
+        yawVelocityRadPerSec = gyroInputs.yawVelocityRadPerSec;
       } else {
         // Use the angle delta from the kinematics and module deltas
         Twist2d twist = kinematics.toTwist2d(moduleDeltas);
@@ -200,7 +201,6 @@ public class Drive extends SubsystemBase {
 
       // Apply update
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
-      odometryDrive.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
     }
   }
 
@@ -236,7 +236,6 @@ public class Drive extends SubsystemBase {
 
           Translation2d translationSpeeds =
               calulateToGamepieceNorm(
-                  getPose().getTranslation(),
                   AllianceFlipUtil.apply(new Translation2d(3, 7)),
                   new Translation2d(robotRelativeXVel, robotRelativeYVel));
 
@@ -339,15 +338,14 @@ public class Drive extends SubsystemBase {
     return poseEstimator.getEstimatedPosition();
   }
 
-  /** Returns the current odometry pose. */
-  @AutoLogOutput(key = "Odometry/Drive")
-  public Pose2d getDrive() {
-    return odometryDrive.getEstimatedPosition();
-  }
-
   /** Returns the current poseEstimator rotation. */
   public Rotation2d getRotation() {
     return getPose().getRotation();
+  }
+
+  @AutoLogOutput(key = "Drive/GyroRate")
+  public double gyroRateDegrees() {
+    return Units.radiansToDegrees(yawVelocityRadPerSec);
   }
 
   /**
@@ -357,16 +355,6 @@ public class Drive extends SubsystemBase {
    */
   public void setPose(Pose2d pose) {
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
-  }
-
-  /**
-   * Resets the current odometry and poseEstimator pose.
-   *
-   * @param pose The pose to reset to.
-   */
-  public void setAutoStartPose(Pose2d pose) {
-    poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
-    odometryDrive.resetPosition(rawGyroRotation, getModulePositions(), pose);
   }
 
   /**
@@ -392,17 +380,20 @@ public class Drive extends SubsystemBase {
                 visionUpdate.pose(), visionUpdate.timestamp(), visionUpdate.stdDevs()));
   }
 
+
   private double normRotations(double rotations) {
     return MathUtil.inputModulus(rotations, 0.0, 1.0);
   }
 
-  public Translation2d calulateToGamepieceNorm(
-      Translation2d robotPose, Translation2d gamepiece, Translation2d velocity) {
+  public Translation2d calulateToGamepieceNorm(Translation2d gamepiece, Translation2d velocity) {
+    Translation2d robotPose = getPose().getTranslation();
 
     Translation2d assistVelocity = new Translation2d();
+
     if (velocity.getNorm() == 0) {
       return velocity;
     }
+
 
     Logger.recordOutput("GamepieceLocation", gamepiece);
 
@@ -415,9 +406,7 @@ public class Drive extends SubsystemBase {
     double angleToGamePiece =
         Math.abs(
             MathUtil.inputModulus(
-                robotToNote.getAngle().getRotations() - velocity.getAngle().getRotations(),
-                -0.5,
-                0.5));
+                robotToNote.getAngle().minus(velocity.getAngle()).getRotations(), -0.5, 0.5));
 
     if (((AllianceFlipUtil.shouldFlip() && angleToGamePiece > 0.4)
             || (!AllianceFlipUtil.shouldFlip() && angleToGamePiece < 0.1))
@@ -430,10 +419,10 @@ public class Drive extends SubsystemBase {
       Translation2d perpRobotToNote = robotToNote.minus(projRobotToNote);
 
       if (AllianceFlipUtil.shouldFlip()) {
-        assistVelocity = perpRobotToNote.times(GP_ASSIST_kP).unaryMinus();
+        assistVelocity = perpRobotToNote.times(GP_ASSIST_KP).unaryMinus();
 
       } else {
-        assistVelocity = perpRobotToNote.times(GP_ASSIST_kP);
+        assistVelocity = perpRobotToNote.times(GP_ASSIST_KP);
       }
       Translation2d newVelocity = (velocity.plus(assistVelocity));
       Translation2d normVelocity = newVelocity.div(newVelocity.getNorm());
