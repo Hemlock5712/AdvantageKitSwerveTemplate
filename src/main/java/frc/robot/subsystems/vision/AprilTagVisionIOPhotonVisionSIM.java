@@ -17,6 +17,8 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.util.FieldConstants;
 import frc.robot.util.LimelightHelpers.PoseEstimate;
+import frc.robot.util.LimelightHelpers.RawFiducial;
+
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -124,6 +126,11 @@ public class AprilTagVisionIOPhotonVisionSIM implements AprilTagVisionIO {
       poseEstimate.timestampSeconds = timestamp;
       poseEstimate.tagCount = tagIDs.length;
       poseEstimate.avgTagDist = averageTagDistance;
+      RawFiducial[] rawFiducials = new RawFiducial[tagIDs.length];
+      for (int i = 0; i < tagIDs.length; i++) {
+        rawFiducials[i] = new RawFiducial(tagIDs[i], 0, 0, 0, 0, 0, 0);
+      }
+      poseEstimate.rawFiducials = rawFiducials;
       poseEstimates.add(poseEstimate);
     }
     inputs.poseEstimates = poseEstimates;

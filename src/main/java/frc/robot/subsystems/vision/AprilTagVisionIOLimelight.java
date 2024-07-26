@@ -48,6 +48,7 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
     PoseEstimate mt = LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName);
     LimelightHelpers.SetRobotOrientation(
         limelightName, driveHeadingSupplier.get().getDegrees(), 0, 0, 0, 0, 0);
+
     if (DriverStation.isEnabled()) {
       mt = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
     }

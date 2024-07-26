@@ -234,15 +234,15 @@ public class Drive extends SubsystemBase {
           double robotRelativeXVel = linearVelocity.getX() * drivetrainConfig.maxLinearVelocity();
           double robotRelativeYVel = linearVelocity.getY() * drivetrainConfig.maxLinearVelocity();
 
-          Translation2d translationSpeeds =
-              calulateToGamepieceNorm(
-                  AllianceFlipUtil.apply(new Translation2d(3, 7)),
-                  new Translation2d(robotRelativeXVel, robotRelativeYVel));
+          // Translation2d translationSpeeds =
+          //     calulateToGamepieceNorm(
+          //         AllianceFlipUtil.apply(new Translation2d(3, 7)),
+          //         new Translation2d(robotRelativeXVel, robotRelativeYVel));
 
           ChassisSpeeds chassisSpeeds =
               ChassisSpeeds.fromFieldRelativeSpeeds(
-                  translationSpeeds.getX(),
-                  translationSpeeds.getY(),
+                  robotRelativeXVel,
+                  robotRelativeYVel,
                   omega * drivetrainConfig.maxAngularVelocity(),
                   isFlipped
                       ? this.getRotation().plus(new Rotation2d(Math.PI))

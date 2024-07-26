@@ -11,30 +11,30 @@ import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.AprilTagVisionIO.AprilTagVisionIOInputs;
 import frc.robot.util.FieldConstants;
 import frc.robot.util.LimelightHelpers.PoseEstimate;
 import frc.robot.util.VisionHelpers.TimestampedVisionUpdate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class AprilTagVision extends SubsystemBase {
 
-  // Time interval for logging tag poses
-  private static final double targetProcessSecs = 0.1;
-
   // Margin around the field border
   private static final double fieldBorderMargin = 0.5;
 
-  // Margin for the z-axis
-  private static final double zMargin = 0.75;
+  private static final double targetLogTimeSecs = 0.1;
 
   // Path for logging vision data
   private static final String VISION_PATH = "AprilTagVision/Inst";
@@ -107,10 +107,11 @@ public class AprilTagVision extends SubsystemBase {
         if (DriverStation.isDisabled()) {
           thetaStdDev = calculateThetaStdDev(poseEstimates, poseEstimates.tagCount);
         }
-        // double thetaStdDev = calculateThetaStdDev(poseEstimates, poseEstimates.tagCount());
+        List<Pose3d> tagPoses = getTagPoses(poseEstimates);
         visionUpdates.add(
             new TimestampedVisionUpdate(
                 timestamp, robotPose, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
+        logData(instanceIndex, timestamp, robotPose, tagPoses);
       }
     }
     return visionUpdates;
@@ -161,6 +162,46 @@ public class AprilTagVision extends SubsystemBase {
    */
   private double calculateThetaStdDev(PoseEstimate poseEstimates, int tagPosesSize) {
     return thetaStdDevCoefficient * Math.pow(poseEstimates.avgTagDist, 2.0) / tagPosesSize;
+  }
+
+  private List<Pose3d> getTagPoses(PoseEstimate poseEstimates) {
+    List<Pose3d> tagPoses = new ArrayList<>();
+    Arrays.stream(poseEstimates.rawFiducials)
+        .forEachOrdered(
+            tagId -> {
+              lastTagDetectionTimes.put(tagId.id, Timer.getFPGATimestamp());
+              Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(tagId.id);
+              tagPose.ifPresent(tagPoses::add);
+            });
+    return tagPoses;
+  }
+
+  private void logData(
+    int instanceIndex, double timestamp, Pose2d robotPose, List<Pose3d> tagPoses) {
+  Logger.recordOutput(
+      VISION_PATH + Integer.toString(instanceIndex) + "/LatencySecs",
+      Timer.getFPGATimestamp() - timestamp);
+  Logger.recordOutput(
+      VISION_PATH + Integer.toString(instanceIndex) + "/RobotPose", robotPose);
+  Logger.recordOutput(
+      VISION_PATH + Integer.toString(instanceIndex) + "/TagPoses",
+      tagPoses.toArray(new Pose3d[tagPoses.size()]));
+  logTagPoses();
+}
+
+
+  private void logTagPoses() {
+    List<Pose3d> allTagPoses = new ArrayList<>();
+    for (Map.Entry<Integer, Double> detectionEntry : lastTagDetectionTimes.entrySet()) {
+      if (Timer.getFPGATimestamp() - detectionEntry.getValue() < targetLogTimeSecs) {
+        Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(detectionEntry.getKey());
+        if (tagPose.isPresent()) {
+          allTagPoses.add(tagPose.get());
+        }
+      }
+    }
+    Logger.recordOutput(
+        "AprilTagVision/TagPoses", allTagPoses.toArray(new Pose3d[allTagPoses.size()]));
   }
 
   /**
