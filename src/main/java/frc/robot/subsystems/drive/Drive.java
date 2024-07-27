@@ -358,17 +358,6 @@ public class Drive extends SubsystemBase {
   }
 
   /**
-   * Adds a vision measurement to the pose estimator.
-   *
-   * @param visionPose The pose of the robot as measured by the vision camera.
-   * @param timestamp The timestamp of the vision measurement in seconds.
-   */
-  public void addVisionMeasurement(
-      Pose2d visionPose, double timestamp, Matrix<N3, N1> visionMeasurementStdDevs) {
-    poseEstimator.addVisionMeasurement(visionPose, timestamp, visionMeasurementStdDevs);
-  }
-
-  /**
    * Adds vision data to the pose esimation.
    *
    * @param visionData The vision data to add.
@@ -376,7 +365,7 @@ public class Drive extends SubsystemBase {
   public void addVisionData(List<TimestampedVisionUpdate> visionData) {
     visionData.forEach(
         visionUpdate ->
-            addVisionMeasurement(
+            poseEstimator.addVisionMeasurement(
                 visionUpdate.pose(), visionUpdate.timestamp(), visionUpdate.stdDevs()));
   }
 
