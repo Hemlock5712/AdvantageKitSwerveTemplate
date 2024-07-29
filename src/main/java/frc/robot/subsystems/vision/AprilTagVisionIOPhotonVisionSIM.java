@@ -7,6 +7,8 @@
 
 package frc.robot.subsystems.vision;
 
+import static frc.robot.util.FieldConstants.*;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -15,7 +17,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import frc.robot.util.FieldConstants;
 import frc.robot.util.LimelightHelpers.PoseEstimate;
 import frc.robot.util.LimelightHelpers.RawFiducial;
 import java.util.ArrayList;
@@ -52,17 +53,14 @@ public class AprilTagVisionIOPhotonVisionSIM implements AprilTagVisionIO {
     camera = new PhotonCamera(identifier);
     photonEstimator =
         new PhotonPoseEstimator(
-            FieldConstants.aprilTags,
-            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-            camera,
-            robotToCamera);
+            aprilTags, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera, robotToCamera);
     photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
     // Create the vision system simulation which handles cameras and targets on the
     // field.
     visionSim = new VisionSystemSim("main");
     // Add all the AprilTags inside the tag layout as visible targets to this
     // simulated field.
-    visionSim.addAprilTags(FieldConstants.aprilTags);
+    visionSim.addAprilTags(aprilTags);
     // Create simulated camera properties. These can be set to mimic your actual
     // camera.
     var cameraProp = new SimCameraProperties();

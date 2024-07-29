@@ -9,7 +9,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.subsystems.gamepiece.GamePieceVision.GamePiece;
-import frc.robot.util.FieldConstants;
+import frc.robot.util.FieldConstants.StagingLocations;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -41,7 +41,7 @@ public class GamePieceVisionIOPhotonVisionSIM implements GamePieceVisionIO {
     cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
     cameraSim.setMaxSightRange(10);
     cameraSim.setMinTargetAreaPixels(1.0);
-    Translation2d[] centerGamePieces = FieldConstants.StagingLocations.centerlineTranslations;
+    Translation2d[] centerGamePieces = StagingLocations.centerlineTranslations;
     for (Translation2d centerGamePiece : centerGamePieces) {
       Pose3d targetPose =
           new Pose3d(
@@ -81,7 +81,7 @@ public class GamePieceVisionIOPhotonVisionSIM implements GamePieceVisionIO {
         }
       }
 
-      Logger.recordOutput("gamepieceLoco", FieldConstants.StagingLocations.centerlineTranslations);
+      Logger.recordOutput("gamepieceLocation", StagingLocations.centerlineTranslations);
 
       double distancetoGamepiece =
           (Units.inchesToMeters(14.0)

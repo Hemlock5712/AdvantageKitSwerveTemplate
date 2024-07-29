@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.flywheel.Flywheel;
 import frc.robot.util.AllianceFlipUtil;
-import frc.robot.util.FieldConstants;
+import frc.robot.util.FieldConstants.Speaker;
 
 public class CompositeCommand {
   Drive drive;
@@ -34,8 +34,7 @@ public class CompositeCommand {
                   .getPose()
                   .getTranslation()
                   .getDistance(
-                      AllianceFlipUtil.apply(
-                          FieldConstants.Speaker.centerSpeakerOpening.getTranslation()));
+                      AllianceFlipUtil.apply(Speaker.centerSpeakerOpening.getTranslation()));
           // Get the corresponding speed from the distance-speed map
           double speed = distanceMap.get(distance);
 

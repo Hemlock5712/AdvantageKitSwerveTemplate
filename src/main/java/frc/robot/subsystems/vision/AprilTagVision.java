@@ -8,19 +8,24 @@
 package frc.robot.subsystems.vision;
 
 import static frc.robot.subsystems.drive.DriveConstants.*;
+import static frc.robot.util.FieldConstants.*;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.drive.PoseEstimator.VisionObservation;
 import frc.robot.subsystems.vision.AprilTagVisionIO.AprilTagVisionIOInputs;
 import frc.robot.util.FieldConstants;
 import frc.robot.util.LimelightHelpers.PoseEstimate;
+import frc.robot.util.PoseEstimator.VisionObservation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -69,7 +74,7 @@ public class AprilTagVision extends SubsystemBase {
     }
 
     // Create map of last detection times for tags
-    FieldConstants.aprilTags.getTags().forEach(tag -> lastTagDetectionTimes.put(tag.ID, 0.0));
+    aprilTags.getTags().forEach(tag -> lastTagDetectionTimes.put(tag.ID, 0.0));
   }
 
   @Override
@@ -98,6 +103,7 @@ public class AprilTagVision extends SubsystemBase {
         Pose2d robotPose = poseEstimates.pose;
         double xyStdDev = calculateXYStdDev(poseEstimates, poseEstimates.tagCount);
         double thetaStdDev = 9999999;
+        List<Pose3d> tagPoses = getTagPoses(poseEstimates);
         if (DriverStation.isDisabled()) {
           thetaStdDev = calculateThetaStdDev(poseEstimates, poseEstimates.tagCount);
         }
@@ -105,6 +111,7 @@ public class AprilTagVision extends SubsystemBase {
         visionUpdates.add(
             new VisionObservation(
                 robotPose, timestamp, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
+        logData(instanceIndex, timestamp, robotPose, tagPoses);
       }
     }
     return visionUpdates;
@@ -130,9 +137,9 @@ public class AprilTagVision extends SubsystemBase {
    */
   private boolean isOutsideFieldBorder(Pose2d robotPose) {
     return robotPose.getX() < -fieldBorderMargin
-        || robotPose.getX() > FieldConstants.fieldLength + fieldBorderMargin
+        || robotPose.getX() > fieldLength + fieldBorderMargin
         || robotPose.getY() < -fieldBorderMargin
-        || robotPose.getY() > FieldConstants.fieldWidth + fieldBorderMargin;
+        || robotPose.getY() > fieldWidth + fieldBorderMargin;
   }
 
   /**
@@ -155,6 +162,41 @@ public class AprilTagVision extends SubsystemBase {
    */
   private double calculateThetaStdDev(PoseEstimate poseEstimates, int tagPosesSize) {
     return thetaStdDevCoefficient * Math.pow(poseEstimates.avgTagDist, 2.0) / tagPosesSize;
+  }
+
+  private List<Pose3d> getTagPoses(PoseEstimate poseEstimates) {
+    List<Pose3d> tagPoses = new ArrayList<>();
+    Arrays.stream(poseEstimates.rawFiducials)
+        .forEachOrdered(
+            tagId -> {
+              lastTagDetectionTimes.put(tagId.id, Timer.getFPGATimestamp());
+              Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(tagId.id);
+              tagPose.ifPresent(tagPoses::add);
+            });
+    return tagPoses;
+  }
+
+  private void logData(int instanceIndex, double timestamp, Pose2d pose, List<Pose3d> tagPoses) {
+    Logger.recordOutput(
+        VISION_PATH + Integer.toString(instanceIndex) + "/LatencySecs",
+        Timer.getFPGATimestamp() - timestamp);
+    Logger.recordOutput(VISION_PATH + Integer.toString(instanceIndex) + "/RobotPose", pose);
+    Logger.recordOutput(
+        VISION_PATH + Integer.toString(instanceIndex) + "/TagPoses",
+        tagPoses.toArray(new Pose3d[tagPoses.size()]));
+    logTagPoses();
+  }
+
+  private void logTagPoses() {
+    List<Pose3d> allTagPoses = new ArrayList<>();
+    for (Map.Entry<Integer, Double> detectionEntry : lastTagDetectionTimes.entrySet()) {
+      Optional<Pose3d> tagPose = aprilTags.getTagPose(detectionEntry.getKey());
+      if (tagPose.isPresent()) {
+        allTagPoses.add(tagPose.get());
+      }
+    }
+    Logger.recordOutput(
+        "AprilTagVision/TagPoses", allTagPoses.toArray(new Pose3d[allTagPoses.size()]));
   }
 
   /**
