@@ -13,7 +13,6 @@
 
 package frc.robot.subsystems.drive;
 
-import static edu.wpi.first.units.Units.*;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -22,9 +21,7 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -32,19 +29,19 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveWheelPositions;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.util.AllianceFlipUtil;
-import frc.robot.util.VisionHelpers.TimestampedVisionUpdate;
+import frc.robot.subsystems.drive.PoseEstimator.OdometryObservation;
+import frc.robot.subsystems.drive.PoseEstimator.VisionObservation;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -57,17 +54,18 @@ public class Drive extends SubsystemBase {
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
-  private final SysIdRoutine sysId;
+
+  private double filteredX = 0;
+  private double filteredY = 0;
+  private final LinearFilter xFilter = LinearFilter.movingAverage(10);
+  private final LinearFilter yFilter = LinearFilter.movingAverage(10);
 
   private static final double DEADBAND = 0.1;
 
-  private static final double MAX_ROBOT_NOTE =
-      4; // Max distance allowed from robot to note will be smaller in real life
-  private static final double GP_ASSIST_KP = 1.0;
-
   private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
   private Rotation2d rawGyroRotation = new Rotation2d();
-  private double yawVelocityRadPerSec = 0.0;
+  private double yawVelocityRadPerSec = 0;
+  private double yawTimeStamp = 0;
 
   private SwerveModulePosition[] lastModulePositions = // For delta tracking
       new SwerveModulePosition[] {
@@ -76,15 +74,7 @@ public class Drive extends SubsystemBase {
         new SwerveModulePosition(),
         new SwerveModulePosition()
       };
-  private SwerveDrivePoseEstimator poseEstimator =
-      new SwerveDrivePoseEstimator(
-          kinematics,
-          rawGyroRotation,
-          lastModulePositions,
-          new Pose2d(),
-          stateStdDevs,
-          new Matrix<>(
-              VecBuilder.fill(xyStdDevCoefficient, xyStdDevCoefficient, thetaStdDevCoefficient)));
+  private final PoseEstimator poseEstimator;
 
   public Drive(
       GyroIO gyroIO,
@@ -127,22 +117,8 @@ public class Drive extends SubsystemBase {
     PathPlannerLogging.setLogTargetPoseCallback(
         targetPose -> Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose));
 
-    // Configure SysId
-    sysId =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                null,
-                null,
-                null,
-                state -> Logger.recordOutput("Drive/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism(
-                voltage -> {
-                  for (int i = 0; i < 4; i++) {
-                    modules[i].runCharacterization(voltage.in(Volts));
-                  }
-                },
-                null,
-                this));
+    poseEstimator = new PoseEstimator(DriveConstants.stateStdDevs, DriveConstants.kinematics);
+    // PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
   }
 
   @Override
@@ -193,14 +169,26 @@ public class Drive extends SubsystemBase {
         // Use the real gyro angle
         rawGyroRotation = gyroInputs.odometryYawPositions[i];
         yawVelocityRadPerSec = gyroInputs.yawVelocityRadPerSec;
+        yawTimeStamp = gyroInputs.odometryYawTimestamps[i];
       } else {
         // Use the angle delta from the kinematics and module deltas
         Twist2d twist = kinematics.toTwist2d(moduleDeltas);
         rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
+        yawTimeStamp = sampleTimestamps[i];
       }
 
       // Apply update
-      poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
+      poseEstimator.addOdometryObservation(
+          new OdometryObservation(
+              new SwerveDriveWheelPositions(modulePositions), rawGyroRotation, yawTimeStamp));
+
+      ChassisSpeeds chassisSpeeds = kinematics.toChassisSpeeds(getModuleStates());
+      Translation2d rawFieldRelativeVelocity =
+          new Translation2d(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond)
+              .rotateBy(getRotation());
+
+      filteredX = xFilter.calculate(rawFieldRelativeVelocity.getX());
+      filteredY = yFilter.calculate(rawFieldRelativeVelocity.getY());
     }
   }
 
@@ -262,6 +250,10 @@ public class Drive extends SubsystemBase {
     // Calculate module setpoints
     ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
     SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
+    setModuleStates(setpointStates);
+  }
+
+  public void setModuleStates(SwerveModuleState[] setpointStates) {
     SwerveDriveKinematics.desaturateWheelSpeeds(
         setpointStates, drivetrainConfig.maxLinearVelocity());
 
@@ -295,24 +287,6 @@ public class Drive extends SubsystemBase {
     stop();
   }
 
-  /**
-   * Returns a command to run a quasistatic test in the specified direction.
-   *
-   * @param direction The direction to run the quasistatic test.
-   */
-  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return sysId.quasistatic(direction);
-  }
-
-  /**
-   * Returns a command to run a dynamic test in the specified direction.
-   *
-   * @param direction The direction to run the dynamic test.
-   */
-  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return sysId.dynamic(direction);
-  }
-
   /** Returns the module states (turn angles and drive velocities) for all of the modules. */
   @AutoLogOutput(key = "SwerveStates/Measured")
   private SwerveModuleState[] getModuleStates() {
@@ -335,7 +309,7 @@ public class Drive extends SubsystemBase {
   /** Returns the current pose estimation. */
   @AutoLogOutput(key = "Odometry/PoseEstimation")
   public Pose2d getPose() {
-    return poseEstimator.getEstimatedPosition();
+    return poseEstimator.getEstimatedPose();
   }
 
   /** Returns the current poseEstimator rotation. */
@@ -348,13 +322,18 @@ public class Drive extends SubsystemBase {
     return Units.radiansToDegrees(yawVelocityRadPerSec);
   }
 
+  @AutoLogOutput(key = "Drive/GyroTimeStamp")
+  public double gyroTimeStamp() {
+    return yawTimeStamp;
+  }
+
   /**
    * Resets the current poseEstimator pose.
    *
    * @param pose The pose to reset to.
    */
   public void setPose(Pose2d pose) {
-    poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+    poseEstimator.resetPose(pose);
   }
 
   /**
@@ -362,67 +341,30 @@ public class Drive extends SubsystemBase {
    *
    * @param visionData The vision data to add.
    */
-  public void addVisionData(List<TimestampedVisionUpdate> visionData) {
-    visionData.forEach(
-        visionUpdate ->
-            poseEstimator.addVisionMeasurement(
-                visionUpdate.pose(), visionUpdate.timestamp(), visionUpdate.stdDevs()));
+  public void addVisionData(List<VisionObservation> visionData) {
+    visionData.stream()
+        .sorted(Comparator.comparingDouble(VisionObservation::timestamp))
+        .forEach(poseEstimator::addVisionObservation);
   }
 
-  private double normRotations(double rotations) {
-    return MathUtil.inputModulus(rotations, 0.0, 1.0);
+  @AutoLogOutput
+  public Translation2d getFieldRelativeVelocity() {
+    return new Translation2d(filteredX, filteredY);
   }
 
-  public Translation2d calulateToGamepieceNorm(Translation2d gamepiece, Translation2d velocity) {
-    Translation2d robotPose = getPose().getTranslation();
+  public double[] getWheelRadiusCharacterizationPosition() {
+    return Arrays.stream(modules).mapToDouble(Module::getPositionRadians).toArray();
+  }
 
-    Translation2d assistVelocity = new Translation2d();
-
-    if (velocity.getNorm() == 0) {
-      return velocity;
-    }
-
-    Logger.recordOutput("GamepieceLocation", gamepiece);
-
-    Logger.recordOutput(
-        "VelocityPlacedonRobot",
-        new Translation2d(robotPose.getX() + velocity.getX(), robotPose.getY() + velocity.getY()));
-
-    Translation2d robotToNote = gamepiece.minus(robotPose);
-    double angleToGamePiece =
-        Math.abs(
-            MathUtil.inputModulus(
-                robotToNote.getAngle().minus(velocity.getAngle()).getRotations(), -0.5, 0.5));
-
-    if (((AllianceFlipUtil.shouldFlip() && angleToGamePiece > 0.4)
-            || (!AllianceFlipUtil.shouldFlip() && angleToGamePiece < 0.1))
-        && robotToNote.getNorm() < MAX_ROBOT_NOTE) {
-
-      double projFactor =
-          ((robotToNote.getX() * velocity.getX()) + (robotToNote.getY() * velocity.getY()))
-              / ((velocity.getX() * velocity.getX()) + (velocity.getY() * velocity.getY()));
-      Translation2d projRobotToNote = velocity.times(projFactor);
-      Translation2d perpRobotToNote = robotToNote.minus(projRobotToNote);
-
-      if (AllianceFlipUtil.shouldFlip()) {
-        assistVelocity = perpRobotToNote.times(GP_ASSIST_KP).unaryMinus();
-
-      } else {
-        assistVelocity = perpRobotToNote.times(GP_ASSIST_KP);
-      }
-      Translation2d newVelocity = (velocity.plus(assistVelocity));
-      Translation2d normVelocity = newVelocity.div(newVelocity.getNorm());
-      Translation2d finalVelocity = normVelocity.times(velocity.getNorm());
-
-      Logger.recordOutput(
-          "AssistVelocity",
-          new Translation2d(
-              (robotPose.getX() + finalVelocity.getX()),
-              (robotPose.getY() + finalVelocity.getY())));
-
-      return finalVelocity;
-    } else {
-      return velocity;
-    }
+  public void setWheelsToCircle() {
+    Rotation2d[] turnAngles =
+        Arrays.stream(DriveConstants.moduleTranslations)
+            .map(translation -> translation.getAngle().plus(new Rotation2d(Math.PI / 2.0)))
+            .toArray(Rotation2d[]::new);
+    SwerveModuleState[] desiredStates =
+        Arrays.stream(turnAngles)
+            .map(angle -> new SwerveModuleState(0, angle))
+            .toArray(SwerveModuleState[]::new);
+    setModuleStates(desiredStates);
   }
 }

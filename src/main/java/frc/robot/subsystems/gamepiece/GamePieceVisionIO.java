@@ -1,7 +1,7 @@
 package frc.robot.subsystems.gamepiece;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import frc.robot.util.VisionHelpers.GamePiece;
+import frc.robot.subsystems.gamepiece.GamePieceVision.GamePiece;
 import java.util.ArrayList;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;

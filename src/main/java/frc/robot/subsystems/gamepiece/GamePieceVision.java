@@ -1,8 +1,8 @@
 package frc.robot.subsystems.gamepiece;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.gamepiece.GamePieceVisionIO.GamePieceVisionIOInputs;
-import frc.robot.util.VisionHelpers.GamePiece;
 import java.util.ArrayList;
 import org.littletonrobotics.junction.Logger;
 
@@ -43,4 +43,6 @@ public class GamePieceVision extends SubsystemBase {
   private void setAllGamePieces(ArrayList<GamePiece> tempGamePieces) {
     allGamepiece = tempGamePieces;
   }
+
+  public record GamePiece(Translation2d translationOfGamepiece) {}
 }

@@ -45,13 +45,13 @@ public class AprilTagVisionIOLimelight implements AprilTagVisionIO {
   @Override
   public void updateInputs(AprilTagVisionIOInputs inputs) {
     ArrayList<PoseEstimate> poseEstimates = new ArrayList<>();
-    PoseEstimate mt = LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName);
     LimelightHelpers.SetRobotOrientation(
         limelightName, driveHeadingSupplier.get().getDegrees(), 0, 0, 0, 0, 0);
 
-    if (DriverStation.isEnabled()) {
-      mt = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
-    }
+    PoseEstimate mt =
+        DriverStation.isEnabled()
+            ? LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName)
+            : LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
 
     // if our angular velocity is greater than 720 degrees per second, ignore vision updates
     if (Math.abs(gyroRateDegrees.get()) > 80 || mt == null || mt.tagCount == 0) {
