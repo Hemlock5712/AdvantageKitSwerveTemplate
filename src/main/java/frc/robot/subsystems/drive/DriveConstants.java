@@ -66,30 +66,14 @@ public final class DriveConstants {
       switch (Constants.getRobot()) {
         case COMPBOT ->
             new ModuleConfig[] {
-              new ModuleConfig(
-                  1,
-                  2,
-                  9,
-                  Rotation2d.fromRotations(-0.383).plus(Rotation2d.fromDegrees(180)),
-                  true),
-              new ModuleConfig(
-                  3,
-                  4,
-                  10,
-                  Rotation2d.fromRotations(-0.251).plus(Rotation2d.fromDegrees(180)),
-                  true),
-              new ModuleConfig(
-                  5,
-                  6,
-                  11,
-                  Rotation2d.fromRotations(-0.057).plus(Rotation2d.fromDegrees(180)),
-                  true),
-              new ModuleConfig(
-                  7,
-                  8,
-                  12,
-                  Rotation2d.fromRotations(-0.470).plus(Rotation2d.fromDegrees(180)),
-                  true)
+              // 0.454346
+              new ModuleConfig(1, 2, 9, Rotation2d.fromRotations(0.360840), true),
+              // -0.305420
+              new ModuleConfig(3, 4, 10, Rotation2d.fromRotations(-0.307861 + 0.5), true),
+              // -0.486084
+              new ModuleConfig(5, 6, 11, Rotation2d.fromRotations(-0.488770), true),
+              // -0.052002
+              new ModuleConfig(7, 8, 12, Rotation2d.fromRotations(-0.163086 + 0.5), true)
             };
         case SIMBOT -> {
           ModuleConfig[] configs = new ModuleConfig[4];
@@ -103,13 +87,13 @@ public final class DriveConstants {
       switch (Constants.getRobot()) {
         case COMPBOT ->
             new ModuleConstants(
-                0.1,
-                0.13,
+                0.26002,
+                0.10382,
                 0.1,
                 0.0,
                 10.0,
                 0.0,
-                Mk4iReductions.L2.reduction,
+                Mk4iReductions.L4.reduction,
                 Mk4iReductions.TURN.reduction);
         case SIMBOT ->
             new ModuleConstants(
@@ -119,7 +103,7 @@ public final class DriveConstants {
                 0.0,
                 10.0,
                 0.0,
-                Mk4iReductions.L2.reduction,
+                Mk4iReductions.L4.reduction,
                 Mk4iReductions.TURN.reduction);
       };
 
@@ -176,6 +160,7 @@ public final class DriveConstants {
   private enum Mk4iReductions {
     L2((50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0)),
     L3((50.0 / 14.0) * (16.0 / 28.0) * (45.0 / 15.0)),
+    L4((50.0 / 16.0) * (16.0 / 28.0) * (45.0 / 15.0)),
     TURN((150.0 / 7.0));
 
     final double reduction;

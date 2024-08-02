@@ -23,20 +23,12 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.CompositeCommand;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
-import frc.robot.subsystems.flywheel.Flywheel;
-import frc.robot.subsystems.flywheel.FlywheelIO;
-import frc.robot.subsystems.flywheel.FlywheelIOSim;
-import frc.robot.subsystems.flywheel.FlywheelIOTalonFX;
-import frc.robot.subsystems.gamepiece.GamePieceVision;
-import frc.robot.subsystems.gamepiece.GamePieceVisionIO;
-import frc.robot.subsystems.gamepiece.GamePieceVisionIOPhotonVisionSIM;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.AprilTagVisionIO;
 import frc.robot.subsystems.vision.AprilTagVisionIOLimelight;
@@ -52,10 +44,10 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  private final Flywheel flywheel;
+  // private final Flywheel flywheel;
   private final AprilTagVision aprilTagVision;
-  private final GamePieceVision gamePieceVision;
-  private final CompositeCommand compositeCommand;
+  // private final GamePieceVision gamePieceVision;
+  // private final CompositeCommand compositeCommand;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -75,12 +67,18 @@ public class RobotContainer {
                 new ModuleIOTalonFX(moduleConfigs[1]),
                 new ModuleIOTalonFX(moduleConfigs[2]),
                 new ModuleIOTalonFX(moduleConfigs[3]));
-        flywheel = new Flywheel(new FlywheelIOTalonFX());
+        // flywheel = new Flywheel(new FlywheelIOTalonFX());
         aprilTagVision =
             new AprilTagVision(
                 new AprilTagVisionIOLimelight(
-                    "limelight", drive::getRotation, drive::gyroRateDegrees));
-        gamePieceVision = new GamePieceVision(new GamePieceVisionIO() {});
+                    "limelight-fl", drive::getRotation, drive::gyroRateDegrees),
+                new AprilTagVisionIOLimelight(
+                    "limelight-fr", drive::getRotation, drive::gyroRateDegrees),
+                new AprilTagVisionIOLimelight(
+                    "limelight-bl", drive::getRotation, drive::gyroRateDegrees),
+                new AprilTagVisionIOLimelight(
+                    "limelight-br", drive::getRotation, drive::gyroRateDegrees));
+        // gamePieceVision = new GamePieceVision(new GamePieceVisionIO() {});
         break;
 
       case SIM:
@@ -92,7 +90,7 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
-        flywheel = new Flywheel(new FlywheelIOSim());
+        // flywheel = new Flywheel(new FlywheelIOSim());
 
         aprilTagVision =
             new AprilTagVision(
@@ -101,12 +99,12 @@ public class RobotContainer {
                     new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0)),
                     drive::getPose));
 
-        gamePieceVision =
-            new GamePieceVision(
-                new GamePieceVisionIOPhotonVisionSIM(
-                    "gamePieceCamera1",
-                    new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0.0, 0)),
-                    drive::getPose));
+        // gamePieceVision =
+        //     new GamePieceVision(
+        //         new GamePieceVisionIOPhotonVisionSIM(
+        //             "gamePieceCamera1",
+        //             new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0.0, 0)),
+        //             drive::getPose));
         break;
 
       default:
@@ -118,16 +116,16 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        flywheel = new Flywheel(new FlywheelIO() {});
+        // flywheel = new Flywheel(new FlywheelIO() {});
         aprilTagVision = new AprilTagVision(new AprilTagVisionIO() {});
-        gamePieceVision = new GamePieceVision(new GamePieceVisionIO() {});
+        // gamePieceVision = new GamePieceVision(new GamePieceVisionIO() {});
         break;
     }
 
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     // Configure the button bindings
     aprilTagVision.setDataInterfaces(drive::addVisionData);
-    compositeCommand = new CompositeCommand(drive, flywheel);
+    // compositeCommand = new CompositeCommand(drive, flywheel);
 
     configureButtonBindings();
   }
@@ -147,7 +145,7 @@ public class RobotContainer {
                 () -> -controller.getRightX())
             .withName("Drive Teleop Input"));
 
-    controller.a().whileTrue(compositeCommand.speakerShoot().withName("Speaker Smart Shooting"));
+    // controller.a().whileTrue(compositeCommand.speakerShoot().withName("Speaker Smart Shooting"));
   }
 
   /**
